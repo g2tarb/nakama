@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import {
   format,
@@ -9,6 +9,7 @@ import {
   endOfMonth,
   startOfDay,
   addDays,
+  subDays,
   isSameDay,
   isSameMonth,
   addWeeks,
@@ -31,10 +32,11 @@ import {
 import { cn } from '@/lib/utils';
 import { seances, sportifs, pros } from '@/lib/mock-data';
 import { useUserStore } from '@/stores/user-store';
+import { useMobile } from '@/hooks/use-mobile';
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
-type View = 'semaine' | 'mois';
+type View = 'jour' | 'semaine' | 'mois';
 
 interface BlockedSlot {
   id: string;
@@ -46,8 +48,10 @@ interface BlockedSlot {
 
 export default function AgendaPage() {
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
+  const isMobile = useMobile();
   const [view, setView] = useState<View>('semaine');
   const [refDate, setRefDate] = useState(() => startOfDay(new Date()));
+  const [dayDetailDate, setDayDetailDate] = useState<Date | null>(null);
   const [blockOpen, setBlockOpen] = useState(false);
   const [blocks, setBlocks] = useState<BlockedSlot[]>([]);
   const [blockForm, setBlockForm] = useState({
@@ -56,6 +60,15 @@ export default function AgendaPage() {
     heureFin: '14:00',
     raison: '',
   });
+
+  // Bascule par défaut en vue Jour sur mobile au premier render client
+  const [hasInitView, setHasInitView] = useState(false);
+  useEffect(() => {
+    if (!hasInitView && isMobile) {
+      setView('jour');
+    }
+    setHasInitView(true);
+  }, [isMobile, hasInitView]);
 
   const weekStart = useMemo(() => startOfWeek(refDate, { weekStartsOn: 1 }), [refDate]);
   const weekDays = useMemo(
@@ -78,10 +91,14 @@ export default function AgendaPage() {
   );
 
   function navigatePrev() {
-    setRefDate(view === 'semaine' ? subWeeks(refDate, 1) : subMonths(refDate, 1));
+    if (view === 'jour') setRefDate(subDays(refDate, 1));
+    else if (view === 'semaine') setRefDate(subWeeks(refDate, 1));
+    else setRefDate(subMonths(refDate, 1));
   }
   function navigateNext() {
-    setRefDate(view === 'semaine' ? addWeeks(refDate, 1) : addMonths(refDate, 1));
+    if (view === 'jour') setRefDate(addDays(refDate, 1));
+    else if (view === 'semaine') setRefDate(addWeeks(refDate, 1));
+    else setRefDate(addMonths(refDate, 1));
   }
   function goToday() {
     setRefDate(startOfDay(new Date()));
@@ -106,10 +123,29 @@ export default function AgendaPage() {
     setBlockOpen(false);
   }
 
+  function getDateSeances(day: Date) {
+    return proSeances
+      .filter((s) => isSameDay(new Date(s.date), day))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  function getDateBlocks(day: Date) {
+    const ymd = format(day, 'yyyy-MM-dd');
+    return blocks.filter((b) => b.date === ymd);
+  }
+
+  const periodLabel =
+    view === 'jour'
+      ? format(refDate, 'EEEE d MMMM', { locale: fr })
+      : view === 'semaine'
+        ? `${format(weekDays[0]!, 'd MMM', { locale: fr })} – ${format(weekDays[6]!, 'd MMM', { locale: fr })}`
+        : format(refDate, 'MMMM yyyy', { locale: fr });
+
   return (
     <div className="relative min-h-[calc(100vh-4rem)] px-4 py-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      {/* Header */}
+      <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-3 sm:justify-start">
           <h1 className="text-accent-gold text-xl font-bold">Agenda</h1>
           <button
             onClick={goToday}
@@ -119,15 +155,15 @@ export default function AgendaPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Toggle Semaine/Mois */}
-          <div className="border-border bg-surface flex overflow-hidden rounded-lg border">
-            {(['semaine', 'mois'] as const).map((v) => (
+        {/* Toggle + nav */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="border-border bg-surface flex flex-1 overflow-hidden rounded-lg border sm:flex-initial">
+            {(['jour', 'semaine', 'mois'] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium capitalize transition-colors',
+                  'flex-1 px-3 py-1.5 text-xs font-medium capitalize transition-colors sm:flex-initial',
                   view === v
                     ? 'bg-accent-gold text-background'
                     : 'text-text-secondary hover:text-text-primary',
@@ -138,115 +174,135 @@ export default function AgendaPage() {
             ))}
           </div>
 
-          <button
-            onClick={navigatePrev}
-            className="border-border hover:bg-surface rounded-lg border p-1.5"
-            aria-label="Précédent"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span className="min-w-[140px] text-center text-sm font-medium">
-            {view === 'semaine'
-              ? `${format(weekDays[0]!, 'd MMM', { locale: fr })} - ${format(weekDays[6]!, 'd MMM yyyy', { locale: fr })}`
-              : format(refDate, 'MMMM yyyy', { locale: fr })}
-          </span>
-          <button
-            onClick={navigateNext}
-            className="border-border hover:bg-surface rounded-lg border p-1.5"
-            aria-label="Suivant"
-          >
-            <ChevronRight size={16} />
-          </button>
+          <div className="border-border bg-surface flex items-center gap-1 rounded-lg border px-1">
+            <button
+              onClick={navigatePrev}
+              className="hover:bg-surface-elevated rounded p-1.5"
+              aria-label="Précédent"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="min-w-[90px] text-center text-xs font-medium capitalize sm:min-w-[140px] sm:text-sm">
+              {periodLabel}
+            </span>
+            <button
+              onClick={navigateNext}
+              className="hover:bg-surface-elevated rounded p-1.5"
+              aria-label="Suivant"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Vue Semaine */}
+      {/* Vue Jour (mobile-first) */}
+      {view === 'jour' && (
+        <DayView
+          date={refDate}
+          seances={getDateSeances(refDate)}
+          blocks={getDateBlocks(refDate)}
+        />
+      )}
+
+      {/* Vue Semaine (scroll horizontal sur mobile, grille pleine sur desktop) */}
       {view === 'semaine' && (
-        <div className="overflow-x-auto">
-          <div className="min-w-[700px]">
-            <div className="grid grid-cols-[60px_repeat(7,1fr)] gap-px">
-              <div />
-              {weekDays.map((day) => (
-                <div
-                  key={day.toISOString()}
-                  className={cn(
-                    'py-2 text-center text-xs font-medium',
-                    isSameDay(day, new Date())
-                      ? 'text-accent-gold'
-                      : 'text-text-secondary',
-                  )}
-                >
-                  <div className="uppercase">{format(day, 'EEE', { locale: fr })}</div>
-                  <div
+        <div>
+          <p className="text-text-tertiary mb-2 text-center text-[11px] sm:hidden">
+            ← Glisse horizontalement pour voir toute la semaine →
+          </p>
+          <div className="overflow-x-auto">
+            <div className="min-w-[700px]">
+              <div className="grid grid-cols-[60px_repeat(7,1fr)] gap-px">
+                <div />
+                {weekDays.map((day) => (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => {
+                      setRefDate(day);
+                      setView('jour');
+                    }}
                     className={cn(
-                      'mt-1 inline-flex size-7 items-center justify-center rounded-full text-sm',
-                      isSameDay(day, new Date()) &&
-                        'bg-accent-gold text-background font-bold',
+                      'py-2 text-center text-xs font-medium transition-colors hover:opacity-80',
+                      isSameDay(day, new Date())
+                        ? 'text-accent-gold'
+                        : 'text-text-secondary',
                     )}
                   >
-                    {format(day, 'd')}
-                  </div>
-                </div>
-              ))}
-            </div>
+                    <div className="uppercase">{format(day, 'EEE', { locale: fr })}</div>
+                    <div
+                      className={cn(
+                        'mt-1 inline-flex size-7 items-center justify-center rounded-full text-sm',
+                        isSameDay(day, new Date()) &&
+                          'bg-accent-gold text-background font-bold',
+                      )}
+                    >
+                      {format(day, 'd')}
+                    </div>
+                  </button>
+                ))}
+              </div>
 
-            <div className="border-border grid grid-cols-[60px_repeat(7,1fr)] gap-px border-t">
-              {HOURS.map((hour) => (
-                <div key={hour} className="contents">
-                  <div className="text-text-tertiary flex h-12 items-start justify-end pt-0.5 pr-2 text-[10px]">
-                    {hour}:00
-                  </div>
-                  {weekDays.map((day) => {
-                    const daySeances = proSeances.filter(
-                      (s) =>
-                        isSameDay(new Date(s.date), day) &&
-                        new Date(s.date).getHours() === hour,
-                    );
-                    const dayBlocks = blocks.filter(
-                      (b) =>
-                        b.date === format(day, 'yyyy-MM-dd') &&
-                        parseInt(b.heureDebut.slice(0, 2), 10) <= hour &&
-                        parseInt(b.heureFin.slice(0, 2), 10) > hour,
-                    );
-                    return (
-                      <div
-                        key={`${day.toISOString()}-${hour}`}
-                        className="border-border relative h-12 border-b border-l"
-                      >
-                        {daySeances.map((seance) => {
-                          const client = sportifs.find((s) => s.id === seance.sportifId);
-                          return (
+              <div className="border-border grid grid-cols-[60px_repeat(7,1fr)] gap-px border-t">
+                {HOURS.map((hour) => (
+                  <div key={hour} className="contents">
+                    <div className="text-text-tertiary flex h-12 items-start justify-end pt-0.5 pr-2 text-[10px]">
+                      {hour}:00
+                    </div>
+                    {weekDays.map((day) => {
+                      const daySeances = proSeances.filter(
+                        (s) =>
+                          isSameDay(new Date(s.date), day) &&
+                          new Date(s.date).getHours() === hour,
+                      );
+                      const dayBlocks = blocks.filter(
+                        (b) =>
+                          b.date === format(day, 'yyyy-MM-dd') &&
+                          parseInt(b.heureDebut.slice(0, 2), 10) <= hour &&
+                          parseInt(b.heureFin.slice(0, 2), 10) > hour,
+                      );
+                      return (
+                        <div
+                          key={`${day.toISOString()}-${hour}`}
+                          className="border-border relative h-12 border-b border-l"
+                        >
+                          {daySeances.map((seance) => {
+                            const client = sportifs.find(
+                              (s) => s.id === seance.sportifId,
+                            );
+                            return (
+                              <div
+                                key={seance.id}
+                                className="bg-accent-gold/20 text-accent-gold absolute inset-x-0.5 top-0.5 rounded px-1 py-0.5 text-[10px] leading-tight"
+                              >
+                                {client?.prenom ?? 'Client'}
+                              </div>
+                            );
+                          })}
+                          {dayBlocks.map((b) => (
                             <div
-                              key={seance.id}
-                              className="bg-accent-gold/20 text-accent-gold absolute inset-x-0.5 top-0.5 rounded px-1 py-0.5 text-[10px] leading-tight"
+                              key={b.id}
+                              title={b.raison}
+                              className="bg-text-tertiary/30 text-text-secondary absolute inset-x-0.5 top-0.5 truncate rounded px-1 py-0.5 text-[10px] leading-tight"
                             >
-                              {client?.prenom ?? 'Client'}
+                              🚫 {b.raison}
                             </div>
-                          );
-                        })}
-                        {dayBlocks.map((b) => (
-                          <div
-                            key={b.id}
-                            title={b.raison}
-                            className="bg-text-tertiary/30 text-text-secondary absolute inset-x-0.5 top-0.5 rounded px-1 py-0.5 text-[10px] leading-tight"
-                          >
-                            🚫 {b.raison}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Vue Mois */}
+      {/* Vue Mois (compact mobile, expansif desktop) */}
       {view === 'mois' && (
         <div>
-          <div className="grid grid-cols-7 gap-px text-center text-xs font-medium uppercase">
+          <div className="grid grid-cols-7 gap-px text-center text-[10px] font-medium uppercase sm:text-xs">
             {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
               <div key={d} className="text-text-secondary py-2">
                 {d}
@@ -255,26 +311,23 @@ export default function AgendaPage() {
           </div>
           <div className="border-border grid grid-cols-7 gap-px border-t">
             {monthDays.map((day) => {
-              const daySeances = proSeances.filter((s) =>
-                isSameDay(new Date(s.date), day),
-              );
-              const dayBlocks = blocks.filter(
-                (b) => b.date === format(day, 'yyyy-MM-dd'),
-              );
+              const daySeances = getDateSeances(day);
+              const dayBlocks = getDateBlocks(day);
               const inMonth = isSameMonth(day, refDate);
               const today = isSameDay(day, new Date());
               return (
-                <div
+                <button
                   key={day.toISOString()}
+                  onClick={() => setDayDetailDate(day)}
                   className={cn(
-                    'border-border min-h-[88px] border-b border-l p-1.5 transition-colors',
+                    'border-border hover:bg-surface relative min-h-[52px] border-b border-l p-1 text-left transition-colors sm:min-h-[88px] sm:p-1.5',
                     !inMonth && 'opacity-40',
                     today && 'bg-accent-gold/5',
                   )}
                 >
                   <div
                     className={cn(
-                      'inline-flex size-6 items-center justify-center rounded-full text-xs',
+                      'inline-flex size-5 items-center justify-center rounded-full text-[10px] sm:size-6 sm:text-xs',
                       today
                         ? 'bg-accent-gold text-background font-bold'
                         : 'text-text-secondary',
@@ -282,7 +335,7 @@ export default function AgendaPage() {
                   >
                     {format(day, 'd')}
                   </div>
-                  <div className="mt-1 space-y-0.5">
+                  <div className="mt-1 hidden space-y-0.5 sm:block">
                     {daySeances.slice(0, 3).map((s) => {
                       const client = sportifs.find((c) => c.id === s.sportifId);
                       return (
@@ -302,27 +355,79 @@ export default function AgendaPage() {
                     )}
                     {dayBlocks.length > 0 && (
                       <div className="text-text-tertiary text-[10px]">
-                        🚫 {dayBlocks.length} blocage
-                        {dayBlocks.length > 1 ? 's' : ''}
+                        🚫 {dayBlocks.length}
                       </div>
                     )}
                   </div>
-                </div>
+                  {/* Indicateur compact mobile */}
+                  {(daySeances.length > 0 || dayBlocks.length > 0) && (
+                    <div className="absolute right-1 bottom-1 flex gap-0.5 sm:hidden">
+                      {daySeances.length > 0 && (
+                        <span className="bg-accent-gold size-1.5 rounded-full" />
+                      )}
+                      {dayBlocks.length > 0 && (
+                        <span className="bg-text-tertiary size-1.5 rounded-full" />
+                      )}
+                    </div>
+                  )}
+                </button>
               );
             })}
           </div>
         </div>
       )}
 
-      {/* FAB Bloquer plage */}
+      {/* FAB Bloquer plage — icon-only mobile, label desktop */}
       <button
         onClick={() => setBlockOpen(true)}
-        className="bg-accent-gold text-background fixed right-6 bottom-24 z-40 flex h-14 items-center gap-2 rounded-full px-5 shadow-lg transition-transform hover:scale-105 lg:bottom-8"
+        className="bg-accent-gold text-background fixed right-4 bottom-24 z-40 flex h-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 sm:right-6 sm:gap-2 sm:px-5 lg:bottom-8"
         aria-label="Bloquer une plage horaire"
       >
-        <Plus size={20} />
-        <span className="text-sm font-semibold">Bloquer une plage</span>
+        <Plus size={20} className="mx-3 sm:mx-0" />
+        <span className="hidden text-sm font-semibold sm:inline">Bloquer une plage</span>
       </button>
+
+      {/* Dialog Détail jour (depuis vue Mois) */}
+      <Dialog
+        open={dayDetailDate !== null}
+        onOpenChange={(o) => !o && setDayDetailDate(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="capitalize">
+              {dayDetailDate && format(dayDetailDate, 'EEEE d MMMM yyyy', { locale: fr })}
+            </DialogTitle>
+            <DialogDescription>
+              {dayDetailDate && getDateSeances(dayDetailDate).length} séance
+              {dayDetailDate && getDateSeances(dayDetailDate).length > 1 ? 's' : ''}{' '}
+              prévue
+              {dayDetailDate && getDateSeances(dayDetailDate).length > 1 ? 's' : ''}
+            </DialogDescription>
+          </DialogHeader>
+          {dayDetailDate && (
+            <DayContentList
+              seances={getDateSeances(dayDetailDate)}
+              blocks={getDateBlocks(dayDetailDate)}
+            />
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDayDetailDate(null)}>
+              Fermer
+            </Button>
+            <Button
+              onClick={() => {
+                if (dayDetailDate) {
+                  setRefDate(dayDetailDate);
+                  setView('jour');
+                  setDayDetailDate(null);
+                }
+              }}
+            >
+              Ouvrir le jour
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog Bloquer plage */}
       <Dialog open={blockOpen} onOpenChange={setBlockOpen}>
@@ -396,7 +501,7 @@ export default function AgendaPage() {
                       key={b.id}
                       className="bg-surface flex items-center justify-between rounded-md px-2 py-1.5 text-xs"
                     >
-                      <span>
+                      <span className="truncate">
                         {format(new Date(b.date), 'd MMM', { locale: fr })} {b.heureDebut}
                         -{b.heureFin} · {b.raison}
                       </span>
@@ -404,7 +509,7 @@ export default function AgendaPage() {
                         onClick={() =>
                           setBlocks((prev) => prev.filter((x) => x.id !== b.id))
                         }
-                        className="text-text-tertiary hover:text-danger"
+                        className="text-text-tertiary hover:text-danger ml-2 shrink-0"
                       >
                         <X size={14} />
                       </button>
@@ -423,5 +528,105 @@ export default function AgendaPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// Sous-composant : Vue Jour (timeline verticale, mobile-first)
+// ──────────────────────────────────────────────────────────
+
+interface DayViewProps {
+  date: Date;
+  seances: typeof seances;
+  blocks: BlockedSlot[];
+}
+
+function DayView({ date, seances, blocks }: DayViewProps) {
+  const isToday = isSameDay(date, new Date());
+
+  if (seances.length === 0 && blocks.length === 0) {
+    return (
+      <div className="border-border bg-surface flex flex-col items-center justify-center gap-2 rounded-xl border py-16 text-center">
+        <p className="text-text-secondary text-sm">
+          {isToday ? 'Pas de séance aujourd’hui' : 'Aucune séance ce jour'}
+        </p>
+        <p className="text-text-tertiary text-xs">
+          Ta journée est libre. Profites-en pour bloquer du temps perso si besoin.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <DayContentList seances={seances} blocks={blocks} />
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// Sous-composant : Liste des items d'un jour (réutilisé par Dialog mois)
+// ──────────────────────────────────────────────────────────
+
+interface DayContentListProps {
+  seances: typeof seances;
+  blocks: BlockedSlot[];
+}
+
+function DayContentList({ seances, blocks }: DayContentListProps) {
+  if (seances.length === 0 && blocks.length === 0) {
+    return (
+      <p className="text-text-tertiary py-4 text-center text-sm">
+        Aucune séance ce jour.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="space-y-2">
+      {seances.map((s) => {
+        const client = sportifs.find((c) => c.id === s.sportifId);
+        return (
+          <li
+            key={s.id}
+            className="border-border bg-surface flex items-center gap-3 rounded-lg border p-3"
+          >
+            <div className="text-accent-gold w-12 shrink-0 text-center">
+              <p className="text-sm font-bold">{format(new Date(s.date), 'HH:mm')}</p>
+              <p className="text-text-tertiary text-[10px]">{s.dureeMinutes}min</p>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">
+                {client ? `${client.prenom} ${client.nom}` : 'Client'}
+              </p>
+              <p className="text-text-tertiary truncate text-xs">
+                {s.lieu ?? 'Lieu à confirmer'}
+              </p>
+            </div>
+            <span className="text-accent-gold shrink-0 text-sm font-semibold">
+              {s.tarif}€
+            </span>
+          </li>
+        );
+      })}
+      {blocks.map((b) => (
+        <li
+          key={b.id}
+          className="border-border bg-surface/50 flex items-center gap-3 rounded-lg border p-3"
+        >
+          <div className="text-text-tertiary w-12 shrink-0 text-center text-sm font-bold">
+            {b.heureDebut}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-text-secondary truncate text-sm font-medium">
+              🚫 {b.raison}
+            </p>
+            <p className="text-text-tertiary truncate text-xs">
+              Jusqu&apos;à {b.heureFin}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
