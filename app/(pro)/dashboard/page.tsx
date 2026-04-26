@@ -20,20 +20,7 @@ import { Button } from '@/components/ui/button';
 import { useCountUp } from '@/hooks/use-count-up';
 import { useUserStore } from '@/stores/user-store';
 import { pros, seances, sportifs } from '@/lib/mock-data';
-
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: 'easeOut' as const },
-  },
-};
+import { containerVariants, itemVariants } from '@/lib/animations';
 
 // Données sparkline revenus (6 derniers mois)
 const SPARKLINE_DATA = [
@@ -118,6 +105,9 @@ export default function DashboardPage() {
                   stroke="#C9B27A"
                   strokeWidth={2}
                   dot={false}
+                  isAnimationActive
+                  animationDuration={1200}
+                  animationEasing="ease-out"
                 />
               </LineChart>
             </ResponsiveContainer>

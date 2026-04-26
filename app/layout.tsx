@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -10,19 +10,98 @@ const inter = Inter({
   display: 'swap',
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const TITLE = 'Nakama — Le Doctolib du coaching sportif';
+const DESCRIPTION =
+  'Trouve le coach sportif qui te correspond vraiment. Matching comportemental, réservation simple, progression suivie.';
+
 export const dynamic = 'force-dynamic';
 
+export const viewport: Viewport = {
+  themeColor: '#0B0F14',
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: 'Nakama — Le Doctolib du coaching sportif',
-  description:
-    'Trouve le coach sportif qui te correspond vraiment. Matching comportemental, réservation simple, progression suivie.',
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: TITLE,
+    template: '%s — Nakama',
+  },
+  description: DESCRIPTION,
+  applicationName: 'Nakama',
+  keywords: [
+    'coaching sportif',
+    'coach sport',
+    'préparateur physique',
+    'matching coach',
+    'réservation séance sport',
+    'doctolib sport',
+  ],
+  authors: [{ name: 'Nakama' }],
+  creator: 'Nakama',
   openGraph: {
-    title: 'Nakama — Le Doctolib du coaching sportif',
-    description:
-      'Trouve le coach sportif qui te correspond vraiment. Matching comportemental, réservation simple, progression suivie.',
+    title: TITLE,
+    description: DESCRIPTION,
     type: 'website',
     locale: 'fr_FR',
+    url: APP_URL,
+    siteName: 'Nakama',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Nakama — Marketplace coaching sportif',
+      },
+    ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/og.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${APP_URL}/#organization`,
+      name: 'Nakama',
+      url: APP_URL,
+      logo: `${APP_URL}/logo.png`,
+      description: DESCRIPTION,
+      sameAs: [],
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Nakama',
+      operatingSystem: 'Web',
+      applicationCategory: 'HealthApplication',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+      description: DESCRIPTION,
+      url: APP_URL,
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -32,6 +111,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${inter.variable} h-full antialiased`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         {children}
         <ClientShell />

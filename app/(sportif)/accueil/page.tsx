@@ -9,20 +9,7 @@ import { useMatchedPros } from '@/hooks/use-matching';
 import { pros } from '@/lib/mock-data';
 import { SPORTS_DISPONIBLES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: 'easeOut' as const },
-  },
-};
+import { containerVariants, itemVariants } from '@/lib/animations';
 
 const pseudoDistance = (id: string) => {
   const n = parseInt(id.replace(/\D/g, '').slice(-3) || '0', 10);
