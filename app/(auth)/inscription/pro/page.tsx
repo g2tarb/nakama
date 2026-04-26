@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useUserStore } from '@/stores/user-store';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, SPECIALITES, FORMULES } from '@/lib/constants';
+import { onboardingProSchema } from '@/lib/schemas';
 import type { Pro, Sport, Specialite, Format, Formule } from '@/types';
 
 const TOTAL_STEPS = 6;
@@ -97,44 +98,76 @@ export default function InscriptionProPage() {
   }
 
   function handleValidation() {
-    const pro: Pro = {
-      id: 'pro-user',
+    const input = {
       prenom: prenom || 'Julie',
       nom: (nom || 'MARTIN').toUpperCase(),
-      photo:
-        'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop&q=80',
+      bio: bio || 'Coach passionné(e) et à votre écoute. ',
       specialite,
-      sports: [carteSport],
-      bio: bio || 'Coach passionné(e) et à votre écoute.',
-      anneesExperience,
       formations: formations.filter(Boolean),
+      anneesExperience,
+      premiereCarte: {
+        nom: carteNom || 'Séance découverte personnalisée',
+        sport: carteSport,
+        description:
+          carteDescription || 'Première séance personnalisée pour faire connaissance.',
+        tarifHeure: carteTarif,
+        dureeMinutes: carteDuree,
+        format: formats[0] ?? 'presentiel',
+      },
       ville,
       codePostal,
       rayonKm,
       formats,
       formule,
+      vibe: { pedagogieDiscipline, suiviAutonomie, dataRessenti },
+    };
+
+    const parsed = onboardingProSchema.safeParse(input);
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0];
+      alert(`Champ invalide : ${firstError?.path.join('.')} — ${firstError?.message}`);
+      return;
+    }
+
+    const data = parsed.data;
+    const pro: Pro = {
+      id: 'pro-user',
+      prenom: data.prenom,
+      nom: data.nom,
+      photo:
+        'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop&q=80',
+      specialite: data.specialite,
+      sports: [data.premiereCarte.sport],
+      bio: data.bio,
+      anneesExperience: data.anneesExperience,
+      formations: data.formations,
+      ville: data.ville,
+      codePostal: data.codePostal,
+      rayonKm: data.rayonKm,
+      formats: data.formats,
+      formule: data.formule,
       note: 4.8,
       nbAvis: 0,
       avis: [],
       cartesServices: [
         {
           id: 'cs-user-001',
-          nom: carteNom || 'Séance découverte',
-          sport: carteSport,
-          description: carteDescription || 'Première séance personnalisée.',
-          tarifHeure: carteTarif,
-          dureeMinutes: carteDuree,
+          nom: data.premiereCarte.nom,
+          sport: data.premiereCarte.sport,
+          description: data.premiereCarte.description,
+          tarifHeure: data.premiereCarte.tarifHeure,
+          dureeMinutes: data.premiereCarte.dureeMinutes,
           tags: [],
-          format: formats[0] ?? 'presentiel',
+          format: data.premiereCarte.format,
           actif: true,
           nbReservations: 0,
           caGenere: 0,
         },
       ],
       niveauEnseigne: ['debutant', 'intermediaire', 'avance'],
-      tarifMin: carteTarif,
-      tarifMax: carteTarif,
-      vibe: { pedagogieDiscipline, suiviAutonomie, dataRessenti },
+      tarifMin: data.premiereCarte.tarifHeure,
+      tarifMax: data.premiereCarte.tarifHeure,
+      vibe: data.vibe,
     };
 
     setPro(pro);

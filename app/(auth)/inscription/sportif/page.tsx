@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useUserStore } from '@/stores/user-store';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, OBJECTIFS, NIVEAUX, FREQUENCES } from '@/lib/constants';
+import { onboardingSportifSchema } from '@/lib/schemas';
 import type { Sportif, Genre, Objectif, Sport, Niveau } from '@/types';
 
 const TOTAL_STEPS = 6;
@@ -94,18 +95,14 @@ export default function InscriptionSportifPage() {
   }
 
   function handleValidation() {
-    const sportif: Sportif = {
-      id: 'sportif-user',
+    const input = {
       prenom: prenom || 'Thomas',
-      nom: 'DEMO',
       age,
       genre,
-      photo:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80',
-      niveau,
       objectifs,
       sports,
       ...(contraintes ? { contraintes } : {}),
+      niveau,
       frequence,
       ville,
       codePostal,
@@ -113,6 +110,21 @@ export default function InscriptionSportifPage() {
       budgetMin,
       budgetMax,
       vibe: { pedagogieDiscipline, suiviAutonomie, dataRessenti },
+    };
+
+    const parsed = onboardingSportifSchema.safeParse(input);
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0];
+      alert(`Champ invalide : ${firstError?.path.join('.')} — ${firstError?.message}`);
+      return;
+    }
+
+    const sportif: Sportif = {
+      id: 'sportif-user',
+      nom: 'DEMO',
+      photo:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80',
+      ...parsed.data,
     };
 
     setSportif(sportif);

@@ -3,7 +3,7 @@
 import { use, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, CreditCard, Lock, MapPin } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -244,53 +244,92 @@ export default function ReservationPage({
       )}
 
       {/* ÉTAPE 3 — Paiement simulé */}
-      {step === 2 && (
+      {step === 2 && service && (
         <div className="space-y-6">
           <h1 className="text-xl font-bold">Paiement</h1>
 
+          {/* Carte bancaire visuelle */}
+          <div className="from-accent-gold/20 via-accent-gold/5 to-surface relative h-44 overflow-hidden rounded-2xl bg-gradient-to-br p-5 shadow-lg">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-text-tertiary text-xs uppercase">Total à payer</p>
+                <p className="text-accent-gold mt-1 text-2xl font-bold">
+                  {(service.tarifHeure + fraisNakama).toFixed(2)}€
+                </p>
+              </div>
+              <CreditCard size={28} className="text-accent-gold/60" />
+            </div>
+            <p className="text-text-secondary absolute bottom-12 left-5 font-mono text-base tracking-widest">
+              •••• •••• •••• 4242
+            </p>
+            <div className="absolute bottom-5 left-5 flex items-end gap-4 text-xs">
+              <div>
+                <p className="text-text-tertiary uppercase">Titulaire</p>
+                <p className="font-medium">THOMAS LEROY</p>
+              </div>
+              <div>
+                <p className="text-text-tertiary uppercase">Exp</p>
+                <p className="font-medium">12/28</p>
+              </div>
+            </div>
+          </div>
+
           <div className="border-border bg-surface space-y-4 rounded-xl border p-4">
             <div>
-              <label className="text-text-secondary mb-1.5 block text-sm">
+              <label className="text-text-secondary mb-1.5 block text-xs font-medium">
                 Numéro de carte
               </label>
               <input
                 type="text"
-                placeholder="4242 4242 4242 4242"
-                className="border-border bg-background focus:border-accent-gold focus:ring-accent-gold/30 h-12 w-full rounded-[10px] border px-4 text-sm focus:ring-2 focus:outline-none"
+                defaultValue="4242 4242 4242 4242"
+                placeholder="0000 0000 0000 0000"
+                className="border-border bg-background focus:border-accent-gold focus:ring-accent-gold/30 h-12 w-full rounded-[10px] border px-4 font-mono text-sm tracking-wider focus:ring-2 focus:outline-none"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-text-secondary mb-1.5 block text-sm">
+                <label className="text-text-secondary mb-1.5 block text-xs font-medium">
                   Expiration
                 </label>
                 <input
                   type="text"
+                  defaultValue="12/28"
                   placeholder="MM/AA"
-                  className="border-border bg-background focus:border-accent-gold focus:ring-accent-gold/30 h-12 w-full rounded-[10px] border px-4 text-sm focus:ring-2 focus:outline-none"
+                  className="border-border bg-background focus:border-accent-gold focus:ring-accent-gold/30 h-12 w-full rounded-[10px] border px-4 font-mono text-sm focus:ring-2 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-text-secondary mb-1.5 block text-sm">CVV</label>
+                <label className="text-text-secondary mb-1.5 block text-xs font-medium">
+                  CVV
+                </label>
                 <input
                   type="text"
-                  placeholder="123"
-                  className="border-border bg-background focus:border-accent-gold focus:ring-accent-gold/30 h-12 w-full rounded-[10px] border px-4 text-sm focus:ring-2 focus:outline-none"
+                  defaultValue="123"
+                  placeholder="000"
+                  className="border-border bg-background focus:border-accent-gold focus:ring-accent-gold/30 h-12 w-full rounded-[10px] border px-4 font-mono text-sm focus:ring-2 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          <p className="text-text-tertiary text-center text-xs">
-            Paiement sécurisé via Stripe
-          </p>
+          <div className="text-text-tertiary flex items-center justify-center gap-2 text-xs">
+            <Lock size={12} />
+            <span>Paiement sécurisé par</span>
+            <span className="text-text-secondary inline-flex items-center rounded bg-[#635BFF] px-2 py-0.5 font-bold tracking-tight text-white">
+              stripe
+            </span>
+          </div>
 
           <Button
             className="w-full"
             onClick={() => router.push('/reservation/confirmation')}
           >
-            Confirmer le paiement
+            Confirmer le paiement de {(service.tarifHeure + fraisNakama).toFixed(2)}€
           </Button>
+
+          <p className="text-text-tertiary text-center text-xs">
+            Mode démo : aucune carte n&apos;est débitée.
+          </p>
         </div>
       )}
     </div>

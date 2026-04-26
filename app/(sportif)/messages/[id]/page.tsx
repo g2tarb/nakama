@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 
 import { cn } from '@/lib/utils';
 import { conversations, pros } from '@/lib/mock-data';
+import type { Message } from '@/types';
 
 export default function ConversationPage({
   params,
@@ -25,9 +26,26 @@ export default function ConversationPage({
   const pro = pros.find((p) => p.id === proId);
   const sportifId = conv?.participants[1] ?? '';
 
+  const [messages, setMessages] = useState<Message[]>(conv?.messages ?? []);
+
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
-  }, [conv]);
+  }, [messages]);
+
+  function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = inputValue.trim();
+    if (!trimmed) return;
+    const newMsg: Message = {
+      id: `msg-${Date.now()}`,
+      auteurId: sportifId,
+      contenu: trimmed,
+      date: new Date().toISOString(),
+      lu: false,
+    };
+    setMessages((prev) => [...prev, newMsg]);
+    setInputValue('');
+  }
 
   if (!conv) {
     return (
@@ -63,7 +81,7 @@ export default function ConversationPage({
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
-        {conv.messages.map((msg) => {
+        {messages.map((msg) => {
           const isUser = msg.auteurId === sportifId;
           return (
             <div
@@ -89,7 +107,7 @@ export default function ConversationPage({
       </div>
 
       {/* Input */}
-      <div className="border-border border-t px-4 py-3">
+      <form onSubmit={handleSend} className="border-border border-t px-4 py-3">
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -98,11 +116,16 @@ export default function ConversationPage({
             placeholder="Écris un message..."
             className="border-border bg-surface focus:border-accent-gold focus:ring-accent-gold/30 h-10 flex-1 rounded-full border px-4 text-sm focus:ring-2 focus:outline-none"
           />
-          <button className="bg-accent-gold text-background flex size-10 items-center justify-center rounded-full transition-transform hover:scale-105">
+          <button
+            type="submit"
+            disabled={!inputValue.trim()}
+            className="bg-accent-gold text-background flex size-10 items-center justify-center rounded-full transition-transform hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+            aria-label="Envoyer"
+          >
             <Send size={18} />
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
