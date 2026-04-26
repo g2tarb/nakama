@@ -31,7 +31,8 @@ export default function SportifLayout({ children }: { children: React.ReactNode 
       {/* Bottom nav mobile */}
       <nav className="border-border bg-background/95 fixed inset-x-0 bottom-0 z-50 flex h-16 items-center justify-around border-t backdrop-blur-sm md:hidden">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || pathname.startsWith(`${href}/`);
+          const isActive =
+            pathname === href || (pathname?.startsWith(`${href}/`) ?? false);
           return (
             <Link
               key={href}

@@ -50,7 +50,8 @@ export default function ProLayout({ children }: { children: React.ReactNode }) {
         {/* Navigation */}
         <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
           {SIDEBAR_ITEMS.map(({ href, label, icon: Icon }) => {
-            const isActive = pathname === href || pathname.startsWith(`${href}/`);
+            const isActive =
+              pathname === href || (pathname?.startsWith(`${href}/`) ?? false);
             return (
               <Link
                 key={href}
@@ -88,7 +89,8 @@ export default function ProLayout({ children }: { children: React.ReactNode }) {
       {/* Bottom nav mobile */}
       <nav className="border-border bg-background/95 fixed inset-x-0 bottom-0 z-50 flex h-16 items-center justify-around border-t backdrop-blur-sm lg:hidden">
         {MOBILE_NAV.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || pathname.startsWith(`${href}/`);
+          const isActive =
+            pathname === href || (pathname?.startsWith(`${href}/`) ?? false);
           return (
             <Link
               key={href}

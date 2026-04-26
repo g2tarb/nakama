@@ -51,7 +51,7 @@ function RechercheContent() {
   const searchParams = useSearchParams();
   const matchedPros = useMatchedPros();
 
-  const initialSport = searchParams.get('sport') as Sport | null;
+  const initialSport = (searchParams?.get('sport') ?? null) as Sport | null;
 
   const [showFilters, setShowFilters] = useState(false);
   const [selectedSports, setSelectedSports] = useState<Sport[]>(
