@@ -94,11 +94,11 @@ Tout part de `lib/mock-data/index.ts` (barrel) :
 
 `lib/matching.ts` — scoring **100 pts** entre un `Sportif` et un `Pro` :
 
-| Pilier          | Poids | Détail                                                                                            |
-| --------------- | ----- | ------------------------------------------------------------------------------------------------- | --- | ------------------------- |
-| **Logistique**  | 45    | Sport en commun (20) + Budget compatible (15) + Distance mockée (10)                              |
-| **Performance** | 20    | Tags objectifs↔services (15 max) + Cohérence niveau (5)                                           |
-| **Psychologie** | 35    | `pedagogieDiscipline` (15) + `suiviAutonomie` (10) + `dataRessenti` (10) — chacun = `max(0, max - | Δ   | )`sur les 3 axes du`vibe` |
+| Pilier          | Poids | Détail                                                                                                                            |
+| --------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Logistique**  | 45    | Sport en commun (20) + Budget compatible (15) + Distance mockée (10)                                                              |
+| **Performance** | 20    | Tags objectifs↔services (15 max) + Cohérence niveau (5)                                                                           |
+| **Psychologie** | 35    | `pedagogieDiscipline` (15) + `suiviAutonomie` (10) + `dataRessenti` (10), chacun = `max(0, max - écart)` sur les 3 axes du `vibe` |
 
 Helpers : `computeMatchScore(sportif, pro)` retourne `MatchScore` (avec breakdown), `rankPros(sportif, pros)` retourne le top trié décroissant.
 
