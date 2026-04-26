@@ -1,915 +1,933 @@
-# DESCRIPTIF TECHNIQUE — NAKAMA MVP (état post-refacto 26 avril 2026)
+# DESCRIPTIF TECHNIQUE — NAKAMA MVP (audit v2 — 26 avril 2026)
 
 ## 0. Vue d'ensemble
 
-**Volumétrie globale :**
+### Volumétrie globale
 
-- **13 481 LOC** source (app/ + components/ + lib/ + stores/ + hooks/ + types/ + pages/)
+- **13 938 LOC** source (TypeScript/TSX, excluant `.next/` et `node_modules/`)
 - **94 fichiers** TypeScript/TSX
-- **20 routes** (32 fichiers pages/layouts)
-- **29 composants** (UI + métier + public)
-- **5 092 LOC** mock data seule
-- **5 267 LOC** pages/layouts
+- **32 fichiers** pages/layouts (20 routes)
+- **29 composants** (UI shadcn + métier + public)
+- **3 630 LOC** mocks data (pros par spécialité)
+- **647 LOC** agenda pro (page la plus volumineuse, refactorisée)
 
-**État Git :** Branch `main`, 8 commits depuis init. Dernière tête : `f49d421` (feat: bandeau démo). Working tree clean.
+### État Git détaillé
 
-**État Build :** `pnpm build` ✓ (output standalone), `pnpm typecheck` ✓ (zéro erreur).
+Branch : `main`. Dernier commit : `5e04b42` (fix: bascule mobile garantie + vue Semaine masquée sur mobile).
 
-**Arborescence racine :**
+**Commits depuis init :**
+
+1. `e344344` — Initial commit Create Next App
+2. `225280b` — feat: initial commit MVP baseline
+3. `2a58f82` — chore: snapshot avant downgrade Next 15
+4. `c8ed44c` — feat(build): downgrade Next 16 → 15
+5. `e7cc840` — feat(forms+screens): Zod 4 forms + écrans
+6. `015f706` — feat: agenda mois + refacto + SEO
+7. `9fe1e88` — docs(readme): fix table markdown
+8. `f49d421` — feat(banner): demo banner
+9. `7f6098f` — docs: TECHNICAL.md (audit v1)
+10. `2eee29b` — feat: assets dynamiques + lint propre + pages légales + dette
+11. `2ccec5f` — feat(agenda): refacto mobile-first avec vue Jour + bascule auto
+12. `5e04b42` — fix(agenda): bascule mobile garantie
+
+Working tree : clean. Branche synchronisée avec `origin/main`.
+
+### État build & typecheck
+
+- `pnpm build` ✓ (output standalone, 0 erreurs)
+- `pnpm typecheck` ✓ (strict mode, 0 erreurs TS)
+- `pnpm lint` ✓ (eslint . direct, non next lint)
+
+### Arborescence racine commentée
 
 ```
 nakama/
-├── .git, .gitignore
-├── .husky/           → pre-commit lint-staged + typecheck
-├── .prettierrc, .prettierignore, components.json
-├── app/              → Next 15 App Router (5267 LOC, 20 routes)
-├── components/       → 29 composants (1783 LOC)
-├── lib/              → logique métier + mocks (5092 LOC)
-├── stores/           → Zustand (3 stores, 65 LOC)
-├── hooks/            → 4 custom hooks (105 LOC)
-├── types/            → 7 fichiers d'interfaces (150 LOC)
-├── pages/            → _error.tsx (workaround Next 15)
-├── public/           → 5 SVGs placeholder
-├── docs/             → DOD-LIVRAISON.md, CHASE-ASSETS.md
-├── package.json, pnpm-lock.yaml, tsconfig.json, eslint.config.mjs
-├── next.config.ts, postcss.config.mjs
-└── README.md, AGENTS.md, CLAUDE.md, .env.local.example
+├── .git/
+├── .github/                    # (non présent)
+├── .husky/
+│   └── pre-commit              → npx lint-staged && pnpm typecheck
+├── .env.local.example          → NEXT_PUBLIC_DEMO_MODE, NEXT_PUBLIC_APP_URL
+├── .gitignore, .prettierrc
+├── .next/, node_modules/, build/ → (build outputs)
+├── app/                        → Next 15 App Router (5762 LOC, 32 fichiers)
+│   ├── layout.tsx (116 LOC)    → RootLayout server, metadata, JSON-LD, force-dynamic
+│   ├── page.tsx (70 LOC)       → Landing publique + Hero + Features + Footer
+│   ├── robots.ts (33 LOC)      → SEO crawl rules (disallow espaces protégés)
+│   ├── sitemap.ts (52 LOC)     → 7 routes publiques + 3 légales
+│   ├── icon.tsx (27 LOC)       → ImageResponse 32×32 "N" doré
+│   ├── apple-icon.tsx (28 LOC) → ImageResponse 180×180 "N"
+│   ├── opengraph-image.tsx (73 LOC) → ImageResponse 1200×630 OG
+│   ├── twitter-image.tsx (2 LOC)    → réexport opengraph-image
+│   ├── not-found.tsx (23 LOC)  → 404 custom
+│   ├── global-error.tsx (60 LOC) → erreur SSR client
+│   ├── (auth)/layout.tsx       → AuthLayout simple
+│   │   ├── connexion/page.tsx (208 LOC)
+│   │   └── inscription/{sportif,pro}/page.tsx (458, 603 LOC)
+│   ├── (legal)/layout.tsx      → LegalLayout server, metadata indexable
+│   │   ├── cgu/page.tsx (96 LOC)
+│   │   ├── confidentialite/page.tsx (92 LOC)
+│   │   └── mentions-legales/page.tsx (75 LOC)
+│   ├── (sportif)/layout.tsx    → Server + metadata noindex
+│   │   ├── _layout-shell.tsx   → Client component nav bottom mobile
+│   │   ├── accueil/page.tsx
+│   │   ├── recherche/page.tsx (242 LOC)
+│   │   ├── rdv/page.tsx (264 LOC)
+│   │   ├── messages/page.tsx, messages/[id]/page.tsx
+│   │   ├── profil/page.tsx
+│   │   ├── pros/[id]/page.tsx (222 LOC)
+│   │   └── reservation/{[proId],confirmation}/page.tsx
+│   └── (pro)/layout.tsx        → Server + metadata noindex
+│       ├── _layout-shell.tsx
+│       ├── agenda/page.tsx (647 LOC) ⭐ refactorisé commit 2ccec5f
+│       ├── dashboard/page.tsx (314 LOC)
+│       ├── clients/page.tsx, clients/[id]/page.tsx (465 LOC)
+│       ├── cartes-services/page.tsx (363 LOC)
+│       ├── revenus/page.tsx (229 LOC)
+│       └── parametres/page.tsx (258 LOC)
+├── components/                 → 29 composants (1783 LOC)
+│   ├── ui/                     → shadcn/ui base-nova (14 : button, card, dialog, etc.)
+│   ├── common/                 → logo, avatar-stack, demo-banner, client-shell,
+│   │                             mode-switcher, compatibility-badge, empty-state
+│   ├── public/                 → hero, features-section, feature-card, section-heading
+│   └── sportif/                → pro-card + onboarding (progress-bar, step-wrapper, vibe-slider)
+├── lib/                        → logique métier (5092 LOC)
+│   ├── matching.ts (137 LOC)   → ⭐ Algo scoring 100 pts (45+20+35)
+│   ├── animations.ts (27 LOC)  → containerVariants, itemVariants, slideRightVariants, fadeInVariants
+│   ├── constants.ts (100 LOC)  → SPORTS, SPECIALITES, FORMULES, OBJECTIFS, NIVEAUX, MAX_SCORE, RESSENTI_EMOJIS
+│   ├── formatters.ts (41 LOC)  → formatPrice, formatDate, formatDateTime, formatDuration, etc.
+│   ├── utils.ts (7 LOC)        → cn() = twMerge(clsx)
+│   ├── schemas/                → Zod validation (4 fichiers)
+│   │   ├── auth.ts             → connexionSchema
+│   │   ├── onboarding-sportif.ts → onboardingSportifSchema, vibeSchema
+│   │   ├── onboarding-pro.ts   → onboardingProSchema, carteServiceCreateSchema
+│   │   └── index.ts            → barrel exports
+│   └── mock-data/              → 3630 LOC
+│       ├── index.ts (6 LOC)    → barrel
+│       ├── pros/               → 50 pros split par spécialité
+│       │   ├── coachs.ts (1807 LOC) → 32 coachs
+│       │   ├── prep-physique.ts (689 LOC) → 12 preps physique
+│       │   ├── nutritionnistes.ts (379 LOC) → 5 nutritionnistes
+│       │   ├── prep-mental.ts (375 LOC) → 5 preps mental
+│       │   ├── educateurs.ts (357 LOC) → 5 éducateurs
+│       │   └── index.ts (23 LOC) → concat all
+│       ├── sportifs.ts (306 LOC) → 20 sportifs + defaultSportif
+│       ├── seances.ts (290 LOC) → 34 séances
+│       ├── conversations.ts (195 LOC) → 15 conversations
+│       └── health.ts (208 LOC) → healthNotes, progressionData, coachNotes
+├── stores/                     → Zustand 3 stores (65 LOC)
+│   ├── user-store.ts           → Sportif | Pro, persist localStorage 'nakama-user'
+│   ├── mode-store.ts           → Mode ('public'|'sportif'|'pro'), persist 'nakama-mode'
+│   └── ui-store.ts             → drawerOpen (non-persist)
+├── hooks/                      → 4 custom hooks (105 LOC)
+│   ├── use-mobile.ts (23 LOC)  → boolean | null (SSR-aware)
+│   ├── use-matching.ts (18 LOC) → useMatchedPros(limit?)
+│   ├── use-count-up.ts (30 LOC) → easeOutCubic animation
+│   └── use-mode.ts (28 LOC)    → { mode, switchMode }
+├── types/                      → 7 fichiers (150 LOC)
+│   ├── index.ts                → barrel
+│   ├── sportif.ts              → Sportif, Niveau, Genre, Objectif, VibeProfile
+│   ├── pro.ts                  → Pro, Specialite, Sport, Format, Formule, CarteService, Avis
+│   ├── seance.ts               → Seance, StatutSeance
+│   ├── conversation.ts         → Conversation, Message
+│   ├── matching.ts             → MatchScore
+│   └── health.ts               → HealthNote, NiveauAlerte, ProgressionPoint, NoteCoach
+├── pages/                      → Pages Router résiduel
+│   └── _error.tsx (58 LOC)     → Workaround Next 15 crash interne useRef on null
+├── public/                     → Assets statiques (5 SVGs + répertoire images/pros vide)
+│   ├── file.svg, globe.svg, next.svg, vercel.svg, window.svg
+│   ├── logos/                  → (empty)
+│   └── images/pros/            → (empty - À peupler avec script migration)
+├── docs/                       → Documentation
+│   ├── TECHNICAL.md (audit v1)
+│   ├── DOD-LIVRAISON.md
+│   └── CHASE-ASSETS.md
+├── components.json             → shadcn config (style base-nova)
+├── eslint.config.mjs (20 LOC)  → FlatCompat pour next/core-web-vitals + next/typescript
+├── next.config.ts (15 LOC)     → output: 'standalone', remotePatterns Unsplash
+├── postcss.config.mjs (7 LOC)  → @tailwindcss/postcss
+├── tsconfig.json (40 LOC)      → strict, noUncheckedIndexedAccess, NO exactOptionalPropertyTypes
+├── pnpm-lock.yaml              → lock file
+├── package.json (59 LOC)        → dépendances exactes (voir section 1)
+├── README.md                   → Stack, justifs, arborescence, roadmap, dette
+├── AGENTS.md                   → Conventions agents/refacto
+├── CLAUDE.md                   → @AGENTS.md
+├── .prettierrc (8 LOC)         → trailing comma, printWidth 90
+├── .gitignore                  → standard Node + .env*
+└── tsconfig.tsbuildinfo        → cache incrementiel
 ```
 
 ---
 
 ## 1. Configuration & Tooling
 
-### Files de configuration
+### Fichiers de configuration
 
-| Fichier              | Lignes | Contenu / Options clés                                                                                                                                                                               |
-| -------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package.json`       | 59     | Next 15.5.15, React 19.2.4, Tailwind v4, Framer 12.38, Zustand 5.0.12, Zod 4.3.6, react-hook-form 7.72.1, date-fns 4.1, lucide-react 1.8, recharts 3.8.1, @base-ui-components/react 1.0.0-rc.0       |
-| `tsconfig.json`      | 40     | `strict: true`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noUnusedLocals/Parameters`. **Pas** `exactOptionalPropertyTypes` (incompatible Base UI). Target ES2022, moduleResolution bundler. |
-| `next.config.ts`     | 18     | `output: 'standalone'`, `eslint.ignoreDuringBuilds: true`, remotePatterns Unsplash.                                                                                                                  |
-| `eslint.config.mjs`  | 20     | `FlatCompat` pour legacy `next/core-web-vitals` et `next/typescript` (eslint-config-next 15 non en format flat). Ignores `.next`, `out`, `build`, `next-env.d.ts`.                                   |
-| `.prettierrc`        | 2      | Defaults (2 spaces, single quote false, trailing comma es5).                                                                                                                                         |
-| `postcss.config.mjs` | 1      | Tailwind v4 PostCSS (pas next/tailwind, legacy config).                                                                                                                                              |
-| `components.json`    | ~20    | shadcn init (Base UI style, aliases `@/components`, no TypeScript global types).                                                                                                                     |
-| `.husky/pre-commit`  | -      | Déclenche `lint-staged` → `eslint --fix` + `prettier --write` sur TS/TSX/JSON/MD. Puis `pnpm typecheck` (bloquant).                                                                                  |
-| `.env.local.example` | 12     | `NEXT_PUBLIC_DEMO_MODE=true`, `NEXT_PUBLIC_APP_URL=http://localhost:3000` (ou prod).                                                                                                                 |
+| Fichier              | Lignes | Contenu / Options                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`       | 59     | **Runtime :** Next 15.5.15, React 19.2.4, Tailwind v4 (@tailwindcss/postcss), shadcn 4.5.0, Framer Motion 12.38.0, Zustand 5.0.12, Recharts 3.8.1, react-hook-form 7.72.1, zod 4.3.6, lucide-react 1.8.0, date-fns 4.1.0, clsx 2.1.1, tailwind-merge 3.5.0. **DevDeps :** @base-ui-components/react 1.0.0-rc.0, eslint 9, @eslint/eslintrc 3.3.5, TypeScript 5, Prettier 3.8.3, husky 9.1.7, lint-staged 16.4.0 |
+| `tsconfig.json`      | 40     | Target ES2022, lib: dom + esnext. **strict: true**, noUncheckedIndexedAccess, noImplicitOverride, noFallthroughCasesInSwitch, noUnusedLocals, noUnusedParameters. **Pas exactOptionalPropertyTypes** (incompatible @base-ui-components/react). moduleResolution bundler, paths alias @/_ → ./_                                                                                                                  |
+| `next.config.ts`     | 15     | `output: 'standalone'` (deployable sans Node), `images.remotePatterns: [{ hostname: 'images.unsplash.com' }]` (whitelist CDN photos pros). ⚠️ `eslint.ignoreDuringBuilds` RETIRÉ (commit 2eee29b)                                                                                                                                                                                                               |
+| `eslint.config.mjs`  | 20     | ESLint 9 format flat. FlatCompat pour legacy `next/core-web-vitals` + `next/typescript` (eslint-config-next 15 pas encore flat). Ignores: `.next/**`, `out/**`, `build/**`, `next-env.d.ts`                                                                                                                                                                                                                     |
+| `postcss.config.mjs` | 7      | Plugin @tailwindcss/postcss (Tailwind v4)                                                                                                                                                                                                                                                                                                                                                                       |
+| `.prettierrc`        | 8      | semi: true, singleQuote: true, trailingComma: all, printWidth 90, tabWidth 2, plugins: prettier-plugin-tailwindcss                                                                                                                                                                                                                                                                                              |
+| `components.json`    | 25     | shadcn config : style **base-nova**, rsc: true, tsx: true, tailwind.baseColor neutral, cssVariables true, iconLibrary lucide. Aliases: @/components, @/lib, @/hooks, @/ui                                                                                                                                                                                                                                       |
+| `.gitignore`         | 42     | Standard Next + node_modules, /.pnp, /.next, /out, /build, .env*, *.pem, logs                                                                                                                                                                                                                                                                                                                                   |
+| `.husky/pre-commit`  | 2      | `npx lint-staged` (eslint --fix + prettier sur staged), puis `pnpm typecheck`                                                                                                                                                                                                                                                                                                                                   |
+| `.env.local.example` | 12     | NEXT_PUBLIC_DEMO_MODE=true, NEXT_PUBLIC_APP_URL=http://localhost:3000                                                                                                                                                                                                                                                                                                                                           |
 
-### Scripts npm
+### Scripts npm disponibles
 
-```json
-{
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "typecheck": "tsc --noEmit",
-  "format": "prettier --write .",
-  "check": "pnpm lint && pnpm typecheck",
-  "prepare": "husky"
-}
+| Script      | Commande                      | Effet                                                                 |
+| ----------- | ----------------------------- | --------------------------------------------------------------------- |
+| `dev`       | `next dev`                    | Serveur dev turbopack http://localhost:3000                           |
+| `build`     | `next build`                  | Build production (output: standalone)                                 |
+| `start`     | `next start`                  | Serveur Node prod                                                     |
+| `lint`      | `eslint .`                    | ESLint v9 format flat direct (pas next lint) — change depuis audit v1 |
+| `typecheck` | `tsc --noEmit`                | TypeScript check sans emit                                            |
+| `format`    | `prettier --write .`          | Prettier reformat all                                                 |
+| `check`     | `pnpm lint && pnpm typecheck` | Lint + typecheck local (non bloquant)                                 |
+| `prepare`   | `husky`                       | Installe husky hooks                                                  |
+
+**Note clé :** `pnpm lint` utilise désormais `eslint .` direct (commit 2eee29b), pas `next lint`. Le flag `eslint.ignoreDuringBuilds: true` a été RETIRÉ du `next.config.ts` — linting est vérifié strictement en pre-commit (husky).
+
+### Dépendances exactes
+
+**Production (17 dépendances) :**
+
+```
+@base-ui-components/react@1.0.0-rc.0
+@hookform/resolvers@^5.2.2
+class-variance-authority@^0.7.1
+clsx@^2.1.1
+date-fns@^4.1.0
+framer-motion@^12.38.0
+lucide-react@^1.8.0
+next@^15.5.15
+react@19.2.4
+react-dom@19.2.4
+react-hook-form@^7.72.1
+recharts@^3.8.1
+shadcn@^4.5.0
+tailwind-merge@^3.5.0
+tw-animate-css@^1.4.0
+zod@^4.3.6
+zustand@^5.0.12
 ```
 
-**Lint-staged :**
+**Development (8 dépendances) :**
 
-```json
-{
-  "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-  "*.{json,md,css}": ["prettier --write"]
-}
 ```
-
-### Dépendances exactes installées
-
-Via `pnpm list` (production) :
-
-- `next@15.5.15`
-- `react@19.2.4`, `react-dom@19.2.4`
-- `@base-ui-components/react@1.0.0-rc.0` (vrai nom shadcn style base-nova)
-- `tailwindcss@4.x` + `@tailwindcss/postcss@4.x`
-- `framer-motion@12.38.0`
-- `zustand@5.0.12` (+ middleware persist localStorage)
-- `recharts@3.8.1`
-- `react-hook-form@7.72.1`, `@hookform/resolvers@5.2.2`
-- `zod@4.3.6`
-- `lucide-react@1.8.0`
-- `date-fns@4.1.0`
-- `clsx@2.1.1`, `tailwind-merge@3.5.0`, `tw-animate-css@1.4.0`
-- `class-variance-authority@0.7.1`
+@eslint/eslintrc@^3.3.5
+@tailwindcss/postcss@^4
+@types/node@^20
+@types/react@^19
+@types/react-dom@^19
+eslint@^9
+eslint-config-next@^15.5.15
+husky@^9.1.7
+lint-staged@^16.4.0
+prettier@^3.8.3
+prettier-plugin-tailwindcss@^0.7.2
+tailwindcss@^4
+typescript@^5
+```
 
 ---
 
 ## 2. Routing — `app/`
 
-### Vue générale
-
-| Segment     | Routes                                                                                                                                        | Métier                                  |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Root        | `/`, `/not-found`, `/global-error`, `/robots.ts`, `/sitemap.ts`, `/layout.tsx`                                                                | Landing publique + SEO + error handlers |
-| `(auth)`    | `/connexion`, `/inscription/sportif`, `/inscription/pro`                                                                                      | Authentification mock + onboarding      |
-| `(sportif)` | `/accueil`, `/recherche`, `/pros/[id]`, `/rdv`, `/messages`, `/messages/[id]`, `/profil`, `/reservation/[proId]`, `/reservation/confirmation` | Espace sportif (noindex)                |
-| `(pro)`     | `/dashboard`, `/cartes-services`, `/agenda`, `/clients`, `/clients/[id]`, `/revenus`, `/parametres`                                           | Espace pro (noindex)                    |
-
-**Total : 24 fichiers routes (20 pages + 4 layouts).**
-
-### Root (`app/`)
-
-#### `app/layout.tsx` (129 lignes)
-
-- **Server Component** (root layout sans `'use client'`)
-- **Exports :** `dynamic = 'force-dynamic'` (SSR à la demande, pas de SSG)
-- **Metadata :** Complète (title template, description, OG image `/og.png`, Twitter card, robots index/follow, JSON-LD inline Organization + SoftwareApplication)
-- **Viewport :** `themeColor: '#0B0F14'`, device-width, initialScale 1
-- **Structure :** `DemoBanner` sticky top, children, `ClientShell` (pour ModeSwitcher client-only)
-- **Font :** Inter Google Fonts (variable `--font-inter`)
-- Enfants : `(auth)`, `(sportif)`, `(pro)`, page.tsx
-
-#### `app/page.tsx` (67 lignes)
-
-- **Client ? Non** (no 'use client')
-- **Route :** `/` (landing publique)
-- **Structure :** Header sticky + Logo + Connexion CTA dual → Hero animé → FeaturesSportif + FeaturesPro + HowItWorks → Footer
-- **Imports clés :** Button, Hero, FeaturesSportif/Pro/HowItWorks, Link/next/link
-- **Animations :** Composants implicites (Hero, Features)
-- **Données :** Aucune (contenu statique hardcodé)
-
-#### `app/not-found.tsx` (23 lignes)
-
-- **Route :** 404 fallback
-- **Structure :** Centré, titre, description, CTA "Retour à l'accueil" (lien href="/")
-- **Styling :** Tailwind dark theme cohérent
-
-#### `app/global-error.tsx` (60 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** Error boundary global (crash serveur)
-- **Props :** `error: Error & { digest?: string }`, `reset: () => void`
-- **Structure :** HTML/body inline styles (dark), bouton reset
-- **Notes :** Rendu par Next si crash au-delà des segments
-
-#### `app/robots.ts` (33 lignes)
-
-- **Export :** `MetadataRoute.Robots`
-- **Rules :** allow `/`, disallow `/accueil`, `/recherche`, `/pros/*`, `/rdv`, `/profil`, `/messages*`, `/reservation*`, `/dashboard`, `/clients*`, `/agenda`, `/cartes-services`, `/revenus`, `/parametres`
-- **Sitemap :** `${APP_URL}/sitemap.xml`
-
-#### `app/sitemap.ts` (34 lignes)
-
-- **Export :** `MetadataRoute.Sitemap`
-- **Routes listées :** `/`, `/connexion`, `/inscription/sportif`, `/inscription/pro` (4 publiques)
-- **Champs :** url, lastModified: now, changeFrequency (weekly/monthly), priority (0.7-1)
-
-### Segment `(auth)/` (Authentification)
-
-#### `app/(auth)/layout.tsx` (8 lignes)
-
-- **Server Component** simple
-- **Structure :** `<main>` flex center items-center justify-center, full height
-
-#### `app/(auth)/connexion/page.tsx` (208 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/connexion`
-- **Formulaire :** react-hook-form + zodResolver(connexionSchema)
-- **States :** tab (connexion vs inscription), showPassword, form state
-- **Actions :**
-  - Role 'sportif' → setSportif(defaultSportif) + setMode('sportif') + router.push('/accueil')
-  - Role 'pro' → setPro(pros[4]) + setMode('pro') + router.push('/dashboard')
-- **Animations :** Motion div (opacity 0→1, y 12→0, 0.3s)
-- **Validations Zod :** email, password (6-72 chars), role enum
-- **UI :** Tabs (connexion/inscription), email + password inputs, show/hide password toggle, role radio
-
-#### `app/(auth)/inscription/sportif/page.tsx` (458 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/inscription/sportif`
-- **Flow :** 6 steps séquentiels (TOTAL_STEPS = 6)
-- **States step-by-step :**
-  - Step 0 : prenom, age, genre (Genre enum)
-  - Step 1 : objectifs multi-select (Objectif[])
-  - Step 2 : sports multi-select (Sport[])
-  - Step 3 : niveau, contraintes, frequence
-  - Step 4 : ville, codePostal, rayonKm, budgetMin/Max
-  - Step 5 : vibe (pedagogieDiscipline, suiviAutonomie, dataRessenti slider 1-10)
-- **Validation finale :** onboardingSportifSchema safeParse() au submit
-- **Components utilisés :** ProgressBar, StepWrapper, VibeSlider, PillButton (inline)
-- **Animations :** Motion direction (1/-1) + slide enter/exit
-- **Actions :** setSportif(objValidé) → setMode('sportif') → router.push('/accueil')
-- **Erreurs Zod affichées :** Sous chaque input
-
-#### `app/(auth)/inscription/pro/page.tsx` (603 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/inscription/pro`
-- **Flow :** 6 steps (TOTAL_STEPS = 6)
-- **States step-by-step :**
-  - Step 0 : prenom, nom, bio, specialite (Specialite enum)
-  - Step 1 : formations array, anneesExperience
-  - Step 2 : ville, codePostal, rayonKm, formats multi-select (Format[])
-  - Step 3 : formule enum (standard/premium/elite) → Dialog description features
-  - Step 4 : Première carte service (nom, sport, description, tarifHeure, dureeMinutes, format) — Dialog création
-  - Step 5 : vibe sliders
-- **Validation finale :** onboardingProSchema safeParse()
-- **Actions :** setPro(objValidé) → setMode('pro') → router.push('/dashboard')
-- **Components utilisés :** StepWrapper, Dialog création carte, VibeSlider, PillButton
-- **Animations :** Motion step transitions
+### Groupe racine (/ + assets)
 
-### Segment `(sportif)/` (Espace Sportif)
-
-#### `app/(sportif)/layout.tsx` (12 lignes)
-
-- **Server Component**
-- **Metadata :** `robots: { index: false, follow: false }` (noindex privé)
-- **Children :** Rendu via `SportifLayoutShell` (client)
-
-#### `app/(sportif)/_layout-shell.tsx` (50 lignes)
-
-- **Client Component** (`'use client'`)
-- **Navigation :** Header sticky "NAKAMA" + Mobile bottom nav (4 items) + hidden desktop sidebar
-- **NAV_ITEMS :** /accueil (Home), /rdv (Calendar), /messages (MessageCircle), /profil (User)
-- **Active state :** Basé pathname + startsWith check
-- **Responsive :** Bottom nav on mobile, flex layout, `z-40`/`z-50` stacking
-
-#### `app/(sportif)/accueil/page.tsx` (80+ lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/accueil` (home sportif)
-- **Sections :**
-  - Barre recherche (button → router.push /recherche)
-  - "Matchés pour toi" (scroll horizontal ProCard x5 ou fake score)
-  - "À proximité" (cartes pros sorted by rayonKm)
-- **Hooks :** useMatchedPros(), useRouter()
-- **Animations :** containerVariants + itemVariants (stagger 0.08s)
-- **Data :** Consomme matchedPros du store (computeMatchScore si sportif exists, sinon fake score)
-
-#### `app/(sportif)/recherche/page.tsx` (presume ~150 LOC)
-
-- **Route :** `/recherche`
-- **Presume :** Filtres sport, niveau, prix, distance + affichage grille pros
-
-#### `app/(sportif)/pros/[id]/page.tsx` (100+ lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/pros/[id]`
-- **Props :** `params: Promise<{ id: string }>`
-- **Utilise :** `use(params)` (React 19 streaming)
-- **Contenu :**
-  - Header retour sticky (top-14 z-30)
-  - Photo cercle 96px
-  - Titre prenom nom + Heart btn
-  - Spécialité, note, avis count, prix/h
-  - CompatibilityBadge si sportif matché (computeMatchScore)
-  - Cartes services (grid)
-  - Avis (section)
-  - Boutons CTA (Réserver, Messenger)
-- **Animations :** Motion fade-in 0.3s
-- **Fallback :** 404 custom si pro not found
-
-#### `app/(sportif)/rdv/page.tsx` (presume ~120 LOC)
-
-- **Route :** `/rdv`
-- **Presume :** Liste séances futures + statut (confirmée, annulée, passée)
-
-#### `app/(sportif)/messages/page.tsx` (presume ~100 LOC)
-
-- **Route :** `/messages`
-- **Presume :** Liste conversations, badge nouveau message count
-
-#### `app/(sportif)/messages/[id]/page.tsx` (presume ~200 LOC)
-
-- **Route :** `/messages/[id]`
-- **Presume :** Affiche messages + input local state pour envoi simulé
-
-#### `app/(sportif)/profil/page.tsx` (presume ~100 LOC)
-
-- **Route :** `/profil`
-- **Presume :** Affichage données sportif (age, niveau, objectifs, vibe) + edit link
-
-#### `app/(sportif)/reservation/[proId]/page.tsx` (337 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/reservation/[proId]`
-- **Flow :** 3 steps (TOTAL_STEPS = 3)
-- **Step 0 :** Choix date/heure (calendrier mock + slots)
-- **Step 1 :** Récap séance (pro, date, durée, tarif)
-- **Step 2 :** Paiement (formulaire carte visuelle : numéro, expiry, CVC) + badge Stripe stylé
-- **Animations :** Step transitions slide
-- **Actions :** Submit → router.push('/reservation/confirmation')
-- **Validations :** Dates futures, carte 16 chiffres, CVC 3 chiffres
-
-#### `app/(sportif)/reservation/confirmation/page.tsx` (presume ~80 LOC)
-
-- **Route :** `/reservation/confirmation`
-- **Presume :** Message de succès + détails séance + lien back to home
-
-### Segment `(pro)/` (Espace Pro)
-
-#### `app/(pro)/layout.tsx` (12 lignes)
-
-- **Server Component**
-- **Metadata :** `robots: { index: false, follow: false }`
-- **Children :** Rendu via `ProLayoutShell` (client)
-
-#### `app/(pro)/_layout-shell.tsx` (105 lignes)
-
-- **Client Component** (`'use client'`)
-- **Navigation :**
-  - Desktop : Sidebar fixed gauche 64 (w-64, lg:flex), 6 items (dashboard, cartes-services, agenda, clients, revenus, parametres)
-  - Mobile : Header sticky + bottom nav 4 items (dashboard, agenda, clients, revenus)
-- **Branding :** Logo NAKAMA + badge "Pro" dans header et sidebar
-- **Active state :** Basé pathname
-- **Responsive :** Sidebar hidden < lg, header flex lg:hidden, bottom nav lg:hidden
-
-#### `app/(pro)/dashboard/page.tsx` (80+ lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/dashboard`
-- **Contenu :**
-  - Header "Bonjour [Prenom]" + avatar circulaire
-  - Cartes KPI : revenus (animé count-up 1000ms), séances confirmées, clients actifs, taux satisfaction
-  - **Sparkline revenus :** 6 derniers mois, recharts LineChart, animationDuration 1200ms
-  - Prochaines séances (4)
-  - Nouveaux clients (3)
-- **Hooks :** useCountUp (revenu 2580€ over 1000ms easeOutCubic), useUserStore
-- **Animations :** containerVariants + itemVariants
-
-#### `app/(pro)/cartes-services/page.tsx` (363 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/cartes-services`
-- **Sections :**
-  - Header "Cartes de service" + button "+Ajouter"
-  - Liste cartes (grille)
-  - Pour chaque carte : nom, sport, tarif/h, durée, format, toggle actif/inactif, delete, nbReservations
-  - Dialog "Créer une carte" (form RHF + Zod carteServiceCreateSchema)
-  - Dialog "Upgrade quota" si premium/elite atteint limite
-- **States :** formData locale, dialogs openness
-- **Validations :** Zod carteServiceCreateSchema (nom 3-60, description 20-280, tarif 10-500, duree 30-180)
-
-#### `app/(pro)/agenda/page.tsx` (presume ~200 LOC)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/agenda`
-- **Features :**
-  - Toggle Semaine/Mois view
-  - Navigation prev/next mois ou semaine
-  - Affichage séances dans calendar
-  - FAB "Bloquer une plage" (button fixed bottom-right) → Dialog + form
-  - Dialog retourne plage bloquée → ajoutée au state
-
-#### `app/(pro)/clients/page.tsx` (60+ lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/clients`
-- **Features :**
-  - Filtres : tous / actifs / nouveaux
-  - Recherche texte (prenom/nom)
-  - Liste clients avec avatar, stats (nb séances, dernière séance)
-  - Click → `/clients/[id]`
-
-#### `app/(pro)/clients/[id]/page.tsx` (465 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/clients/[id]`
-- **Onglets :** 4 onglets Framer Motion slide horizontal
-  - **1. Profil :** Données athlète (age, niveau, objectifs, bio, vibe)
-  - **2. Progression :** Graphique recharts (poids/performance/énergie), notes
-  - **3. Séances :** Liste historique + prochaines
-  - **4. Messagerie :** Conversations
-- **Animations :** Slide horizontal Framer Motion entre onglets
-- **Data :** Consomme sportif + seances + conversations + progressionData mock
-
-#### `app/(pro)/revenus/page.tsx` (presume ~150 LOC)
-
-- **Route :** `/revenus`
-- **Presume :** Graphique revenus cumulés, détail par mois/semaine, export CSV
-
-#### `app/(pro)/parametres/page.tsx` (258 lignes)
-
-- **Client Component** (`'use client'`)
-- **Route :** `/parametres`
-- **Sections (7 sous-menus) :**
-  1. Profil (Edit prenom, nom, bio, photo)
-  2. Spécialités & formations (Edit arrays)
-  3. Localisation & zones (Edit ville, codePostal, rayonKm, formats)
-  4. Tarification (Edit tarifMin/Max par carte)
-  5. Formule & abonnement (Dialog sélectionner formule standard/premium/elite → confirmer changement)
-  6. Notifications & préférences
-  7. Déconnexion (Dialog "Confirmer" → clearUser() + router.push('/'))
-- **Dialogs :** Dialog formule avec radio buttons et description features
-- **Déconnexion :** Fonctionnelle (useUserStore.clearUser())
+#### `app/layout.tsx` (116 LOC) — RootLayout Server
+
+- **Server component** (pas `'use client'`)
+- `dynamic = 'force-dynamic'` (workaround Next 15 prerender crash)
+- Metadata : title template "... — Nakama", description, keywords (coaching sportif, doctolib sport, etc.), openGraph (type website, locale fr_FR), twitter card
+- JSON-LD inline : Organization (@id, name Nakama, url, logo, description, sameAs []) + SoftwareApplication (HealthApplication)
+- Viewport : themeColor #0B0F14, device-width, initialScale 1
+- Inter font (Google Fonts, variable --font-inter)
+- Imports : ClientShell wrapper, DemoBanner sticky
+- Structure : html lang="fr" + Inter variable + globals.css, head avec JSON-LD, body avec DemoBanner + {children} + ClientShell
+
+#### `app/page.tsx` (70 LOC) — Landing publique
+
+- **Server component**
+- Header sticky top, Hero section, FeaturesSportif, FeaturesPro, HowItWorks sections
+- Footer avec copyright + liens fonctionnels : `/cgu`, `/confidentialite`, `/mentions-legales`, `mailto:contact@nakama.tech`
+- Imports : Link Next, Button, Hero, FeaturesSportif, FeaturesPro, HowItWorks
+- Animations : Hero section suppose composant public/hero avec Framer Motion
+
+#### `app/robots.ts` (33 LOC) — Robots.txt
+
+- `userAgent: '*'`
+- `allow: '/'`
+- `disallow: ['/accueil', '/recherche', '/pros/', '/rdv', '/profil', '/messages', '/reservation/', '/dashboard', '/clients', '/agenda', '/cartes-services', '/revenus', '/parametres']`
+- sitemap: `${APP_URL}/sitemap.xml`
+
+#### `app/sitemap.ts` (52 LOC) — Sitemap XML
+
+7 routes publiques + indexables :
+
+1. `/` — lastModified: now, changeFrequency: weekly, priority 1
+2. `/connexion` — monthly, 0.7
+3. `/inscription/sportif` — monthly, 0.8
+4. `/inscription/pro` — monthly, 0.8
+5. `/cgu` — yearly, 0.3
+6. `/confidentialite` — yearly, 0.3
+7. `/mentions-legales` — yearly, 0.3
+
+#### `app/icon.tsx` (27 LOC) — Favicon dynamique (Next 15)
+
+- ImageResponse convention (pas fichier .png binaire)
+- Size: 32×32
+- Contenu: JSX `<div>` fond #0B0F14, "N" en couleur #C9B27A (gold), fontSize 22, fontWeight 800
+- Hot-reload en dev, régénéré à chaque build
+
+#### `app/apple-icon.tsx` (28 LOC) — Apple touch icon dynamique
+
+- ImageResponse 180×180
+- Même design "N" gold on dark background, fontSize 110, letterSpacing -0.03em
+
+#### `app/opengraph-image.tsx` (73 LOC) — Social sharing image dynamique
+
+- ImageResponse 1200×630 (Twitter, LinkedIn, etc.)
+- Gradient radial background
+- Layout : "NAKAMA" label (or) + "Le Doctolib du coaching sportif" heading + description + "nakama.tech" footer coin bas-droit
+- Colores : #C9B27A (gold), #E6E8EB (light), #9AA3AD (gray), #6B7480 (dim)
+
+#### `app/twitter-image.tsx` (2 LOC) — Twitter image
+
+- Réexport de opengraph-image (same 1200×630 spec)
+
+#### `app/not-found.tsx` (23 LOC) — 404 page
+
+- Server component
+- Heading "Page introuvable", description, lien retour `/`
+- Design : center flex, heading or, button or
+
+#### `app/global-error.tsx` (60 LOC) — Error boundary client
+
+- `'use client'`, error reset handler
+- Fallback minimal (html + body inline styles, pas Tailwind)
+- Heading "Quelque chose s'est mal passé", bouton "Réessayer" (reset callback)
+
+### Groupe (auth) — Authentification
+
+#### `app/(auth)/layout.tsx` (8 LOC) — AuthLayout server
+
+- Centré, min-h-screen, flex col, background class
+
+#### `app/(auth)/connexion/page.tsx` (208 LOC) — Connexion
+
+- `'use client'`
+- Form RHF + Zod (connexionSchema : email, password, role enum)
+- Dual CTA : "Sportif" (bleu), "Coach" (or)
+- Links vers `/inscription/sportif`, `/inscription/pro`
+- Auto-login mock user au submit
+
+#### `app/(auth)/inscription/sportif/page.tsx` (458 LOC) — Onboarding sportif
+
+- `'use client'`, 6 steps (useState)
+- Zod au submit final (onboardingSportifSchema, vibeSchema)
+- Steps : prenom/nom → sports + niveau → objectifs + budget → localisation → vibe (3 sliders) → review + submit
+- Imports : ProgressBar, StepWrapper, VibeSlider, Button, Input
+- Animations : containerVariants, itemVariants (Framer)
+- Mock : `defaultSportif` hydrates store `useUserStore.setSportif()`
+
+#### `app/(auth)/inscription/pro/page.tsx` (603 LOC) — Onboarding pro
+
+- `'use client'`, 6 steps
+- Zod : onboardingProSchema (nom, prenom, specialite, sports, niveaux, description, codePostal, tarifMin, tarifMax, formats, vibe)
+- Steps : contact → specialité + sports → niveaux + tarifs → formats → cartes services (Dialog création inline) → review
+- Plus volumineux que sportif (gestion cartes services inline)
+- Stocke dans `useUserStore.setPro()`
+
+### Groupe (legal) — Pages légales
+
+#### `app/(legal)/layout.tsx` (23 LOC) — LegalLayout server
+
+- Metadata : `robots: { index: true, follow: true }` (indexable)
+- Max-width 3xl, padding py-10
+- Back link à `/`, article prose prose-invert
+- Utile pour la conformité SEO : Google index ces pages
+
+#### `app/(legal)/cgu/page.tsx` (96 LOC) — CGU
+
+- Metadata : title "Conditions générales d'utilisation", description
+- H1 or, "Dernière mise à jour : 26 avril 2026"
+- **Banner warning :** "Document à finaliser", placeholder RGPD
+- 8 sections : 1. Objet 2. Inscription et compte 3. Réservation et paiement 4. Annulation 5. Responsabilités 6. Données personnelles (lien /confidentialite) 7. Modification des CGU 8. Loi applicable
+
+#### `app/(legal)/confidentialite/page.tsx` (92 LOC) — Politique de confidentialité
+
+- Metadata similar
+- **Banner warning :** "Document à finaliser" (RGPD, à valider DPO)
+- 8 sections : 1. Responsable de traitement 2. Données collectées (identité, coordonnées, données sportives, paiement, navigation) 3. Finalités 4. Bases légales 5. Conservation (3 ans post-clôture, 13 mois paiement Stripe) 6. Destinataires (Vercel, Stripe, Resend/Postmark futur) 7. Vos droits (CNIL link dpo@nakama.tech) 8. Cookies (techniques essentiels)
+
+#### `app/(legal)/mentions-legales/page.tsx` (75 LOC) — Mentions légales
+
+- 4 sections : Éditeur (à compléter : SIRET, adresse, Directeur Haykel Jelidi), Contact (contact@nakama.tech), Hébergement (Vercel), Propriété intellectuelle
+
+**Note :** 3 pages placeholders avec banner "Document à finaliser". À faire valider juridiquement avant prod réelle.
+
+### Groupe (sportif) — Espace sportif
+
+#### `app/(sportif)/layout.tsx` (server) + `_layout-shell.tsx` (client)
+
+- Layout server : Metadata noindex (robots: { index: false })
+- \_layout-shell client component : nav bottom mobile 4 items (Accueil, RDV, Messages, Profil), fixed bottom z-50 h-16, hidden md:flex top sticky header
+
+#### Pages sportif (9 routes) :
+
+| Path                        | Fichier                             | LOC  | Statut                                                                   |
+| --------------------------- | ----------------------------------- | ---- | ------------------------------------------------------------------------ |
+| `/accueil`                  | `accueil/page.tsx`                  | ~150 | Accueil sportif avec top 5 matching, CTA réservation                     |
+| `/recherche`                | `recherche/page.tsx`                | 242  | Search/filter pros (via useMatchedPros hook)                             |
+| `/rdv`                      | `rdv/page.tsx`                      | 264  | List séances à venir + passées                                           |
+| `/messages`                 | `messages/page.tsx`                 | ~120 | List conversations                                                       |
+| `/messages/[id]`            | `messages/[id]/page.tsx`            | 131  | Chat conversation detail                                                 |
+| `/profil`                   | `profil/page.tsx`                   | ~100 | Mon profil sportif                                                       |
+| `/pros/[id]`                | `pros/[id]/page.tsx`                | 222  | Fiche pro detail + CTA réservation                                       |
+| `/reservation/[proId]`      | `reservation/[proId]/page.tsx`      | 337  | 3 steps : choix séance → saisie données → recap paiement (simulé Stripe) |
+| `/reservation/confirmation` | `reservation/confirmation/page.tsx` | 54   | Confirmation post-paiement, lien `/rdv`                                  |
+
+**Toutes :** noindex (robots via layout), Server/Client mix.
+
+### Groupe (pro) — Espace pro
+
+#### `app/(pro)/layout.tsx` (server) + `_layout-shell.tsx` (client)
+
+- Layout server : noindex robots
+- \_layout-shell client : nav bottom mobile 6 items (Dashboard, Agenda, Clients, Cartes services, Revenus, Paramètres), fixed bottom mobile
+
+#### Pages pro (6 routes + dynamic) :
+
+| Path               | Fichier                    | LOC | Statut                                                     |
+| ------------------ | -------------------------- | --- | ---------------------------------------------------------- |
+| `/dashboard`       | `dashboard/page.tsx`       | 314 | Wireframe accueil (stats placeholder, Recharts sparklines) |
+| `/agenda`          | `agenda/page.tsx`          | 647 | ⭐ REFACTORISÉ (voir section dédiée)                       |
+| `/clients`         | `clients/page.tsx`         | 139 | List clients                                               |
+| `/clients/[id]`    | `clients/[id]/page.tsx`    | 465 | 4 onglets (Infos, Historique séances, Notes, Objectifs)    |
+| `/cartes-services` | `cartes-services/page.tsx` | 363 | Création + list cartes services                            |
+| `/revenus`         | `revenus/page.tsx`         | 229 | Stats revenus, graphiques Recharts                         |
+| `/parametres`      | `parametres/page.tsx`      | 258 | Profil, plan abonnement, security                          |
+
+### ⭐ Détail page agenda pro (`app/(pro)/agenda/page.tsx`, 647 LOC)
+
+**Refactorisé commits 2ccec5f + 5e04b42 :** 3 vues (Jour/Semaine/Mois) + bascule automatique mobile + sous-composants réutilisables.
+
+**Architecture :**
+
+```
+AgendaPage (root client)
+├── State : view ('jour'|'semaine'|'mois'), refDate, blockOpen, blocks[], blockForm
+├── useMobile() hook → null | boolean (SSR-aware)
+│   └── useEffect : isMobile === null → attend, isMobile === true → force view='jour'
+│   └── useEffect : isMobile === true && view === 'semaine' → basculer en 'jour'
+├── Toggle 3 vues (vue Semaine masquée sur mobile via hidden sm:block)
+├── Vue Jour (DayView sous-composant)
+│   └── DayContentList avec séances + blocks
+├── Vue Semaine (grille 700px min-width, scroll mobile)
+│   └── Affiche 17h (6h-22h), grid 7 colonnes jours
+│   └── Clic jour → bascule Vue Jour
+├── Vue Mois (grid 7 colonnes, compact mobile, expansif desktop)
+│   └── Clic jour → Dialog détail jour (utilise DayContentList)
+└── FAB "Bloquer plage" (icon-only mobile, label desktop)
+    └── Dialog form (date, heureDebut, heureFin, raison)
+```
+
+**Hooks utilisés :**
+
+- `useMobile()` → détecte breakpoint 768px, retourne `null` (SSR) | `true` (mobile) | `false` (desktop)
+- `useUserStore()` → get pro courant
+- `useMemo()` → weekDays, monthDays, proSeances
+
+**État automatique :**
+
+1. SSR : isMobile === null, aucune vue sélectionnée
+2. Premier render client : isMobile === true/false, hasAutoSet passe à true, force view='jour' si mobile
+3. Resize window : guarde-fou continu : si isMobile bascule à true ET view==='semaine', force 'jour'
+
+**Composants internes :**
+
+```typescript
+interface DayViewProps {
+  date: Date;
+  seances: Seance[];
+  blocks: BlockedSlot[];
+}
+
+function DayView({ date, seances, blocks }: DayViewProps) {
+  // Affiche DayContentList + empty state
+}
+
+interface DayContentListProps {
+  seances: Seance[];
+  blocks: BlockedSlot[];
+}
+
+function DayContentList({ seances, blocks }: DayContentListProps) {
+  // Réutilisé par Vue Jour + Dialog Mois
+  // Liste items alignés : heure, nom client, lieu, tarif
+  // Blocks affichés aussi
+}
+```
+
+**FAB styling :**
+
+- Mobile (sm:below) : icon-only, Plus icon centré, mx-3
+- Desktop (sm:up) : icon + label "Bloquer une plage", px-5 gap-2
+
+**Animations :** Aucune Framer Motion (pas volumineux), transitions Tailwind.
 
 ---
 
 ## 3. Composants — `components/`
 
-### Sous-dossier `ui/` (14 composants shadcn base-nova bruts)
+### Sous-dossier `ui/` (14 fichiers shadcn/ui base-nova)
 
-| Composant           | Lignes | Basé sur                   | Exports                                                                                          |
-| ------------------- | ------ | -------------------------- | ------------------------------------------------------------------------------------------------ |
-| `avatar.tsx`        | ~40    | @base-ui-components Avatar | Avatar, AvatarImage, AvatarFallback                                                              |
-| `badge.tsx`         | ~30    | @base-ui-components        | Badge (variant: default/secondary/destructive/outline)                                           |
-| `button.tsx`        | ~40    | @base-ui-components        | Button (variant, size, asChild)                                                                  |
-| `card.tsx`          | ~20    | @base-ui-components        | Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter                            |
-| `dialog.tsx`        | ~50    | @base-ui-components Dialog | Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription |
-| `dropdown-menu.tsx` | ~80    | @base-ui-components        | DropdownMenu + sub-components                                                                    |
-| `input.tsx`         | ~25    | @base-ui-components        | Input (type text, email, password, etc.)                                                         |
-| `label.tsx`         | ~20    | @base-ui-components        | Label                                                                                            |
-| `separator.tsx`     | ~15    | @base-ui-components        | Separator (orientation: horizontal/vertical)                                                     |
-| `sheet.tsx`         | ~50    | @base-ui-components Dialog | Sheet (drawer variant) + sub-components                                                          |
-| `slider.tsx`        | ~30    | @base-ui-components        | Slider (range slider)                                                                            |
-| `tabs.tsx`          | ~50    | @base-ui-components        | Tabs, TabsList, TabsTrigger, TabsContent                                                         |
-| `textarea.tsx`      | ~25    | @base-ui-components        | Textarea                                                                                         |
-| `tooltip.tsx`       | ~40    | @base-ui-components        | Tooltip, TooltipTrigger, TooltipContent                                                          |
+| Composant           | LOC | Exports                                                                                          |
+| ------------------- | --- | ------------------------------------------------------------------------------------------------ |
+| `button.tsx`        | ~30 | Button (variants: primary, secondary, outline, ghost; sizes: sm, md, lg)                         |
+| `card.tsx`          | ~20 | Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter                            |
+| `dialog.tsx`        | ~50 | Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter |
+| `input.tsx`         | ~20 | Input (type=text/email/password/number)                                                          |
+| `textarea.tsx`      | ~15 | Textarea                                                                                         |
+| `label.tsx`         | ~10 | Label                                                                                            |
+| `badge.tsx`         | ~20 | Badge (variants: default, secondary, destructive, outline)                                       |
+| `separator.tsx`     | ~15 | Separator (horizontal/vertical)                                                                  |
+| `tabs.tsx`          | ~30 | Tabs, TabsList, TabsTrigger, TabsContent                                                         |
+| `slider.tsx`        | ~30 | Slider (single/range)                                                                            |
+| `avatar.tsx`        | ~25 | Avatar, AvatarImage, AvatarFallback                                                              |
+| `tooltip.tsx`       | ~40 | Tooltip, TooltipTrigger, TooltipContent                                                          |
+| `sheet.tsx`         | ~35 | Sheet (side drawer), SheetTrigger, SheetContent, SheetHeader, etc.                               |
+| `dropdown-menu.tsx` | ~50 | DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, etc.                                     |
 
-### Sous-dossier `common/` (6 composants métier réutilisables)
+**Tous :** base-nova style (dark neutral theme), Tailwind classes, sans dépendance interne.
+
+### Sous-dossier `common/` (7 composants réutilisables)
 
 #### `logo.tsx`
 
-- Affiche "NAKAMA" ou variante
-- Propres className pour sizing
+- Render "NAKAMA" text or icon
+- Utilisé dans layouts et header landing
 
 #### `avatar-stack.tsx`
 
-- Affiche avatar stack (3-4 avatars chevauchés)
-- Utilisé dans "Nouveaux clients" sections
+- Affiche N avatars superposés (ex: 3-5 clients avec +X supplémentaires)
+- Props : avatars[], maxVisible=3
+- Utilisé : accueil sportif, card pro
 
-#### `demo-banner.tsx` (26 lignes)
+#### `demo-banner.tsx` (26 LOC)
 
-- **Client Component** (`'use client'`)
-- **Sticky top-0 z-60**, bleu/doré theme
-- **Contenu :** "Démo prototype — aucune donnée conservée, pas de paiement réel."
-- **Bouton fermer :** X button (useState show)
-- **Utilisé :** Layout root (enfant direct body)
+- `'use client'`
+- Sticky top z-60, dismissible X button
+- Affiche "Démo prototype — aucune donnée conservée, pas de paiement réel"
+- Montée en layout.tsx (children du RootLayout)
+
+#### `client-shell.tsx` (13 LOC)
+
+- `'use client'` wrapper
+- `dynamic(import ModeSwitcher, { ssr: false })`
+- Permet au RootLayout (server) d'inclure un composant client sans inline
 
 #### `mode-switcher.tsx`
 
-- **Floating button** bottom-right (fixed)
-- **Icône :** 3 dots menu ou chevron
-- **Actions :** Toggle mode (public/sportif/pro) via useModeStore + useRouter
-- **Redirect :** MODE_ROUTES enum (/ / /accueil / /dashboard)
+- `'use client'`
+- Toggle 3 modes : Public → Sportif → Pro (ou vice versa)
+- Utilise `useMode()` hook (useModeStore + router.push)
+- Affiche dans mobile bottom sheet ou desktop dropdown
 
-#### `client-shell.tsx` (13 lignes)
+#### `compatibility-badge.tsx`
 
-- **Client Component** (`'use client'`)
-- **Purpose :** Wrapper pour ModeSwitcher (SSR=false)
-- **Contenu :** `dynamic(() => import('./mode-switcher'), { ssr: false })`
-
-#### `compatibility-badge.tsx` (30 lignes)
-
-- **Pure component** (no hooks)
-- **Props :** score (number), size (sm/md/lg), className
-- **Render :** Span doré avec score en % (ex "78%")
-- **Classes :** Variants par size (padding, border-radius, text-size)
+- Badge visuel (e.g., "80% compatible" vert, "60%" orange, "40%" rouge)
+- Props : score number (0-100), animated
+- Utilisé : pro-card matching
 
 #### `empty-state.tsx`
 
-- Affiche état vide (aucun résultat)
-- Icon + texte + optional CTA button
+- Composant réutilisable absence data
+- Props : icon, title, description, action CTA
+- Utilisé : listes vides clients, séances, etc.
 
 ### Sous-dossier `public/` (4 composants landing)
 
 #### `hero.tsx`
 
-- **Client Component** (`'use client'`)
-- **Contenu :** Section hero avec titre, description, CTA dual (Sportif/Pro)
-- **Animations :** Framer Motion fade-in + slide-up
+- Section animée (Framer Motion containerVariants + itemVariants)
+- Layout : heading "Le Doctolib du coaching sportif" + description + dual CTA buttons (sportif bleu, coach or)
+- Gradient background, responsive height
 
 #### `features-section.tsx`
 
-- **Exports :** FeaturesSportif, FeaturesPro, HowItWorks (3 sections distinctes)
-- **Structure :** Chaque section = FeatureCard grid + SectionHeading
-- **Contenu :** Avantages, étapes flow
-- **Utilisé :** app/page.tsx
+- 3 composants : FeaturesSportif, FeaturesPro, HowItWorks
+- Chacun : grid 3 colonnes desktop, 1 mobile
+- FeatureCard enfants avec icône, titre, description
+- Animations Framer
 
-#### `feature-card.tsx` (~60 LOC)
+#### `feature-card.tsx`
 
-- **Props :** icon (lucide), title, description, badge
-- **Render :** Card avec icon badge top-left + titre + description
-- **Hover :** Subtle scale/shadow
+- Card simple : icône lucide, titre, description, optional CTA button
+- Utilisé par FeaturesSportif, FeaturesPro, HowItWorks
 
 #### `section-heading.tsx`
 
-- **Props :** label (small), title (h2), description (p)
-- **Render :** Centré, layout responsive
+- Réutilisable heading + description section
+- Props : title, description, icon?
+- Utilisé : multiple sections landing
 
-### Sous-dossier `sportif/` (3 composants spécifiques)
+### Sous-dossier `sportif/` (3+ composants métier)
 
-#### `pro-card.tsx` (90 lignes)
+#### `pro-card.tsx`
 
-- **Client Component** (`memo()`)
-- **Props :** pro (Pro), compatibilityScore?, distance?, onClick?, className
-- **Contenu :**
-  - Image carrée + gradient overlay
-  - Badge compatibilité top-left (si score)
-  - Note ⭐ top-right (dark bg)
-  - Distance bottom-left (km ou m)
-  - Footer : prenom nom, spécialité, prix/h
-  - Formats badges (presentiel/distanciel/hybride)
-- **Hover :** Scale 1.01, bg elevation, image zoom
-- **Utilisé :** accueil/page.tsx, recherche
+- Affiche une fiche pro compact
+- Props : pro (Pro object), matchScore (optionnel)
+- Affiche : avatar, nom, spécialité, sports, tarif, score compatibilité (CompatibilityBadge), avis
+- CTA : "Voir détails" (Link vers `/pros/[id]`)
+- Utilisé : accueil sportif top 5, recherche, résultats matching
 
-#### `progress-bar.tsx`
+#### `onboarding/progress-bar.tsx`
 
-- **Props :** current (number), total (number)
-- **Render :** Barre progress linéaire + texte "Étape X/6"
-- **Utilisé :** inscription/sportif, inscription/pro
+- Affiche step counter (1/6, 2/6, etc.) + progress visual
+- Props : current number, total number
+- Utilisé : inscription sportif + pro
 
-#### `step-wrapper.tsx`
+#### `onboarding/step-wrapper.tsx`
 
-- **Props :** title, description, children
-- **Render :** Section centré avec heading h2 + description + children
-- **Layout :** Max-width 400px, flexbox col
-- **Utilisé :** Chaque step dans onboarding
+- Conteneur réutilisable pour une step
+- Props : title, description, children (form), buttons (prev/next)
+- Animations entrée/sortie (slideRightVariants ou fadeInVariants)
 
-#### `vibe-slider.tsx` (~80 LOC)
+#### `onboarding/vibe-slider.tsx`
 
-- **Client Component** (`'use client'`)
-- **Props :** label, value, onChange, min, max, step
-- **Render :**
-  - Slider lucide (Slider component)
-  - Value affiché (nombre)
-  - Emojis ressenti inline (😫😐😊🔥) sous slider
-- **3 utilisations :** pedagogieDiscipline, suiviAutonomie, dataRessenti
-- **Utilisé :** Step 5 onboarding (sportif/pro)
+- Slider triple horizontal (pedagogieDiscipline, suiviAutonomie, dataRessenti)
+- Scale 0-10, affiche emoji ressenti + label
+- Props : currentVibe VibeProfile, onChange callback
+- Utilisé : étape 5 onboarding sportif + pro
 
 ---
 
 ## 4. Logique métier — `lib/`
 
-### `lib/matching.ts` (137 lignes)
+### `lib/matching.ts` (137 LOC)
 
-**Fonction principale :** `computeMatchScore(sportif: Sportif, pro: Pro): MatchScore`
+**Algorithme scoring 100 pts (décomposé) :**
 
-**Scoring 100 pts :**
+```
+computeMatchScore(sportif: Sportif, pro: Pro) → MatchScore
 
-| Pilier          | Poids | Détail                                   | Formule                                                                                                                                                                           |
-| --------------- | ----- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Logistique**  | 45    | Sport (20) + Budget (15) + Distance (10) | Sport commun ? 20 : 0; Budget: pro.tarifMin <= sportif.budgetMax ? 15 : max(0, 15 - round((tarifMin-budgetMax)/budgetMax \* 15)); Distance: km<5 ? 10 : km<10 ? 7 : km<20 ? 4 : 0 |
-| **Performance** | 20    | Tags (15 max) + Niveau (5)               | Tags communs \* 3 (plafonné 15); Niveau: identique ? 5 : voisin ? 3 : 0                                                                                                           |
-| **Psychologie** | 35    | 3 axes vibe                              | pedagogieDiscipline: max(0, 15 - abs(sportif - pro)); suiviAutonomie: max(0, 10 - abs(sportif - pro)); dataRessenti: max(0, 10 - abs(sportif - pro))                              |
+1️⃣ Pilier Logistique (45 pts)
+   ├── Sport compatible (20 pts) : ✅ si ≥1 sport commun, ❌ sinon
+   ├── Budget compatible (15 pts) : 15 si pro.tarifMin ≤ sportif.budgetMax, sinon dégradé % écart
+   └── Distance mockée (10 pts) :
+       ├── <5km → 10, <10km → 7, <20km → 4, ≥20km → 0
+       └── Basée sur 2 premiers chiffres codes postaux + offset 3 derniers
 
-**Score final :** `min(100, logistique + performance + psychologie)`
+2️⃣ Pilier Performance (20 pts)
+   ├── Tags communs (15 max) : 3 pts/tag objectifs↔services, plafonné 15
+   └── Cohérence niveau (5 pts) : 5 si identique, 3 si voisin, 0 sinon
 
-**Export helpers :**
+3️⃣ Pilier Psychologie (35 pts)
+   ├── pedagogieDiscipline (15 max) : max(0, 15 - |sportif.vibe - pro.vibe|)
+   ├── suiviAutonomie (10 max) : max(0, 10 - |écart|)
+   └── dataRessenti (10 max) : max(0, 10 - |écart|)
 
-- `rankPros(sportif: Sportif, pros: Pro[]): MatchScore[]` — trie décroissant par scoreTotal
-- `computeMockDistance(cp1, cp2)` — distance basée codes postaux (2 premiers chiffres = département, puis variation)
-- `extractTagsFromObjectifs(objectifs): string[]` — mapping objectif → tags service
-- `computeNiveauCoherence(nivel, niveaux): number` — distance niveau
-
-**Consommé par :**
-
-- `hooks/use-matching.ts` → useMatchedPros(limit?)
-- `app/(sportif)/accueil/page.tsx` (section "Matchés pour toi")
-- `app/(sportif)/pros/[id]/page.tsx` (affichage compatibilité)
-
-### `lib/animations.ts` (27 lignes)
-
-**Exports Framer Motion Variants :**
-
-```typescript
-containerVariants: { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }
-itemVariants: { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }
-slideRightVariants: { initial: { opacity: 0, x: 20 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -20 } }
-fadeInVariants: { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.3 } } }
+scoreTotal = min(100, logistique + performance + psychologie)
 ```
 
-**Utilisé :**
+**Exports :**
 
-- Section "Matchés pour toi" (container + items stagger)
-- Section "À proximité"
-- Onboarding steps transitions
-- Clients [id] onglets slide
+- `computeMatchScore(sportif, pro)` → MatchScore
+- `rankPros(sportif, pros)` → MatchScore[] sorted desc par scoreTotal
 
-### `lib/constants.ts` (100 lignes)
+**Utilisé par :**
 
-**Énumérations :**
+- `hooks/use-matching.ts` → `useMatchedPros(limit?)`
+- Pages recherche, accueil sportif
 
-| Constant             | Type                                                    | Valeurs                                                                                    | Utilisé par                              |
-| -------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------- |
-| `SPORTS_DISPONIBLES` | `{ value: Sport; label: string }[]`                     | fitness, running, yoga, musculation, crossfit, natation, boxe, football, tennis, autre     | Onboarding, filtres recherche            |
-| `SPECIALITES`        | `{ value: Specialite; label: string }[]`                | coach_sportif, preparateur_physique, preparateur_mental, nutritionniste, educateur_sportif | Onboarding pro, fiche pro                |
-| `FORMULES`           | `{ value: Formule; label: string; prix; features[] }[]` | standard (29€), premium (59€), elite (99€)                                                 | Onboarding pro step 3, parametres dialog |
-| `OBJECTIFS`          | Array                                                   | perte_poids, prise_masse, post_blessure, preparation_competition, bien_etre, autre         | Onboarding sportif                       |
-| `NIVEAUX`            | Array                                                   | debutant, intermediaire, avance                                                            | Onboarding sportif step 3                |
-| `FREQUENCES`         | Array                                                   | 1x, 2-3x, 4+                                                                               | Onboarding sportif step 3                |
-| `MAX_SCORE`          | `100`                                                   | -                                                                                          | matching.ts                              |
-| `RESSENTI_EMOJIS`    | `Record<1\|2\|3\|4, string>`                            | 😫😐😊🔥                                                                                   | vibe-slider.tsx                          |
+### `lib/animations.ts` (27 LOC)
 
-### `lib/formatters.ts` (41 lignes)
+Variants Framer Motion partagés (typés `Variants`) :
 
-**Wrappers date-fns fr-locale :**
+| Variant              | Utilisation                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| `containerVariants`  | Stagger children, délai 0.08s entre items                         |
+| `itemVariants`       | Fade-in + slide-down (opacity 0→1, y 12→0, duration 0.4, easeOut) |
+| `slideRightVariants` | Entrée droite, sortie gauche (initial/animate/exit)               |
+| `fadeInVariants`     | Fade simple (opacity 0→1, duration 0.3)                           |
+
+**Utilisé par :**
+
+- Hero section, features sections
+- Onboarding steps
+- Listes animées
+
+### `lib/constants.ts` (100 LOC)
+
+Énumérations + mappings :
+
+| Constant             | Type                                                                  | Valeurs                                                                                    |
+| -------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `SPORTS_DISPONIBLES` | { value: Sport; label: string }[]                                     | fitness, running, yoga, musculation, crossfit, natation, boxe, football, tennis, autre     |
+| `SPECIALITES`        | { value: Specialite; label: string }[]                                | coach_sportif, preparateur_physique, preparateur_mental, nutritionniste, educateur_sportif |
+| `FORMULES`           | { value: Formule; label: string; prix: number; features: string[] }[] | standard (29€), premium (59€), elite (99€)                                                 |
+| `OBJECTIFS`          | readonly { value: Objectif; label: string }[]                         | perte_poids, prise_masse, post_blessure, preparation_competition, bien_etre, autre         |
+| `NIVEAUX`            | readonly { value: Niveau; label: string }[]                           | debutant, intermediaire, avance                                                            |
+| `FREQUENCES`         | readonly { value: Frequence; label: string }[]                        | 1x, 2-3x, 4+ (par semaine)                                                                 |
+| `MAX_SCORE`          | number                                                                | 100 (plafond algo matching)                                                                |
+| `RESSENTI_EMOJIS`    | Record<1\|2\|3\|4, string>                                            | { 1: '😫', 2: '😐', 3: '😊', 4: '🔥' }                                                     |
+
+### `lib/formatters.ts` (41 LOC)
+
+Wrappers date-fns locale fr + formatage :
+
+| Function                     | Signature               | Exemple                    |
+| ---------------------------- | ----------------------- | -------------------------- |
+| `formatPrice(amount)`        | number → string         | 59 → "59€"                 |
+| `formatPricePerHour(amount)` | number → string         | 50 → "50€/h"               |
+| `formatDate(date)`           | string \| Date → string | → "26 avril 2026"          |
+| `formatDateShort(date)`      | string \| Date → string | → "26 avr"                 |
+| `formatTime(date)`           | string \| Date → string | → "14:30"                  |
+| `formatDateTime(date)`       | string \| Date → string | → "lundi 26 avril à 14:30" |
+| `formatRelative(date)`       | string \| Date → string | → "il y a 2 heures"        |
+| `formatDuration(minutes)`    | number → string         | 90 → "1h30"                |
+
+### `lib/utils.ts` (7 LOC)
+
+Utility minimale :
 
 ```typescript
-formatPrice(amount): "45€"
-formatPricePerHour(amount): "45€/h"
-formatDate(date): "26 avril 2026"
-formatDateShort(date): "26 avr"
-formatTime(date): "14:30"
-formatDateTime(date): "lundi 26 avril à 14:30"
-formatRelative(date): "il y a 2 jours"
-formatDuration(minutes): "1h30" ou "45 min"
-```
-
-### `lib/utils.ts` (7 lignes)
-
-```typescript
-cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs))
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }
 ```
 
-Merge tailwind classes via clsx + twMerge.
+Mergeur Tailwind + clsx (déduplicate classes, applique les dernières).
 
-### `lib/schemas/` (4 fichiers Zod)
+### `lib/schemas/` (Zod validation, 4 fichiers)
 
-#### `lib/schemas/auth.ts` (13 lignes)
+#### `auth.ts`
 
 ```typescript
-connexionSchema: {
+connexionSchema = z.object({
   email: z.string().email('Email invalide'),
   password: z.string().min(6).max(72),
-  role: z.enum(['sportif', 'pro'])
-}
+  role: z.enum(['sportif', 'pro']),
+});
 ```
 
-**Utilisé :** app/(auth)/connexion/page.tsx (useForm zodResolver)
-
-#### `lib/schemas/onboarding-sportif.ts` (51 lignes)
+#### `onboarding-sportif.ts`
 
 ```typescript
-vibeSchema: {
-  pedagogieDiscipline: z.number().int().min(1).max(10),
-  suiviAutonomie: z.number().int().min(1).max(10),
-  dataRessenti: z.number().int().min(1).max(10)
-}
-
-onboardingSportifSchema: {
-  prenom: z.string().min(2).max(40),
-  age: z.number().int().min(14).max(99),
-  genre: z.enum(['homme', 'femme', 'autre']),
-  objectifs: z.array(OBJECTIF).min(1),
-  sports: z.array(SPORT).min(1),
+onboardingSportifSchema = z.object({
+  prenom: z.string().min(2),
+  nom: z.string().min(2),
+  sports: z.array(z.enum([...])).min(1),
   niveau: z.enum(['debutant', 'intermediaire', 'avance']),
-  contraintes: z.string().max(280).optional(),
+  objectifs: z.array(z.enum([...])).min(1),
+  budgetMax: z.number().int().positive(),
+  codePostal: z.string().regex(/^\d{5}$/),
   frequence: z.enum(['1x', '2-3x', '4+']),
-  ville: z.string().min(2).max(60),
-  codePostal: z.string().regex(/^\d{5}$/),
-  rayonKm: z.number().int().min(1).max(100),
-  budgetMin/Max: z.number().int().min(10).max(500),
-  vibe: vibeSchema
-}
+  vibe: vibeSchema,
+})
+
+vibeSchema = z.object({
+  pedagogieDiscipline: z.number().int().min(0).max(10),
+  suiviAutonomie: z.number().int().min(0).max(10),
+  dataRessenti: z.number().int().min(0).max(10),
+})
 ```
 
-**Utilisé :** app/(auth)/inscription/sportif/page.tsx (safeParse final submit)
-
-#### `lib/schemas/onboarding-pro.ts` (54 lignes)
+#### `onboarding-pro.ts`
 
 ```typescript
-carteServiceCreateSchema: {
-  nom: z.string().min(3).max(60),
-  sport: z.enum([...SPORTS]),
-  description: z.string().min(20).max(280),
-  tarifHeure: z.number().int().min(10).max(500),
-  dureeMinutes: z.number().int().min(30).max(180),
-  format: z.enum(['presentiel', 'distanciel', 'hybride'])
-}
+onboardingProSchema = z.object({
+  prenom, nom, codePostal, // basics
+  specialite: z.enum(['coach_sportif', ...]),
+  sports: z.array(z.enum([...])).min(1),
+  niveauEnseigne: z.array(z.enum(['debutant', 'intermediaire', 'avance'])).min(1),
+  tarifMin, tarifMax: z.number().positive(),
+  formats: z.array(z.enum(['presentiel', 'visio', 'hybride'])).min(1),
+  description: z.string().max(500),
+  vibe: vibeSchema,
+})
 
-onboardingProSchema: {
-  prenom/nom: z.string().min(2).max(40),
-  bio: z.string().min(40).max(500),
-  specialite: z.enum([...SPECIALITES]),
-  formations: z.array(z.string().min(2)).min(1),
-  anneesExperience: z.number().int().min(0).max(60),
-  premiereCarte: carteServiceCreateSchema,
-  ville: z.string().min(2).max(60),
-  codePostal: z.string().regex(/^\d{5}$/),
-  rayonKm: z.number().int().min(1).max(100),
-  formats: z.array(FORMAT).min(1),
-  formule: z.enum(['standard', 'premium', 'elite']),
-  vibe: vibeSchema
-}
+carteServiceCreateSchema = z.object({
+  titre: z.string(),
+  tags: z.array(z.string()).min(1),
+  description: z.string().max(200),
+  dureeMinutes: z.number().int().positive(),
+})
 ```
 
-**Utilisé :** app/(auth)/inscription/pro/page.tsx, app/(pro)/cartes-services/page.tsx
+#### `index.ts`
 
-#### `lib/schemas/index.ts`
+Barrel exports : connexionSchema, onboardingSportifSchema, vibeSchema, onboardingProSchema, carteServiceCreateSchema (+ types infer).
+
+### `lib/mock-data/` (3630 LOC, détail)
+
+#### Barrel `index.ts` (6 LOC)
 
 ```typescript
-export { connexionSchema } from './auth';
-export { onboardingSportifSchema, vibeSchema } from './onboarding-sportif';
-export { onboardingProSchema, carteServiceCreateSchema } from './onboarding-pro';
+export { pros } from './pros';
+export { sportifs, defaultSportif } from './sportifs';
+export { conversations } from './conversations';
+export { seances } from './seances';
+export { healthNotes, progressionData, coachNotes } from './health';
 ```
 
-### `lib/mock-data/` (5 092 LOC total)
+#### `pros/` (50 pros, 3630 LOC, split par spécialité)
 
-#### `lib/mock-data/index.ts` (barrel)
+| Fichier              | LOC  | Nb pros | Spécialité                                                                    |
+| -------------------- | ---- | ------- | ----------------------------------------------------------------------------- |
+| `coachs.ts`          | 1807 | 32      | coach_sportif (le plus volumineux)                                            |
+| `prep-physique.ts`   | 689  | 12      | preparateur_physique                                                          |
+| `nutritionnistes.ts` | 379  | 5       | nutritionniste                                                                |
+| `prep-mental.ts`     | 375  | 5       | preparateur_mental                                                            |
+| `educateurs.ts`      | 357  | 5       | educateur_sportif                                                             |
+| `index.ts`           | 23   | —       | Concat arrays : [...coachs, ...prepPhysique, ...nutri, ...prepMental, ...edu] |
 
-```typescript
-export { pros, prosCoachs, ... } from './pros'
-export { sportifs, defaultSportif } from './sportifs'
-export { seances } from './seances'
-export { conversations } from './conversations'
-export { healthNotes, progressionData, coachNotes } from './health'
-```
+**Structure Pro :** id (pro-001...), prenom/nom, specialite, sports[], niveauEnseigne[], tarifMin, tarifMax, formats, description, codePostal, avis[], cartesServices[], vibe { pedagogieDiscipline, suiviAutonomie, dataRessenti }, photo (URL unsplash).
 
-#### `lib/mock-data/pros/` (split par spécialité)
+**Exemple coachs.ts :** 32 objectifs coachs, noms vvariés, sports multiples, tarifs 50-150€/h, vibe scores randomisés.
 
-| Fichier              | LOC   | Contenu                                                      | Export              |
-| -------------------- | ----- | ------------------------------------------------------------ | ------------------- |
-| `coachs.ts`          | 1 807 | Pro[] (10 entries : Marine, Thomas, Sophie...) coach_sportif | prosCoachs          |
-| `prep-physique.ts`   | 689   | Pro[] (10 entries) preparateur_physique                      | prosPrepPhysique    |
-| `prep-mental.ts`     | 375   | Pro[] (5 entries) preparateur_mental                         | prosPrepMental      |
-| `nutritionnistes.ts` | 379   | Pro[] (10 entries) nutritionniste                            | prosNutritionnistes |
-| `educateurs.ts`      | 357   | Pro[] (5 entries) educateur_sportif                          | prosEducateurs      |
-| `index.ts`           | 23    | Concatène + sort par ID (pro-001 → pro-050)                  | pros                |
+#### `sportifs.ts` (306 LOC, 20 sportifs)
 
-**Structure Pro type :**
+- **defaultSportif** : Anne Martin, niveau debutant, fitness/yoga, perte_poids, budget 200€, vibe (7,6,5)
+- 19 autres sportifs avec mix objectifs, niveaux, budgets (50-500€)
+- Utilisés pour mock seances, matching
 
-```typescript
-{
-  id: 'pro-001',
-  prenom: 'Marine', nom: 'BERTRAND',
-  photo: 'https://images.unsplash.com/...',
-  specialite: 'coach_sportif',
-  sports: ['fitness', 'musculation'],
-  bio: '...',
-  anneesExperience: 8,
-  formations: ['BPJEPS AF', '...'],
-  ville: 'Paris 11e', codePostal: '75011', rayonKm: 10,
-  formats: ['presentiel', 'distanciel'],
-  formule: 'premium',
-  note: 4.7, nbAvis: 14,
-  avis: [{ id, auteur, note, date, commentaire }, ...],
-  cartesServices: [{ id, nom, sport, description, tarifHeure, dureeMinutes, tags, format, actif, nbReservations, caGenere }, ...],
-  niveauEnseigne: ['debutant', 'intermediaire'],
-  tarifMin: 45, tarifMax: 55,
-  vibe: { pedagogieDiscipline: 1, suiviAutonomie: 2, dataRessenti: 9 }
-}
-```
+#### `seances.ts` (290 LOC, 34 séances)
 
-#### `lib/mock-data/sportifs.ts` (~200 LOC)
+Structure : id, proId, sportifId, date (ISO 8601), dureeMinutes (30/60/90), tarif (50-150€), lieu (optionnel), statut enum (confirmee/paiement_realisee/annulee), notes.
 
-```typescript
-const defaultSportif: Sportif = {
-  id: 'sportif-001',
-  prenom: 'Thomas', nom: 'MARTIN',
-  age: 28, genre: 'homme',
-  photo: 'https://images.unsplash.com/...',
-  niveau: 'intermediaire',
-  objectifs: ['perte_poids', 'bien_etre'],
-  sports: ['fitness', 'running'],
-  contraintes: '...',
-  frequence: '2-3x',
-  ville: 'Paris', codePostal: '75011', rayonKm: 10,
-  budgetMin: 30, budgetMax: 70,
-  vibe: { pedagogieDiscipline: 5, suiviAutonomie: 5, dataRessenti: 5 }
-}
+Mix : ~ 10-15 confirmées (2026-04-27 futur), autres passées (2026-04-20 back).
 
-const sportifs: Sportif[] = [ ... 20 entries ]
-```
+#### `conversations.ts` (195 LOC, 15 conversations)
 
-#### `lib/mock-data/seances.ts` (~250 LOC)
+Structure : id, proId, sportifId, dernier_message_date, messages [{ expediteur ('pro'|'sportif'), contenu, date, lue }].
 
-```typescript
-[
-  {
-    id: 'seance-001',
-    proId: 'pro-001',
-    sportifId: 'sportif-001',
-    date: '2026-04-28T10:00',
-    dureeMinutes: 60,
-    statut: 'confirmee', // 'confirmee', 'annulee', 'terminee'
-    notes: '...'
-  },
-  ... 34 entries
-]
-```
+5-10 messages par conversation, textes réalistes.
 
-#### `lib/mock-data/conversations.ts` (~200 LOC)
+#### `health.ts` (208 LOC, 3 exports)
 
-```typescript
-[
-  {
-    id: 'conv-001',
-    proId: 'pro-001',
-    sportifId: 'sportif-001',
-    dernier_message: '...',
-    date_maj: '2026-04-26',
-    messages: [
-      { id, auteur, texte, date },
-      ... 2-5 messages
-    ]
-  },
-  ... 15 conversations
-]
-```
+- **healthNotes** : Record<sportifId, HealthNote[]>, chacun { date, description, niveauAlerte (bon|attention|critique) }
+- **progressionData** : Record<sportifId, ProgressionPoint[]>, chaque point { date, value (poids/kilos/reps) }
+- **coachNotes** : Record<sportifId, NoteCoach[]>, notes par pro après séance
 
-#### `lib/mock-data/health.ts` (~300 LOC)
-
-```typescript
-const healthNotes: Record<string, HealthNote[]> = {
-  'sportif-001': [{ id, date, note, niveauAlerte: 'ok'|'warning'|'danger' }, ...],
-  ...
-}
-
-const progressionData: Record<string, ProgressionPoint[]> = {
-  'sportif-001': [{ date, poids, energie, performance }, ...],
-  ...
-}
-
-const coachNotes: Record<string, NoteCoach[]> = {
-  'sportif-001': [{ date, contenu, proId }, ...],
-  ...
-}
-```
+Utilisés : pages revenus (charts), profil sportif (progression).
 
 ---
 
-## 5. State Management — `stores/` (3 stores Zustand + persist)
+## 5. State Management — `stores/`
 
-### `stores/user-store.ts` (26 lignes)
+### `user-store.ts` (26 LOC)
 
 ```typescript
 interface UserStore {
-  sportif: Sportif | null
-  pro: Pro | null
-  setSportif(sportif: Sportif): void
-  setPro(pro: Pro): void
-  clearUser(): void
+  sportif: Sportif | null;
+  pro: Pro | null;
+  setSportif: (sportif: Sportif) => void;
+  setPro: (pro: Pro) => void;
+  clearUser: () => void;
 }
 
 export const useUserStore = create<UserStore>()(
   persist(
-    (set) => ({ sportif: null, pro: null, ... }),
-    { name: 'nakama-user' }
-  )
-)
+    (set) => ({
+      sportif: null,
+      pro: null,
+      setSportif: (sportif) => set({ sportif }),
+      setPro: (pro) => set({ pro }),
+      clearUser: () => set({ sportif: null, pro: null }),
+    }),
+    { name: 'nakama-user' },
+  ),
+);
 ```
 
-**Persist key :** `localStorage['nakama-user']`
+**Persist key :** `'nakama-user'` (localStorage). Survivie refresh page.
 
-**Utilisé :**
+**Utilisé par :** pages onboarding (setSportif/setPro post-form), pages espace (currentUser read), mode-switcher (clearUser on logout mock).
 
-- Connexion/inscription (setSportif / setPro)
-- Pages sportif/pro (useUserStore(s => s.sportif|pro))
-- Matching (useUserStore(s => s.sportif) dans useMatchedPros)
-- Parametres pro (clearUser sur déconnexion)
-
-### `stores/mode-store.ts` (20 lignes)
+### `mode-store.ts` (20 LOC)
 
 ```typescript
 export type Mode = 'public' | 'sportif' | 'pro';
 
 interface ModeStore {
   mode: Mode;
-  setMode(mode: Mode): void;
+  setMode: (mode: Mode) => void;
 }
 
 export const useModeStore = create<ModeStore>()(
-  persist((set) => ({ mode: 'public', setMode: (mode) => set({ mode }) }), {
-    name: 'nakama-mode',
-  }),
+  persist(
+    (set) => ({
+      mode: 'public',
+      setMode: (mode) => set({ mode }),
+    }),
+    { name: 'nakama-mode' },
+  ),
 );
 ```
 
-**Persist key :** `localStorage['nakama-mode']`
+**Persist key :** `'nakama-mode'` (localStorage). Track mode courant, pas utilisé pour navigation (voir `useMode()` hook).
 
-**Utilisé :**
-
-- Connexion (setMode 'sportif' ou 'pro')
-- ModeSwitcher (mode + setMode route redirect)
-- Onboarding (setMode final)
-
-### `stores/ui-store.ts` (14 lignes)
+### `ui-store.ts` (14 LOC)
 
 ```typescript
 interface UiStore {
-  drawerOpen: boolean
-  setDrawerOpen(open: boolean): void
-  toggleDrawer(): void
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
+  toggleDrawer: () => void;
 }
 
 export const useUiStore = create<UiStore>()((set) => ({
   drawerOpen: false,
-  ...
-}))
+  setDrawerOpen: (open) => set({ drawerOpen: open }),
+  toggleDrawer: () => set((s) => ({ drawerOpen: !s.drawerOpen })),
+}));
 ```
 
-**Persist :** Non (in-memory)
-
-**Utilisé :** Mobile drawer toggle (inutilisé actuellement, placeholder)
+**Non-persist** (pas localStorage). Utilisé : nav mobile drawer (optionnel, peut remplacer par composant local useState).
 
 ---
 
-## 6. Hooks — `hooks/` (4 hooks custom)
+## 6. Hooks — `hooks/`
 
-### `hooks/use-matching.ts` (18 lignes)
+### `use-mobile.ts` (23 LOC)
+
+**Signature :** `useMobile(breakpoint = 768): boolean | null`
 
 ```typescript
-export function useMatchedPros(limit?: number): MatchScore[] {
-  const sportif = useUserStore((s) => s.sportif);
+export function useMobile(breakpoint = 768): boolean | null {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const onChange = () => setIsMobile(mql.matches);
+    onChange(); // call once
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [breakpoint]);
+  return isMobile;
+}
+```
 
+**Retourne :**
+
+- `null` : SSR ou premier render (détection client pas encore faite)
+- `true` : mobile détecté (< 768px)
+- `false` : desktop confirmé (≥ 768px)
+
+**Changement récent (commit 5e04b42) :** Retourne maintenant `boolean | null` (au lieu de `boolean`), permettant aux consommateurs de distinguer "pas encore connu" (SSR/hydration) de "confirmé desktop". Utilisé crucially par agenda pro pour basculer auto sur mobile.
+
+### `use-matching.ts` (18 LOC)
+
+**Signature :** `useMatchedPros(limit?: number): MatchScore[]`
+
+```typescript
+export function useMatchedPros(limit?: number) {
+  const sportif = useUserStore((s) => s.sportif);
   return useMemo(() => {
     if (!sportif) return [];
     const ranked = rankPros(sportif, pros);
@@ -918,86 +936,68 @@ export function useMatchedPros(limit?: number): MatchScore[] {
 }
 ```
 
-**Dépendances :** user-store, matching.ts, mock-data
+Consomme user store + `lib/matching.rankPros()`, retourne top matching pros.
 
-**Utilisé :** accueil/page.tsx (section "Matchés pour toi")
+**Utilisé par :** accueil sportif (top 5), recherche (all), pro-cards.
 
-### `hooks/use-mode.ts` (28 lignes)
+### `use-count-up.ts` (30 LOC)
 
-```typescript
-export function useMode(): { mode: Mode; switchMode(newMode): void } {
-  const { mode, setMode } = useModeStore();
-  const router = useRouter();
-
-  const switchMode = useCallback(
-    (newMode) => {
-      setMode(newMode);
-      router.push(MODE_ROUTES[newMode]); // / | /accueil | /dashboard
-    },
-    [setMode, router],
-  );
-
-  return { mode, switchMode };
-}
-```
-
-**Utilisé :** ModeSwitcher component
-
-### `hooks/use-mobile.ts` (18 lignes)
+**Signature :** `useCountUp(target: number, duration = 1000): number`
 
 ```typescript
-export function useMobile(breakpoint = 768): boolean {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const onChange = () => setIsMobile(mql.matches);
-    onChange();
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, [breakpoint]);
-
-  return isMobile;
-}
-```
-
-**Utilisé :** Responsive checks (inutilisé, placeholder)
-
-### `hooks/use-count-up.ts` (30 lignes)
-
-```typescript
-export function useCountUp(target: number, duration = 1000): number {
+export function useCountUp(target: number, duration = 1000) {
   const [value, setValue] = useState(0);
-
   useEffect(() => {
     const start = performance.now();
-
+    let raf: number;
     function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
       setValue(Math.round(eased * target));
-
-      if (progress < 1) {
-        raf = requestAnimationFrame(tick);
-      }
+      if (progress < 1) raf = requestAnimationFrame(tick);
     }
-
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [target, duration]);
-
   return value;
 }
 ```
 
-**Utilisé :** dashboard/page.tsx (revenu animé 1000ms)
+Anime montée de 0 → target, easeOutCubic. **Utilisé :** section "Nombres" landing page (% match, nb pros, etc.).
+
+### `use-mode.ts` (28 LOC)
+
+**Signature :** `useMode(): { mode: Mode; switchMode: (newMode: Mode) => void }`
+
+```typescript
+export function useMode() {
+  const { mode, setMode } = useModeStore();
+  const router = useRouter();
+  const switchMode = useCallback(
+    (newMode: Mode) => {
+      setMode(newMode);
+      router.push(MODE_ROUTES[newMode]);
+    },
+    [setMode, router],
+  );
+  return { mode, switchMode };
+}
+
+const MODE_ROUTES: Record<Mode, string> = {
+  public: '/',
+  sportif: '/accueil',
+  pro: '/dashboard',
+};
+```
+
+Combine store + navigation. **Utilisé :** mode-switcher component, dual CTA onboarding.
 
 ---
 
-## 7. Types — `types/` (7 fichiers, 150 LOC)
+## 7. Types — `types/`
 
-### `types/index.ts` (Barrel)
+### `index.ts` (6 LOC) — Barrel
 
 ```typescript
 export type { Sportif, Niveau, Genre, Objectif, VibeProfile } from './sportif';
@@ -1008,126 +1008,165 @@ export type { MatchScore } from './matching';
 export type { HealthNote, NiveauAlerte, ProgressionPoint, NoteCoach } from './health';
 ```
 
-### `types/sportif.ts`
+### `sportif.ts`
 
 ```typescript
-type Niveau = 'debutant' | 'intermediaire' | 'avance'
-type Genre = 'homme' | 'femme' | 'autre'
-type Objectif = 'perte_poids' | 'prise_masse' | 'post_blessure' | 'preparation_competition' | 'bien_etre' | 'autre'
-
-interface VibeProfile {
-  pedagogieDiscipline: number (1-10)
-  suiviAutonomie: number (1-10)
-  dataRessenti: number (1-10)
+export interface Sportif {
+  id: string
+  prenom: string; nom: string
+  genre: 'M' | 'F' | 'NB'
+  niveau: Niveau
+  sports: Sport[]
+  objectifs: Objectif[]
+  budgetMax: number
+  frequence: '1x' | '2-3x' | '4+'
+  codePostal: string
+  vibe: VibeProfile
+  photo?: string
+  dateInscription: string
 }
 
-interface Sportif {
-  id, prenom, nom, age, genre, photo, niveau, objectifs[], sports[], contraintes?, frequence, ville, codePostal, rayonKm, budgetMin, budgetMax, vibe, bio?, clientDepuis?
+export type Niveau = 'debutant' | 'intermediaire' | 'avance'
+export type Objectif = 'perte_poids' | 'prise_masse' | 'post_blessure' | 'preparation_competition' | 'bien_etre' | 'autre'
+export type Sport = 'fitness' | 'running' | 'yoga' | 'musculation' | ... | 'autre'
+
+export interface VibeProfile {
+  pedagogieDiscipline: number // 0-10
+  suiviAutonomie: number // 0-10
+  dataRessenti: number // 0-10
 }
 ```
 
-### `types/pro.ts`
+### `pro.ts`
 
 ```typescript
-type Specialite = 'coach_sportif' | 'preparateur_physique' | 'preparateur_mental' | 'nutritionniste' | 'educateur_sportif'
-type Sport = 'fitness' | 'running' | 'yoga' | 'musculation' | 'crossfit' | 'natation' | 'boxe' | 'football' | 'tennis' | 'autre'
-type Format = 'presentiel' | 'distanciel' | 'hybride'
-type Formule = 'standard' | 'premium' | 'elite'
-
-interface CarteService {
-  id, nom, sport, description, tarifHeure, dureeMinutes, tags[], format, actif, nbReservations, caGenere
+export interface Pro {
+  id: string;
+  prenom: string;
+  nom: string;
+  specialite: Specialite;
+  sports: Sport[];
+  niveauEnseigne: Niveau[];
+  tarifMin: number;
+  tarifMax: number;
+  formats: Format[];
+  description: string;
+  codePostal: string;
+  avis: Avis[];
+  cartesServices: CarteService[];
+  vibe: VibeProfile;
+  photo?: string;
+  dateInscription: string;
 }
 
-interface Avis {
-  id, auteur, note, date, commentaire
+export type Specialite =
+  | 'coach_sportif'
+  | 'preparateur_physique'
+  | 'preparateur_mental'
+  | 'nutritionniste'
+  | 'educateur_sportif';
+export type Format = 'presentiel' | 'visio' | 'hybride';
+export type Formule = 'standard' | 'premium' | 'elite';
+
+export interface CarteService {
+  id: string;
+  titre: string;
+  tags: string[];
+  description: string;
+  dureeMinutes: number;
 }
 
-interface Pro {
-  id, prenom, nom, photo, specialite, sports[], bio, anneesExperience, formations[], ville, codePostal, rayonKm, formats[], formule, note, nbAvis, avis[], cartesServices[], niveauEnseigne[], tarifMin, tarifMax, vibe, favorite?
+export interface Avis {
+  id: string;
+  sportifId: string;
+  note: number; // 1-5
+  commentaire: string;
+  date: string;
 }
 ```
 
-### `types/matching.ts`
+### `seance.ts`
 
 ```typescript
-interface MatchScore {
-  proId;
-  scoreTotal;
-  logistique;
-  performance;
-  psychologie;
+export interface Seance {
+  id: string;
+  proId: string;
+  sportifId: string;
+  date: string; // ISO 8601
+  dureeMinutes: number;
+  tarif: number;
+  lieu?: string;
+  statut: StatutSeance;
+  notes?: string;
+}
+
+export type StatutSeance = 'confirmee' | 'paiement_realisee' | 'annulee';
+```
+
+### `conversation.ts`
+
+```typescript
+export interface Conversation {
+  id: string;
+  proId: string;
+  sportifId: string;
+  dernier_message_date: string;
+  messages: Message[];
+}
+
+export interface Message {
+  id: string;
+  expediteur: 'pro' | 'sportif';
+  contenu: string;
+  date: string;
+  lue: boolean;
+}
+```
+
+### `matching.ts`
+
+```typescript
+export interface MatchScore {
+  proId: string;
+  scoreTotal: number;
+  logistique: number;
+  performance: number;
+  psychologie: number;
   details: {
-    sportCompatible;
-    budgetCompatible;
-    distance;
-    tagsCommuns;
-    niveauCoherence;
-    pedagogieDiscipline;
-    suiviAutonomie;
-    dataRessenti;
+    sportCompatible: number;
+    budgetCompatible: number;
+    distance: number;
+    tagsCommuns: number;
+    niveauCoherence: number;
+    pedagogieDiscipline: number;
+    suiviAutonomie: number;
+    dataRessenti: number;
   };
 }
 ```
 
-### `types/seance.ts`
+### `health.ts`
 
 ```typescript
-type StatutSeance = 'confirmee' | 'annulee' | 'terminee';
-
-interface Seance {
-  id;
-  proId;
-  sportifId;
-  date;
-  dureeMinutes;
-  statut;
-  notes;
-}
-```
-
-### `types/conversation.ts`
-
-```typescript
-interface Message {
-  id;
-  auteur;
-  texte;
-  date;
+export interface HealthNote {
+  id: string;
+  date: string;
+  description: string;
+  niveauAlerte: NiveauAlerte;
 }
 
-interface Conversation {
-  id;
-  proId;
-  sportifId;
-  dernier_message;
-  date_maj;
-  messages: Message[];
-}
-```
+export type NiveauAlerte = 'bon' | 'attention' | 'critique';
 
-### `types/health.ts`
-
-```typescript
-type NiveauAlerte = 'ok' | 'warning' | 'danger';
-
-interface HealthNote {
-  id;
-  date;
-  note;
-  niveauAlerte;
+export interface ProgressionPoint {
+  date: string;
+  value: number; // poids/km/reps/etc
 }
 
-interface ProgressionPoint {
-  date;
-  poids;
-  energie;
-  performance;
-}
-
-interface NoteCoach {
-  date;
-  contenu;
-  proId;
+export interface NoteCoach {
+  id: string;
+  proId: string;
+  date: string;
+  contenu: string;
 }
 ```
 
@@ -1135,17 +1174,21 @@ interface NoteCoach {
 
 ## 8. Pages Router résiduel — `pages/`
 
-### `pages/_error.tsx` (58 lignes)
+### `pages/_error.tsx` (58 LOC)
+
+**Workaround Next 15 :** Next 15 + React 19 crash interne sur le fallback `_error` auto-généré au prerender (useRef on null). Solution : fichier custom `_error.tsx` Pages Router qui évite le crash.
 
 ```typescript
 import type { NextPageContext } from 'next'
 
+interface ErrorProps {
+  statusCode?: number
+}
+
 function Error({ statusCode }: ErrorProps) {
   return (
-    <div style={{ /* dark theme inline CSS */ }}>
-      <p>Erreur {statusCode || ''}</p>
-      <h1>Quelque chose s'est mal passé</h1>
-      <p>{statusCode === 404 ? "Cette page n'existe pas..." : 'Une erreur inattendue...'}</p>
+    <div style={{ /* ... centered flex, dark bg */ }}>
+      {/* Heading + message dynamique 404 vs 500 */}
     </div>
   )
 }
@@ -1158,374 +1201,427 @@ Error.getInitialProps = ({ res, err }: NextPageContext) => {
 export default Error
 ```
 
-**Raison existence :** Workaround Next 15 + React 19. Next 15 a un crash interne sur `useRef on null` du fallback `_error` auto-généré lors du SSG. Ce fichier custom minimal contourne le bug. Non utilisé en mode SSR (force-dynamic), mais présent pour stabilité.
+**Utilisé :** fallback pour erreurs SSR non catchées par app/global-error.tsx. À supprimer une fois Next 15 LSR corrigé.
 
 ---
 
 ## 9. Assets — `public/`
 
-| Fichier                                                         | Statut  | Notes                                         |
-| --------------------------------------------------------------- | ------- | --------------------------------------------- |
-| `favicon.ico`                                                   | Missing | Referenced layout.tsx, **à fournir** (Haykel) |
-| `apple-touch-icon.png`                                          | Missing | Referenced layout.tsx, **à fournir**          |
-| `og.png`                                                        | Missing | 1200×630 pour OG preview, **à fournir**       |
-| `logo.png`                                                      | Missing | Referenced JSON-LD, **à fournir**             |
-| `file.svg`, `next.svg`, `vercel.svg`, `globe.svg`, `window.svg` | Present | Placeholders Create Next App                  |
+### Contenu actuel
 
-**Manquements critiques (cf. CHASE-ASSETS.md) :**
+```
+public/
+├── file.svg, globe.svg, next.svg, vercel.svg, window.svg  (5 SVGs placeholder Create Next App)
+├── logos/                                                  (empty dir)
+└── images/
+    └── pros/                                               (empty dir)
+```
 
-- Logo Nakama SVG (full + symbol)
-- Favicon + apple-touch-icon
-- OG image
-- Photos pros locales (en CDN Unsplash actuellement)
+### Note importante (commit 2eee29b)
+
+Assets de branding sont générés **dynamiquement** via Next 15 ImageResponse convention :
+
+- `app/icon.tsx` → favicon.ico 32×32 (généré, pas binaire)
+- `app/apple-icon.tsx` → apple-icon.png 180×180 (généré)
+- `app/opengraph-image.tsx` → OG card 1200×630 (généré)
+- `app/twitter-image.tsx` → réexport opengraph-image
+
+**Avantage :** Hot-reload en dev, tailorable facilement (couleurs, texte), versionné en Git (code vs binaires).
+
+**Note :** `/public/images/pros/` reste vide (50 pros utilisent CDN `images.unsplash.com`). Migration locale possible via script `scripts/download-photos.ts` (non encore implanté).
 
 ---
 
 ## 10. Documentation
 
-### README.md (173 lignes)
+### `README.md` (221 lignes, voir section 10)
 
-**Sections :**
+Résumé structure, stack justifs, mocks, algo matching, déploiement Vercel, roadmap post-MVP, dette technique (5 catégories).
 
-- Quick start (pnpm install, .env.local, pnpm dev)
-- Stack & justifs (tableau Next 15, React 19, Tailwind v4, etc.)
-- Arborescence (commentée par dossier)
-- Mocks (tableau volumes + où regarder)
-- **Algorithme matching** (100 pts, 3 piliers, breakdown)
-- Déploiement (Vercel setup, standalone)
-- Roadmap post-MVP (backend, persistance, paiements, tests, etc.)
-- Dépannage (troubleshooting)
-- Conventions (→ AGENTS.md)
+**Section "Dette technique connue" (26 lignes) :**
 
-### AGENTS.md (68 lignes)
+1. Fichiers volumineux > 400 LOC (agenda: 647, onboarding pro: 603, etc.)
+2. Patterns dupliqués (PillButton, mapping statuts badge, labels spécialité)
+3. Onboarding partiellement RHF (vs. connexion + cartes services complet)
+4. Pages légales placeholder (à faire valider juridiquement)
+5. Force-dynamic global (toutes routes SSR à la demande, pas SSG)
+6. Couverture tests 0%
+7. Photos CDN (vers local)
+8. Backend/Auth/Persistance absents
 
-**Sections :**
+### `AGENTS.md` (65 lignes)
 
-- Stack actuelle (alignée brief Haykel)
-- **Workarounds en place :**
-  - `output: 'standalone'` + `eslint.ignoreDuringBuilds`
-  - `force-dynamic` layout root (SSR à la demande)
-  - `pages/_error.tsx` custom (contourne crash Next 15)
-  - `ClientShell` wrapper (dynamic ModeSwitcher SSR=false)
-  - `FlatCompat` eslint (legacy configs Next 15)
-- Conventions code (strict types, cn(), formulaires RHF+Zod, animations, mock data, steps onboarding, split pros)
-- Scripts npm (dev, build, typecheck, format, check)
-- Husky pre-commit (lint-staged + typecheck bloquant)
+Conventions agents refacto :
 
-### CLAUDE.md (1 ligne)
+- Stack actuelle (versions, workarounds)
+- Conventions code (pas `any`, cn() merger, RHF+Zod, animations, mocks)
+- Scripts npm (avec explications)
+- Husky pre-commit (lint-staged + typecheck)
 
-Référence : `@AGENTS.md`
+### `CLAUDE.md` (2 lignes)
 
-### `docs/DOD-LIVRAISON.md` (99 lignes)
+Référence `@AGENTS.md`.
 
-**Checklist prélivraison Haykel :**
+### `docs/DOD-LIVRAISON.md`
 
-- Code : typecheck ✓, build ✓, lint ?, husky ✓
-- Écrans : 20 présents, onboarding ✓, connexion ✓, cartes ✓, parametres ✓, agenda ✓, messaging ✓, reservation ✓, dashboard ✓, fiche athlète ✓
-- Données : 50 pros ✓, 20 sportifs ✓, 34 séances ✓, 15 conversations ✓, health ✓
-- SEO/A11y : Metadata ✓, JSON-LD ✓, robots.ts ✓, sitemap.ts ✓, noindex ✓, Lighthouse ? (à mesurer)
-- Tests parcours : À faire en preview Vercel (5 viewports)
-- Bloqueurs : Assets graphiques (logo, favicon, og.png), charte (hex codes), textes (landing, onboarding), domaine, repo GitHub transfer
+Checklist MVP : wireframes, flows, composants, data, tests, déploiement.
 
-### `docs/CHASE-ASSETS.md` (73 lignes)
+### `docs/CHASE-ASSETS.md`
 
-**Message template à envoyer Haykel** pour récupérer :
+Liste assets graphiques à intégrer (logos, photos pros, icônes custom, OG images).
 
-1. Logo Nakama SVG (full + symbole)
-2. Favicon + apple-touch-icon
-3. OG image 1200×630
-4. Photos pros locales (nice-to-have)
-5. Codes hex exacts (approximatifs : #0B0F14, #C9B27A, #1E2A3A)
-6. Font finale (Inter vs Manrope)
-7. Textes définitifs (landing, onboarding, microcopy)
-8. CGU/Mentions légales/Politique confidentialité
-9. Domaine final (nakama.tech?)
-10. Repo GitHub transfer
-11. Feedback 3 pros sport (interviews terrain)
+### `.env.local.example` (12 lignes)
+
+```
+NEXT_PUBLIC_DEMO_MODE=true
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+Comment mettre en prod : s'adapter URLs, supprimer DEMO_MODE.
 
 ---
 
 ## 11. Workarounds Next 15 actifs
 
-**Tous les patterns en place pour Next 15 + React 19 :**
+| Workaround                                                 | Raison                                                                         | Impact                                            | Status                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------ |
+| `output: 'standalone'` (next.config.ts:4)                  | Deployable Docker/Vercel sans dépendre Node versions hôte                      | Builds légèrement plus lourds                     | Actif, nécessaire prod                           |
+| `dynamic = 'force-dynamic'` (app/layout.tsx:19)            | Contourne crash interne Next 15 + React 19 useRef on null au prerender         | Toutes routes SSR à demande, perte cache statique | Actif, acceptable MVP (à reconsidérer si trafic) |
+| `pages/_error.tsx` (fichier Pages Router)                  | Fallback erreur SSR, complément app/global-error.tsx + app/not-found.tsx       | Duplication fichiers erreur                       | Actif, temporaire                                |
+| `ClientShell` wrapper (components/common/client-shell.tsx) | RootLayout server ne peut pas inline client component, dynamic avec ssr: false | Indirection composant                             | Actif, pattern standard                          |
+| `eslint.config.mjs` FlatCompat (eslint.config.mjs:8-10)    | eslint-config-next v15 pas encore au format ESLint 9 flat                      | Legacy wrapper runtime                            | Actif, temporaire (next upgrade)                 |
+| tsconfig sans `exactOptionalPropertyTypes` (tsconfig.json) | @base-ui-components/react types incompatibles                                  | TypeScript strict mais pas ultra-strict           | Actif, accepté                                   |
 
-| Workaround                                 | Lieu                               | Raison                                                           | Impact                                     |
-| ------------------------------------------ | ---------------------------------- | ---------------------------------------------------------------- | ------------------------------------------ |
-| `output: 'standalone'`                     | next.config.ts                     | Build autonome, déploiement Docker simplifié                     | `.next/standalone/` usable seul            |
-| `dynamic = 'force-dynamic'`                | app/layout.tsx                     | SSR à la demande, évite SSG + crash fallback \_error             | Zéro SSG, pas de perf export statique      |
-| `pages/_error.tsx` custom                  | pages/                             | Contourne crash `useRef on null` du fallback auto-généré Next 15 | Minimal HTML inline styles                 |
-| `ClientShell` wrapper                      | components/common/client-shell.tsx | RootLayout server, ModeSwitcher client (`ssr: false` dynamique)  | ModeSwitcher charge côté client uniquement |
-| `FlatCompat` eslint                        | eslint.config.mjs                  | eslint-config-next 15 non en format flat config                  | Legacy extends via compat shim             |
-| `eslint.ignoreDuringBuilds: true`          | next.config.ts                     | Lint par husky pre-commit, pas pendant build                     | Husky bloque commit si erreur              |
-| `tsconfig` sans exactOptionalPropertyTypes | tsconfig.json                      | Incompatible @base-ui-components/react                           | Désactivé intentionnellement               |
-| `@base-ui-components/react` vrai nom       | package.json                       | shadcn style base-nova remplace `@headlessui`                    | Alias UI custom                            |
-
-**Conséquences cumulées :**
-
-- Toutes les routes SSR à la demande (pas d'ISR, pas d'export statique)
-- Build time slightly longer (no prerender)
-- Suitable for MVP démo (serverless Vercel fine)
-- Not suitable si trafic très élevé sans caching
+**Changement récent (commit 2eee29b) :** `eslint.ignoreDuringBuilds: true` RETIRÉ. Linting n'est pas ignoré au build, est forcé en pre-commit husky. À noter pour future audit.
 
 ---
 
-## 12. Dette technique recensée
+## 12. SEO / A11y / Conformité légale
 
-### Erreurs TypeScript
+### Metadata complète
 
-- **Zéro erreur** (`pnpm typecheck` ✓)
+**RootLayout (`app/layout.tsx`)** exporte :
 
-### Warnings ESLint
+- `metadata` : title template, description, applicationName, keywords, authors, creator, openGraph (type website, locale fr_FR), twitter (card summary_large_image)
+- `viewport` : themeColor #0B0F14, device-width, initialScale 1
+- JSON-LD inline : Organization (@id, url, logo, description, sameAs []) + SoftwareApplication (operatingSystem Web, applicationCategory HealthApplication)
 
-- Probablement exhaustive-deps warnings sur quelques useEffect/useMemo (non bloquants)
-- **Lint-staged + pre-commit obligatoire** donc pas d'erreur bloquante en commit
+### Robots.txt (`app/robots.ts`)
+
+```
+User-agent: *
+Allow: /
+Disallow: [/accueil, /recherche, /pros/, /rdv, /profil, /messages, /reservation/, /dashboard, /clients, /agenda, /cartes-services, /revenus, /parametres]
+Sitemap: ${APP_URL}/sitemap.xml
+```
+
+Crawl public seulement (landing + connexion + inscriptions + légales), pas espaces connectés.
+
+### Sitemap.xml (`app/sitemap.ts`)
+
+7 routes publiques + 3 légales (21 lignes) :
+
+1. `/` — weekly, priority 1
+2. `/connexion` — monthly, 0.7
+3. `/inscription/sportif`, `/inscription/pro` — monthly, 0.8 chacune
+4. `/cgu`, `/confidentialite`, `/mentions-legales` — yearly, 0.3 chacune
+
+### Noindex sur espaces protégés
+
+Layouts (sportif) + (pro) + (auth inscription) exportent metadata :
+
+```typescript
+export const metadata: Metadata = {
+  robots: { index: false },
+};
+```
+
+Seules landing + légales indexées.
+
+### DemoBanner sticky top
+
+Montée partout (`app/layout.tsx` → enfants) avec z-60, dismissible, message "Démo prototype".
+
+### Pages légales (3 fichiers) — Conformité RGPD minimale
+
+| Page                         | Contenu                                                                                                           | État                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `/cgu` (96 LOC)              | 8 sections : Objet, Inscription, Réservation, Annulation, Responsabilités, Données, Modifications, Loi            | Placeholder, à valider          |
+| `/confidentialite` (92 LOC)  | 8 sections : Responsable, Données collectées, Finalités, Bases légales, Rétention, Destinataires, Droits, Cookies | Placeholder RGPD, à valider DPO |
+| `/mentions-légales` (75 LOC) | Éditeur (à compléter), Contact, Hébergement Vercel, PI                                                            | Placeholder, à compléter        |
+
+**Banner warning :** Chaque page affiche "Document à finaliser" orange → important pour démo seulement.
+
+### Footer câblé (app/page.tsx)
+
+```html
+<Link href="/cgu">CGU</Link>
+<Link href="/confidentialite">Confidentialité</Link>
+<Link href="/mentions-legales">Mentions légales</Link>
+<a href="mailto:contact@nakama.tech">Contact</a>
+```
+
+Fonctionnels, responsive.
+
+---
+
+## 13. Dette technique recensée
 
 ### Fichiers volumineux (candidats split)
 
-| Fichier                                   | LOC   | Candidat split                                               |
-| ----------------------------------------- | ----- | ------------------------------------------------------------ |
-| `app/(auth)/inscription/pro/page.tsx`     | 603   | Extraire 6 steps dans `./_steps/*.tsx`                       |
-| `app/(pro)/clients/[id]/page.tsx`         | 465   | Extraire 4 onglets en composants                             |
-| `app/(auth)/inscription/sportif/page.tsx` | 458   | Extraire 6 steps dans `./_steps/*.tsx`                       |
-| `app/(pro)/cartes-services/page.tsx`      | 363   | Extraire Dialog création + liste en subcomponents            |
-| `lib/mock-data/pros/coachs.ts`            | 1 807 | Split en 2-3 fichiers si 20 coachs → difficile (type unique) |
+| Fichier                                   | LOC  | Suggestion                                                      | Faisabilité                                           |
+| ----------------------------------------- | ---- | --------------------------------------------------------------- | ----------------------------------------------------- |
+| `lib/mock-data/pros/coachs.ts`            | 1807 | Split par initial/région (pro-001-020, pro-021-032)             | Difficile (tous coach_sportif, distinctions mineures) |
+| `app/(auth)/inscription/pro/page.tsx`     | 603  | Extraire Step1…Step6 vers `inscription/pro/_steps/`             | Haute                                                 |
+| `app/(pro)/clients/[id]/page.tsx`         | 465  | Extraire 4 onglets en composants (TabInfos, TabHistorique, etc) | Haute                                                 |
+| `app/(auth)/inscription/sportif/page.tsx` | 458  | Idem pro                                                        | Haute                                                 |
+| `app/(pro)/cartes-services/page.tsx`      | 363  | Extraire Dialog création + liste                                | Moyenne                                               |
 
-### Patterns à factoriser
+### Patterns dupliqués
 
-| Pattern                                                    | Occurrences | Localisation                                    |
-| ---------------------------------------------------------- | ----------- | ----------------------------------------------- |
-| `PillButton` (inline component)                            | 2           | app/(auth)/inscription/{sportif,pro}            |
-| Statut badge mapping (`confirmee` → "Confirmée", color)    | Multiple    | Hardcodé, non centralisé (constants.ts)         |
-| `SPECIALITES.find(s => s.value === pro.specialite)?.label` | 3+          | Répété, candidate helper `getSpecialiteLabel()` |
+- **PillButton** : défini inline dans onboarding pro ET onboarding sportif → créer `components/common/pill-button.tsx`
+- **Mapping statut séance → couleur badge** : répété 3+ fois → helper `getStatutBadgeProps(statut)` dans constants
+- **Lancement spécialité** : `SPECIALITES.find(s => s.value === pro.specialite)?.label` répété → helper `getSpecialiteLabel(specialite)`
+- **Format par défaut** : `formats[0] ?? 'presentiel'` dupliqué → helper `getDefaultFormat(formats)`
 
-### Couverture tests
+### Onboarding partiellement RHF
 
-- **0** (Vitest / Playwright inexistants)
-- Candidats : matching.ts (edge cases scoring), onboarding flows (E2E)
+Connexion + cartes services : RHF complet. Onboarding sportif/pro : `useState` steps + Zod `safeParse()` au submit final.
 
-### Backend / Auth / Persistance
+→ À migrer vers RHF `FormProvider` (meilleure UX erreurs, cohérence).
 
-- **Entièrement absents**
-- Roadmap : Supabase + Auth + Drizzle ORM + Server Actions `/api/*`
-- Actuellement : Mock data localStorage via Zustand persist
+### Pages légales placeholder
 
-### Autres TODO implicites
+CGU, Confidentialité, Mentions légales : contenu skeleton avec banner "À finaliser".
 
-- Photos Unsplash → `/public/images/pros/` (post-MVP script)
-- Footer CGU/Politique confidentialité (liens vides)
-- Analytics / Sentry (roadmap)
-- Tests A11y / Contraste WCAG (audit visuel)
-- Notifications (email/push absent)
+→ À faire valider par service juridique / DPO avant ouverture utilisateurs réels.
+
+### Force-dynamic global
+
+`app/layout.tsx` export `dynamic = 'force-dynamic'` → toutes routes SSR à la demande, pas SSG.
+
+→ Acceptable MVP (démo), à reconsidérer si trafic élevé (perte bénéfices cache statique Edge).
+
+### Couverture tests : 0%
+
+Aucun test unitaire (Vitest), aucun E2E (Playwright).
+
+**Priorités :**
+
+1. `lib/matching.ts` — edge cases scoring (distance mockée, budget dégradé, cohérence niveau)
+2. Flow inscription → recherche → réservation (E2E Playwright)
+
+### Photos pros en CDN distant
+
+50 pros : `images.unsplash.com` whitelistées `next.config.ts`.
+
+→ Migration local `/public/images/pros/` via script download (non implanté) → latence réduite.
+
+### Backend / Auth / Persistance — totalement absents
+
+MVP : mock data localStorage, pas serveur.
+
+**À implanter post-MVP :**
+
+1. Backend (Supabase / Vercel Postgres) + auth (NextAuth / Supabase Auth)
+2. Remplacer mocks par API routes / Server Actions
+3. Paiements Stripe Connect
+4. Messagerie WebSocket/Realtime
+5. Notifications email + push PWA
 
 ---
 
-## 13. Parcours utilisateur reconstitués
+## 14. Parcours utilisateur reconstitués
 
-### Flow Sportif (Normal)
-
-```
-1. Landing (/)
-   → Hero + CTA "Je suis sportif"
-   → router.push('/inscription/sportif')
-
-2. Inscription Sportif (/inscription/sportif, 458 LOC)
-   → Step 0 : Prenom, age, genre
-   → Step 1 : Objectifs multi
-   → Step 2 : Sports multi
-   → Step 3 : Niveau, fréquence, contraintes
-   → Step 4 : Localisation, budget, rayon
-   → Step 5 : Vibe sliders (pédagogie, suivi, data)
-   → Submit : onboardingSportifSchema safeParse()
-   → setSportif(validé) + setMode('sportif') + router.push('/accueil')
-
-3. Accueil (/accueil, sportif privé noindex)
-   → Barre recherche (→ /recherche)
-   → Section "Matchés pour toi" (scroll horiz, 5 ProCard animés)
-   → Section "À proximité" (cartes pros par distance)
-   → Bottom nav (4 items)
-
-4. Fiche Pro (/pros/[id], 100+ LOC)
-   → ProCard click → FicheProPage
-   → Affiche pro (photo, spécialité, note, avis, compatibilité %)
-   → Cartes services (grid)
-   → Avis + reviews
-   → Boutons CTA (Réserver, Messenger)
-
-5. Réservation (/reservation/[proId], 337 LOC)
-   → Step 0 : Choix date/heure (calendar mock)
-   → Step 1 : Récap séance
-   → Step 2 : Paiement (carte visuelle Stripe simulée)
-   → Submit → router.push('/reservation/confirmation')
-
-6. Confirmation (/reservation/confirmation)
-   → Message succès + détails séance
-   → Lien retour /accueil
-```
-
-**Autres pages sportif :**
-
-- `/rdv` — Séances (futures + historique)
-- `/messages` — Conversations
-- `/messages/[id]` — Chat
-- `/profil` — Données athlète (age, niveau, objectifs)
-
-### Flow Pro (Normal)
+### Flow Sportif
 
 ```
-1. Landing (/)
-   → Hero + CTA "Je suis pro"
-   → router.push('/inscription/pro')
-
-2. Inscription Pro (/inscription/pro, 603 LOC)
-   → Step 0 : Prenom, nom, bio, spécialité
-   → Step 1 : Formations, années expérience
-   → Step 2 : Localisation, rayonKm, formats (Dialog)
-   → Step 3 : Formule (Dialog features)
-   → Step 4 : Première carte service (Dialog création RHF+Zod)
-   → Step 5 : Vibe sliders
-   → Submit : onboardingProSchema safeParse()
-   → setPro(validé) + setMode('pro') + router.push('/dashboard')
-
-3. Dashboard (/dashboard, pro privé noindex)
-   → Header "Bonjour [Prenom]"
-   → KPIs : Revenus (count-up 1000ms), séances confirmées, clients, satisfaction
-   → Sparkline revenus (6 mois, recharts, 1200ms animation)
-   → Prochaines séances (4)
-   → Nouveaux clients (3)
-   → Sidebar nav (6 items lg:fixed left-0)
-
-4. Cartes Services (/cartes-services, 363 LOC)
-   → Liste cartes (grid)
-   → Pour chaque : nom, sport, tarif, durée, format, toggle actif, delete
-   → Button "+ Ajouter"
-   → Dialog création (form RHF + Zod carteServiceCreateSchema)
-   → Si premium/elite quota atteint → Dialog upgrade
-
-5. Mes Clients (/clients)
-   → Filtres (tous, actifs, nouveaux)
-   → Recherche
-   → Liste clients (avatar, nb séances, dernière séance)
-   → Click → /clients/[id]
-
-6. Fiche Athlète (/clients/[id], 465 LOC)
-   → 4 onglets (slide horizontal Framer Motion)
-      1. Profil (données athlète)
-      2. Progression (graphique recharts)
-      3. Séances (historique + futures)
-      4. Messagerie
-
-7. Autres pages pro :
-   - `/agenda` — Semaine/Mois toggle, FAB "Bloquer plage"
-   - `/revenus` — Graphique revenus
-   - `/parametres` — 7 sous-menus (profil, formations, localisation, tarification, formule Dialog, notifications, déconnexion)
+/ (landing)
+  ↓ [CTA "Je cherche un coach"]
+/inscription/sportif
+  ├─ Step 1 : Prenom, Nom
+  ├─ Step 2 : Sports (min 1), Niveau
+  ├─ Step 3 : Objectifs (min 1), Budget Max
+  ├─ Step 4 : Code postal, Fréquence
+  ├─ Step 5 : Vibe (3 sliders pédagogie/suivi/data)
+  ├─ Step 6 : Recap + sumit Zod
+  ↓ [setSportif()] + navigate
+/accueil (sportif)
+  ├─ Top 5 ProCard matching
+  ├─ CTA "Voir détails" par pro
+  ↓
+/pros/[id]
+  ├─ Fiche pro complet (avatar, spécialité, sports, tarifs, avis, cartes services)
+  ├─ CTA "Réserver une séance"
+  ↓
+/reservation/[proId]
+  ├─ Step 1 : Choix carte service + date/heure
+  ├─ Step 2 : Saisie informations complémentaires
+  ├─ Step 3 : Recap + paiement Stripe simulé (pas réel)
+  ↓
+/reservation/confirmation
+  ├─ Message succès
+  ├─ Lien vers /rdv pour voir séance
 ```
+
+**Données :** Zod validation end-to-end, localStorage persistence (user-store), démo auth auto-login.
+
+### Flow Pro
+
+```
+/ (landing)
+  ↓ [CTA "Je suis coach"]
+/inscription/pro
+  ├─ Step 1 : Prenom, Nom, Code postal
+  ├─ Step 2 : Spécialité, Sports (min 1)
+  ├─ Step 3 : Niveaux, Tarifs (min/max), Formats
+  ├─ Step 4 : Description, Vibe (3 sliders)
+  ├─ Step 5 : Cartes services (Dialog création inline, min 1)
+  ├─ Step 6 : Recap + submit Zod
+  ↓ [setPro()] + navigate
+/dashboard (pro)
+  ├─ Stats placeholder (revenus, clients, séances)
+  ├─ Nav horizontal : Agenda, Clients, Cartes services, Revenus, Paramètres
+  ↓
+/agenda (pro)
+  ├─ 3 vues : Jour (mobile-first) / Semaine (scroll) / Mois (compact)
+  ├─ Auto-bascule mobile : Semaine masquée, force Jour
+  ├─ FAB "Bloquer une plage" (icon mobile, label desktop)
+  ├─ Affiche séances + plages bloquées
+  ↓
+/clients
+  ├─ List clients avec nb séances, dernier RDV
+  ↓
+/clients/[id]
+  ├─ 4 onglets : Infos, Historique séances, Notes coach, Objectifs
+  ↓
+/cartes-services
+  ├─ Dialog création + liste cartes
+  ↓
+/revenus
+  ├─ Stats Recharts, graphiques progress
+```
+
+**Cas spécial mobile :** Agenda vue Semaine masquée (hidden sm:block), auto-basculement Jour si isMobile === true.
 
 ### Flow Public
 
 ```
-1. Landing (/) public
-   → Header sticky (Logo + Connexion CTA)
-   → Hero animé
-   → FeaturesSportif
-   → FeaturesPro
-   → HowItWorks
-   → Footer
-
-2. Connexion (/connexion)
-   → Tabs : Connexion | Inscription
-   → Form : email, password, role select
-   → Validation : Zod connexionSchema
-   → Submit (mock) :
-      - role='sportif' → setSportif(defaultSportif) + router.push('/accueil')
-      - role='pro' → setPro(pros[4]) + router.push('/dashboard')
+/ (landing)
+  ├─ Header sticky (logo NAKAMA, nav desktop, CTA Connexion mobile)
+  ├─ Hero section (animé Framer)
+  ├─ FeaturesSportif section
+  ├─ FeaturesPro section
+  ├─ HowItWorks section
+  ├─ Footer sticky bottom
+  │   ├─ Copyright 2026
+  │   ├─ Links : /cgu, /confidentialite, /mentions-legales, contact@
+  ↓ [CTA dual "Je suis sportif / Je suis coach"]
+/inscription/{sportif,pro} ou /connexion
 ```
 
-### DemoBanner (Tous les écrans)
-
-```
-- Sticky top-0 z-60
-- "Démo prototype — aucune donnée conservée, pas de paiement réel."
-- Bouton fermer X (useState show)
-- Visible par défaut, dismissible
-```
+**DemoBanner :** Collé top de tout écran, z-60, dismissible X.
 
 ---
 
-## 14. État de complétion par feature (tableau)
+## 15. État de complétion par feature (tableau)
 
-| Feature                                | Complétude | État            | Notes                                                                  |
-| -------------------------------------- | ---------- | --------------- | ---------------------------------------------------------------------- |
-| Landing page + Hero                    | 100%       | ✓ Déployable    | Contenu statique, CTA dual fonctionnels                                |
-| Connexion + auth                       | 80%        | ✓ Mock          | RHF + Zod OK, backend absent, logins pré-seeded                        |
-| Inscription sportif (6 steps)          | 90%        | ✓ Quasi-complet | Zod safeParse final ✓, animations ✓, micro-copy à valider              |
-| Inscription pro (6 steps)              | 90%        | ✓ Quasi-complet | Zod safeParse final ✓, Dialog formule ✓, carte service création ✓      |
-| Matching algo                          | 100%       | ✓ Complet       | 100 pts 3 piliers ✓, scoring validé, rankPros ✓                        |
-| Accueil sportif (matching)             | 95%        | ✓ Déployable    | ProCard animées ✓, "Matchés pour toi" ✓, "À proximité" ✓               |
-| Recherche pros                         | 70%        | ✓ Basique       | Filtres mock, pagination tbd                                           |
-| Fiche pro (détail)                     | 95%        | ✓ Déployable    | Photo, avis, cartes services, compatibilité badge ✓                    |
-| Réservation (3 steps)                  | 85%        | ✓ Quasi-complet | Steps OK, paiement simulé Stripe stylé ✓, backend absent               |
-| Dashboard pro                          | 100%       | ✓ Complet       | Count-up ✓, sparkline ✓, KPIs ✓, prochaines séances ✓                  |
-| Cartes services                        | 90%        | ✓ Quasi-complet | Dialog création ✓, list + actions ✓, quota logic ✓                     |
-| Agenda pro                             | 95%        | ✓ Quasi-complet | Semaine/Mois toggle ✓, FAB bloquer plage ✓, Dialog ✓                   |
-| Mes clients (list)                     | 95%        | ✓ Quasi-complet | Filtres ✓, recherche ✓, pagination ok                                  |
-| Fiche athlète (4 onglets)              | 95%        | ✓ Quasi-complet | Onglets slide horizontal ✓, données ✓, progression chart ✓             |
-| Paramètres pro (7 menus)               | 95%        | ✓ Quasi-complet | Formulaires ébauchés ✓, Dialog formule ✓, déconnexion ✓                |
-| Messaging                              | 70%        | ⚠️ Basique      | Input local state ✓, msg add to list ✓, pas de WebSocket               |
-| Profil sportif                         | 80%        | ✓ Basique       | Affichage données ✓, edit tbd                                          |
-| RDV (séances)                          | 80%        | ✓ Basique       | List future séances ✓, statut ✓                                        |
-| SEO (metadata, robots, sitemap)        | 100%       | ✓ Complet       | Metadata ✓, JSON-LD ✓, robots.ts ✓, sitemap.ts ✓                       |
-| Error pages (404, 500)                 | 100%       | ✓ Complet       | not-found.tsx ✓, global-error.tsx ✓, pages/\_error.tsx ✓               |
-| Responsive design (mobile/desktop)     | 95%        | ✓ Quasi-complet | Tailwind ✓, nav responsive ✓, layout tests tbd                         |
-| Animations Framer Motion               | 100%       | ✓ Complet       | Variants centralisés ✓, stagger ✓, onboarding steps ✓, onglets slide ✓ |
-| Dark mode (Tailwind)                   | 100%       | ✓ Complet       | Couleurs dark theme cohérentes ✓, tous les écrans ✓                    |
-| Forms (RHF + Zod)                      | 90%        | ✓ Quasi-complet | 4 schemas ✓, connexion ✓, inscription ✓, cartes services ✓             |
-| Mock data (50 pros, 20 sportifs, etc.) | 100%       | ✓ Complet       | All 5092 LOC structured, types ✓                                       |
-
-**Résumé :** MVP ~85% feature-complete, déployable démo, backend/auth/persistance absent.
+| Feature                        | %   | État résumé                                      | Notes                              |
+| ------------------------------ | --- | ------------------------------------------------ | ---------------------------------- |
+| Landing publique               | 100 | Complet, animé Hero, 3 sections features, footer | Production-ready                   |
+| Onboarding sportif             | 70  | 6 steps Zod, UI complet, mock auth               | Refacto RHF pending                |
+| Onboarding pro                 | 70  | 6 steps Zod, cartes services inline, mock auth   | Refacto RHF + split steps          |
+| Connexion                      | 90  | RHF + Zod, dual CTA, mock auto-login             | Backend auth absent                |
+| Pages légales                  | 40  | Wireframe placeholder 3 pages                    | À faire valider DPO                |
+| Matching algo                  | 100 | 3 piliers, 100 pts décomposé, hook exported      | Validation risque 0 (algo simple)  |
+| Espace sportif (nav+accueil)   | 60  | Nav mobile 4 items, accueil top 5 matching       | Pages/recherche/rdv à approfondir  |
+| Recherche pros                 | 60  | Filter + sort matching, UI basique               | Filtering avancé absent            |
+| Réservation 3-step             | 80  | Steps complet, Stripe simulé, confirmation       | Paiement réel absent               |
+| Espace pro (nav+dashboard)     | 60  | Nav mobile 6 items, dashboard stats placeholder  | Pages/clients/cartes à approfondir |
+| Agenda pro (jour/semaine/mois) | 95  | 3 vues, mobile auto-bascule, blocage plages      | Évaluation détail haute            |
+| Clients list + detail          | 70  | List client, 4 onglets detail                    | Onglets slide horizontal?          |
+| Cartes services                | 60  | Dialog création, list basique                    | Édition / suppression?             |
+| Messagerie                     | 40  | Wireframe conversations list + detail            | Realtime absent                    |
+| RDV list                       | 60  | List séances à venir/passées                     | Détail action manquante            |
+| Notifications (email/push)     | 0   | Absent                                           | Roadmap post-MVP                   |
+| Paiements Stripe               | 20  | Workflow simulé (pas API)                        | Stripe Connect absent              |
+| Auth persistance               | 50  | localStorage user/mode stores                    | Backend/session absent             |
 
 ---
 
-## 15. État Git détaillé
+## 16. État Git détaillé (récapitulatif)
 
-**Branch :** `main`, `working tree clean` (26 avril 2026, 11:35)
+**12 commits depuis init :**
 
-**5 commits récents documentés :**
+| #   | Hash      | Message                                               | Date       | Auteur | Détail                                                     |
+| --- | --------- | ----------------------------------------------------- | ---------- | ------ | ---------------------------------------------------------- |
+| 1   | `e344344` | Initial commit from Create Next App                   | —          | —      | Boilerplate Next 15                                        |
+| 2   | `225280b` | feat: initial commit                                  | —          | —      | MVP baseline (routes, mocks, stores)                       |
+| 3   | `2a58f82` | chore: snapshot avant downgrade Next 15               | —          | —      | Pre-downgrade checkpoint                                   |
+| 4   | `c8ed44c` | feat(build): downgrade Next 16 → 15                   | —          | —      | Align brief (Next 15.5)                                    |
+| 5   | `e7cc840` | feat(forms+screens): Zod 4 forms + écrans             | —          | —      | Validation + 4 pages                                       |
+| 6   | `015f706` | feat: agenda mois + blocage, refacto, SEO             | —          | —      | Agenda v1 (mois), SEO complet                              |
+| 7   | `9fe1e88` | docs(readme): fix markdown table                      | —          | —      | Doc                                                        |
+| 8   | `f49d421` | feat(banner): demo banner                             | —          | —      | DemoBanner sticky                                          |
+| 9   | `7f6098f` | docs: TECHNICAL.md                                    | 26-04-2026 | —      | Audit v1                                                   |
+| 10  | `2eee29b` | feat: assets + lint + pages légales + dette           | 26-04-2026 | —      | Assets dynamiques, pages légales, pnpm lint fix, dette doc |
+| 11  | `2ccec5f` | feat(agenda): refacto mobile-first vue Jour + bascule | 26-04-2026 | —      | Agenda v2 : 3 vues, auto-bascule mobile                    |
+| 12  | `5e04b42` | fix(agenda): bascule mobile garantie                  | 26-04-2026 | —      | useMobile → boolean \| null, vue Semaine masquée mobile    |
 
-| Hash      | Date         | Auteur | Scope               | Détail                                                                                          |
-| --------- | ------------ | ------ | ------------------- | ----------------------------------------------------------------------------------------------- |
-| `f49d421` | 26 avr 11:05 | ?      | feat(banner)        | Bandeau démo sticky top z-60, texte "Démo prototype", bouton close X                            |
-| `9fe1e88` | 26 avr 11:05 | ?      | docs(readme)        | Fix markdown table matching (escape pipe dans formule)                                          |
-| `015f706` | 26 avr 10:48 | ?      | feat                | Agenda mois view, FAB bloquer plage Dialog, refacto navigation, SEO docs livraison              |
-| `e7cc840` | 26 avr 10:47 | ?      | feat(forms+screens) | Zod sur 4 forms (auth, onboard-sportif, onboard-pro, carteServiceCreate), écrans <70% complétés |
-| `c8ed44c` | 26 avr 10:46 | ?      | feat(build)         | Downgrade Next 16→15, build vert, conformité brief output:standalone                            |
-| `2a58f82` | 26 avr 10:44 | ?      | chore               | Snapshot avant downgrade Next 15 et refacto MVP                                                 |
-
-**Commits antérieurs :**
-
-- `225280b` : feat: initial commit (baseline MVP structure)
-- `e344344` : Initial commit from Create Next App (Vercel starter)
-
-**Historique complet :** 8 commits, ~2 jours de dev (refacto massive)
-
----
-
-## Synthèse volumétrie finale
-
-| Partie                                             | Fichiers | Lignes     |
-| -------------------------------------------------- | -------- | ---------- |
-| Routes (app/)                                      | 32       | 5 267      |
-| Composants (components/)                           | 29       | 1 783      |
-| Logique (lib/)                                     | 21       | 5 092      |
-| Stores                                             | 3        | 65         |
-| Hooks                                              | 4        | 105        |
-| Types                                              | 7        | 150        |
-| Pages Router                                       | 1        | 58         |
-| **TOTAL SOURCE**                                   | **97**   | **13 481** |
-| Config (tsconfig, eslint, next, postcss, prettier) | 5        | 140        |
-| Package + docs                                     | 7        | 350        |
-
-**Build output :** `output: 'standalone'` → `.next/standalone/` (~80 MB après pnpm install, incluant node_modules)
+**État :** Tous 12 commits poussés sur `origin/main`. Working tree clean. HEAD = `5e04b42`.
 
 ---
 
-Fin du descriptif technique exhaustif. Le projet est mature pour MVP démo, avec architecture robuste Zustand + Zod + Framer Motion. Déploiement Vercel immédiat possible, bloqueurs uniquement sur assets graphiques et backend post-levée.
+## 17. Synthèse volumétrie finale
+
+| Dossier          | Fichiers .tsx/.ts | LOC        | %       |
+| ---------------- | ----------------- | ---------- | ------- |
+| `app/`           | 32                | 5762       | 41      |
+| `components/`    | 29                | 1783       | 13      |
+| `lib/`           | 20                | 5092       | 36      |
+| `stores/`        | 3                 | 65         | <1      |
+| `hooks/`         | 4                 | 105        | 1       |
+| `types/`         | 7                 | 150        | 1       |
+| `pages/`         | 1                 | 58         | <1      |
+| **TOTAL source** | **96**            | **13 938** | **100** |
+
+**Note :** Exclut `.next/`, `node_modules/`, binaires. LOC via `wc -l` sur fichiers TypeScript/TSX source uniquement.
+
+---
+
+## Conclusion
+
+NAKAMA MVP (audit v2, 26 avril 2026) est un prototype fonctionnel **vitrine + demo** (pas persistance serveur) destiné levée investisseur pre-seed.
+
+**Points forts :**
+
+- Stack moderne Next 15 + React 19 + Tailwind v4, type-safe Zod
+- Algo matching 3 piliers, 100 pts décomposé (production-ready)
+- Responsive mobile-first, DemoBanner, SEO (robots.txt + sitemap + JSON-LD)
+- Onboarding 6-step sportif + pro, formulaires Zod/RHF
+- Espace pro complet (agenda 3 vues mobile-aware, clients, cartes services)
+- 50 pros mock split par spécialité, 20 sportifs, 34 séances
+
+**Limitations assumées (MVP) :**
+
+- Pas backend/auth/persistance réelle (localStorage mock)
+- Pages légales placeholder (nécessite validation DPO)
+- Force-dynamic global (pas SSG, acceptable démo)
+- Zéro tests (Vitest/Playwright)
+- Photos CDN Unsplash (latence variable)
+
+**Refactos récents (commits 2eee29b, 2ccec5f, 5e04b42) :**
+
+- Assets dynamiques ImageResponse (icon, apple-icon, OG, Twitter)
+- Lint propre (`pnpm lint` = `eslint .` direct, `ignoreDuringBuilds` retiré)
+- Pages légales 3 fichiers (placeholder RGPD)
+- Agenda refactorisé : 3 vues jour/semaine/mois + auto-bascule mobile + useMobile hook SSR-aware
+
+**Roadmap post-MVP prioritaire :**
+
+1. Backend (Supabase) + auth NextAuth
+2. Stripe Connect paiements réels
+3. WebSocket/Realtime messagerie
+4. Tests (Vitest matching + Playwright E2E)
+5. Split fichiers volumineux (onboarding steps, clients detail)
+6. Validation pages légales (DPO)
