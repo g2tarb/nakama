@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 
 import { ClientShell } from '@/components/common/client-shell';
+import { DemoBanner } from '@/components/common/demo-banner';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -118,6 +119,7 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-full flex-col">
+        <DemoBanner />
         {children}
         <ClientShell />
       </body>
