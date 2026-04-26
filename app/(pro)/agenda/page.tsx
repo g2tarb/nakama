@@ -48,7 +48,7 @@ interface BlockedSlot {
 
 export default function AgendaPage() {
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
-  const isMobile = useMobile();
+  const isMobile = useMobile(); // null | true | false
   const [view, setView] = useState<View>('semaine');
   const [refDate, setRefDate] = useState(() => startOfDay(new Date()));
   const [dayDetailDate, setDayDetailDate] = useState<Date | null>(null);
@@ -61,14 +61,27 @@ export default function AgendaPage() {
     raison: '',
   });
 
-  // Bascule par défaut en vue Jour sur mobile au premier render client
-  const [hasInitView, setHasInitView] = useState(false);
+  // Une fois la détection client effective :
+  // - mobile → bascule en vue Jour (par défaut)
+  // - mobile + vue Semaine choisie → impossible : forcer Jour
+  //   (la vue Semaine est masquée du toggle sur mobile, voir plus bas)
+  const [hasAutoSet, setHasAutoSet] = useState(false);
   useEffect(() => {
-    if (!hasInitView && isMobile) {
+    if (isMobile === null) return; // pas encore détecté, on attend
+    if (!hasAutoSet && isMobile) {
       setView('jour');
     }
-    setHasInitView(true);
-  }, [isMobile, hasInitView]);
+    setHasAutoSet(true);
+  }, [isMobile, hasAutoSet]);
+
+  // Garde-fou continu : si on passe en mobile (resize) alors qu'on est en
+  // vue Semaine, basculer automatiquement en Jour (Semaine non utilisable
+  // sur mobile : grille fixe 700px).
+  useEffect(() => {
+    if (isMobile === true && view === 'semaine') {
+      setView('jour');
+    }
+  }, [isMobile, view]);
 
   const weekStart = useMemo(() => startOfWeek(refDate, { weekStartsOn: 1 }), [refDate]);
   const weekDays = useMemo(
@@ -164,6 +177,8 @@ export default function AgendaPage() {
                 onClick={() => setView(v)}
                 className={cn(
                   'flex-1 px-3 py-1.5 text-xs font-medium capitalize transition-colors sm:flex-initial',
+                  // Vue Semaine masquée sur mobile (grille 700px non utilisable)
+                  v === 'semaine' && 'hidden sm:block',
                   view === v
                     ? 'bg-accent-gold text-background'
                     : 'text-text-secondary hover:text-text-primary',

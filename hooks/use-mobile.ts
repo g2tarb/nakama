@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-export function useMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(false);
+/**
+ * Retourne `null` tant que la détection client n'a pas eu lieu (SSR + premier render),
+ * puis `true`/`false`. Permet aux consommateurs de distinguer "pas encore connu"
+ * de "détecté comme desktop", et donc de différer la décision au mount.
+ */
+export function useMobile(breakpoint = 768): boolean | null {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
