@@ -154,6 +154,54 @@ Ce qui n'est PAS dans le scope vitrine et reste à faire pour passer en prod ré
 8. **Observabilité**
    - Sentry, Vercel Analytics, Web Vitals tracking
 
+## Dette technique connue
+
+Inventaire des compromis assumés pour livrer le MVP. Aucun n'est bloquant pour la démo, mais à traiter avant prod réelle.
+
+### Fichiers volumineux à split
+
+| Fichier                                   | LOC   | Suggestion                                          |
+| ----------------------------------------- | ----- | --------------------------------------------------- |
+| `lib/mock-data/pros/coachs.ts`            | 1 807 | Difficile à split (tous coach_sportif). Acceptable. |
+| `app/(auth)/inscription/pro/page.tsx`     | 603   | Extraire `<Step1>`…`<Step6>` dans `_steps/`         |
+| `app/(pro)/clients/[id]/page.tsx`         | 465   | Extraire les 4 onglets en composants                |
+| `app/(auth)/inscription/sportif/page.tsx` | 458   | Idem onboarding pro                                 |
+| `app/(pro)/cartes-services/page.tsx`      | 363   | Extraire Dialog création + liste                    |
+
+### Patterns à factoriser
+
+- `PillButton` redéfini inline dans les 2 onboarding → composant partagé
+- Mapping statut séance → couleur badge → centraliser dans `constants.ts` (helper `getStatutBadgeProps()`)
+- `SPECIALITES.find(s => s.value === ...)?.label` répété 3+ fois → helper `getSpecialiteLabel()`
+- `formats[0] ?? 'presentiel'` fallback dupliqué → helper `getDefaultFormat()`
+
+### Onboarding partiellement RHF
+
+Connexion + cartes services sont en RHF complet. Les 2 onboarding (sportif/pro) utilisent `safeParse` au submit final uniquement (l'état des steps reste en `useState` local). À migrer en RHF avec `FormProvider` pour cohérence et meilleure UX d'erreurs.
+
+### Pages légales placeholder
+
+`/cgu`, `/confidentialite`, `/mentions-legales` existent avec contenu placeholder. **À faire valider par un service juridique / DPO** avant ouverture aux utilisateurs réels.
+
+### Force-dynamic global
+
+`app/layout.tsx` exporte `dynamic = 'force-dynamic'` pour contourner un crash interne Next 15 + React 19 sur le fallback `_error` au prerender. Toutes les routes sont SSR à la demande, pas de SSG. Acceptable pour MVP démo, à reconsidérer si trafic important (perte du cache statique).
+
+### Couverture tests : 0%
+
+Aucun test unitaire ni E2E. Candidats prioritaires :
+
+- `lib/matching.ts` (Vitest) — edge cases scoring
+- Flow inscription → recherche → réservation (Playwright)
+
+### Photos pros en CDN distant
+
+50 pros utilisent des photos `images.unsplash.com` whitelistées via `next.config.ts`. Latence variable selon localisation. Migration locale (`/public/images/pros/`) via script `scripts/download-photos.ts` à prévoir post-MVP.
+
+### Backend / Auth / Persistance — totalement absents
+
+Voir Roadmap post-MVP ci-dessus. Le MVP actuel est une vitrine fonctionnelle sans persistance serveur.
+
 ## Dépannage
 
 | Symptôme                               | Solution                                                                                     |

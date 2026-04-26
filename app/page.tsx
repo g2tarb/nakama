@@ -48,14 +48,17 @@ export default function LandingPage() {
       <footer className="border-border border-t px-4 py-8">
         <div className="text-text-tertiary mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm md:flex-row">
           <span>&copy; 2026 Nakama. Tous droits réservés.</span>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-text-secondary">
+          <div className="flex flex-wrap justify-center gap-6">
+            <Link href="/cgu" className="hover:text-text-secondary">
               CGU
-            </a>
-            <a href="#" className="hover:text-text-secondary">
-              Politique de confidentialité
-            </a>
-            <a href="#" className="hover:text-text-secondary">
+            </Link>
+            <Link href="/confidentialite" className="hover:text-text-secondary">
+              Confidentialité
+            </Link>
+            <Link href="/mentions-legales" className="hover:text-text-secondary">
+              Mentions légales
+            </Link>
+            <a href="mailto:contact@nakama.tech" className="hover:text-text-secondary">
               Contact
             </a>
           </div>

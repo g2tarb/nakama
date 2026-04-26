@@ -67,8 +67,8 @@ export default function FicheAthletePage({
     [id],
   );
   const notes = healthNotes[id] ?? [];
-  const progression = progressionData[id] ?? [];
   const notesCoach = coachNotes[id] ?? [];
+  const progression = useMemo(() => progressionData[id] ?? [], [id]);
 
   const poidsData = useMemo(
     () =>

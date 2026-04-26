@@ -49,20 +49,11 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     url: APP_URL,
     siteName: 'Nakama',
-    images: [
-      {
-        url: '/og.png',
-        width: 1200,
-        height: 630,
-        alt: 'Nakama — Marketplace coaching sportif',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: ['/og.png'],
   },
   robots: {
     index: true,
@@ -75,10 +66,6 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
 };
 
 const jsonLd = {
@@ -89,7 +76,7 @@ const jsonLd = {
       '@id': `${APP_URL}/#organization`,
       name: 'Nakama',
       url: APP_URL,
-      logo: `${APP_URL}/logo.png`,
+      logo: `${APP_URL}/icon`,
       description: DESCRIPTION,
       sameAs: [],
     },
