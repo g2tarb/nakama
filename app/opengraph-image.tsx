@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Nakama — Le Doctolib du coaching sportif';
+export const alt = 'Nakama, le Doctolib du coaching sportif';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

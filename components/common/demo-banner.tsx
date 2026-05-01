@@ -10,7 +10,7 @@ export function DemoBanner() {
     <div className="bg-accent-gold/10 border-accent-gold/20 sticky top-0 z-[60] flex items-center justify-center gap-2 border-b px-4 py-2 text-xs backdrop-blur-sm">
       <Info size={14} className="text-accent-gold shrink-0" />
       <p className="text-text-secondary text-center">
-        <strong className="text-accent-gold">Démo prototype</strong> — aucune donnée
+        <strong className="text-accent-gold">Démo prototype</strong>. Aucune donnée
         n&apos;est conservée, pas de paiement réel.
       </p>
       <button

@@ -1,4 +1,4 @@
-# DESCRIPTIF TECHNIQUE — NAKAMA MVP (audit v2 — 26 avril 2026)
+# DESCRIPTIF TECHNIQUE : NAKAMA MVP (audit v2 : 26 avril 2026)
 
 ## 0. Vue d'ensemble
 
@@ -17,18 +17,18 @@ Branch : `main`. Dernier commit : `5e04b42` (fix: bascule mobile garantie + vue 
 
 **Commits depuis init :**
 
-1. `e344344` — Initial commit Create Next App
-2. `225280b` — feat: initial commit MVP baseline
-3. `2a58f82` — chore: snapshot avant downgrade Next 15
-4. `c8ed44c` — feat(build): downgrade Next 16 → 15
-5. `e7cc840` — feat(forms+screens): Zod 4 forms + écrans
-6. `015f706` — feat: agenda mois + refacto + SEO
-7. `9fe1e88` — docs(readme): fix table markdown
-8. `f49d421` — feat(banner): demo banner
-9. `7f6098f` — docs: TECHNICAL.md (audit v1)
-10. `2eee29b` — feat: assets dynamiques + lint propre + pages légales + dette
-11. `2ccec5f` — feat(agenda): refacto mobile-first avec vue Jour + bascule auto
-12. `5e04b42` — fix(agenda): bascule mobile garantie
+1. `e344344` : Initial commit Create Next App
+2. `225280b` : feat: initial commit MVP baseline
+3. `2a58f82` : chore: snapshot avant downgrade Next 15
+4. `c8ed44c` : feat(build): downgrade Next 16 → 15
+5. `e7cc840` : feat(forms+screens): Zod 4 forms + écrans
+6. `015f706` : feat: agenda mois + refacto + SEO
+7. `9fe1e88` : docs(readme): fix table markdown
+8. `f49d421` : feat(banner): demo banner
+9. `7f6098f` : docs: TECHNICAL.md (audit v1)
+10. `2eee29b` : feat: assets dynamiques + lint propre + pages légales + dette
+11. `2ccec5f` : feat(agenda): refacto mobile-first avec vue Jour + bascule auto
+12. `5e04b42` : fix(agenda): bascule mobile garantie
 
 Working tree : clean. Branche synchronisée avec `origin/main`.
 
@@ -150,7 +150,6 @@ nakama/
 ├── package.json (59 LOC)        → dépendances exactes (voir section 1)
 ├── README.md                   → Stack, justifs, arborescence, roadmap, dette
 ├── AGENTS.md                   → Conventions agents/refacto
-├── CLAUDE.md                   → @AGENTS.md
 ├── .prettierrc (8 LOC)         → trailing comma, printWidth 90
 ├── .gitignore                  → standard Node + .env*
 └── tsconfig.tsbuildinfo        → cache incrementiel
@@ -182,13 +181,13 @@ nakama/
 | `dev`       | `next dev`                    | Serveur dev turbopack http://localhost:3000                           |
 | `build`     | `next build`                  | Build production (output: standalone)                                 |
 | `start`     | `next start`                  | Serveur Node prod                                                     |
-| `lint`      | `eslint .`                    | ESLint v9 format flat direct (pas next lint) — change depuis audit v1 |
+| `lint`      | `eslint .`                    | ESLint v9 format flat direct (pas next lint) : change depuis audit v1 |
 | `typecheck` | `tsc --noEmit`                | TypeScript check sans emit                                            |
 | `format`    | `prettier --write .`          | Prettier reformat all                                                 |
 | `check`     | `pnpm lint && pnpm typecheck` | Lint + typecheck local (non bloquant)                                 |
 | `prepare`   | `husky`                       | Installe husky hooks                                                  |
 
-**Note clé :** `pnpm lint` utilise désormais `eslint .` direct (commit 2eee29b), pas `next lint`. Le flag `eslint.ignoreDuringBuilds: true` a été RETIRÉ du `next.config.ts` — linting est vérifié strictement en pre-commit (husky).
+**Note clé :** `pnpm lint` utilise désormais `eslint .` direct (commit 2eee29b), pas `next lint`. Le flag `eslint.ignoreDuringBuilds: true` a été RETIRÉ du `next.config.ts` : linting est vérifié strictement en pre-commit (husky).
 
 ### Dépendances exactes
 
@@ -234,22 +233,22 @@ typescript@^5
 
 ---
 
-## 2. Routing — `app/`
+## 2. Routing : `app/`
 
 ### Groupe racine (/ + assets)
 
-#### `app/layout.tsx` (116 LOC) — RootLayout Server
+#### `app/layout.tsx` (116 LOC) : RootLayout Server
 
 - **Server component** (pas `'use client'`)
 - `dynamic = 'force-dynamic'` (workaround Next 15 prerender crash)
-- Metadata : title template "... — Nakama", description, keywords (coaching sportif, doctolib sport, etc.), openGraph (type website, locale fr_FR), twitter card
+- Metadata : title template "... : Nakama", description, keywords (coaching sportif, doctolib sport, etc.), openGraph (type website, locale fr_FR), twitter card
 - JSON-LD inline : Organization (@id, name Nakama, url, logo, description, sameAs []) + SoftwareApplication (HealthApplication)
 - Viewport : themeColor #0B0F14, device-width, initialScale 1
 - Inter font (Google Fonts, variable --font-inter)
 - Imports : ClientShell wrapper, DemoBanner sticky
 - Structure : html lang="fr" + Inter variable + globals.css, head avec JSON-LD, body avec DemoBanner + {children} + ClientShell
 
-#### `app/page.tsx` (70 LOC) — Landing publique
+#### `app/page.tsx` (70 LOC) : Landing publique
 
 - **Server component**
 - Header sticky top, Hero section, FeaturesSportif, FeaturesPro, HowItWorks sections
@@ -257,67 +256,67 @@ typescript@^5
 - Imports : Link Next, Button, Hero, FeaturesSportif, FeaturesPro, HowItWorks
 - Animations : Hero section suppose composant public/hero avec Framer Motion
 
-#### `app/robots.ts` (33 LOC) — Robots.txt
+#### `app/robots.ts` (33 LOC) : Robots.txt
 
 - `userAgent: '*'`
 - `allow: '/'`
 - `disallow: ['/accueil', '/recherche', '/pros/', '/rdv', '/profil', '/messages', '/reservation/', '/dashboard', '/clients', '/agenda', '/cartes-services', '/revenus', '/parametres']`
 - sitemap: `${APP_URL}/sitemap.xml`
 
-#### `app/sitemap.ts` (52 LOC) — Sitemap XML
+#### `app/sitemap.ts` (52 LOC) : Sitemap XML
 
 7 routes publiques + indexables :
 
-1. `/` — lastModified: now, changeFrequency: weekly, priority 1
-2. `/connexion` — monthly, 0.7
-3. `/inscription/sportif` — monthly, 0.8
-4. `/inscription/pro` — monthly, 0.8
-5. `/cgu` — yearly, 0.3
-6. `/confidentialite` — yearly, 0.3
-7. `/mentions-legales` — yearly, 0.3
+1. `/` : lastModified: now, changeFrequency: weekly, priority 1
+2. `/connexion` : monthly, 0.7
+3. `/inscription/sportif` : monthly, 0.8
+4. `/inscription/pro` : monthly, 0.8
+5. `/cgu` : yearly, 0.3
+6. `/confidentialite` : yearly, 0.3
+7. `/mentions-legales` : yearly, 0.3
 
-#### `app/icon.tsx` (27 LOC) — Favicon dynamique (Next 15)
+#### `app/icon.tsx` (27 LOC) : Favicon dynamique (Next 15)
 
 - ImageResponse convention (pas fichier .png binaire)
 - Size: 32×32
 - Contenu: JSX `<div>` fond #0B0F14, "N" en couleur #C9B27A (gold), fontSize 22, fontWeight 800
 - Hot-reload en dev, régénéré à chaque build
 
-#### `app/apple-icon.tsx` (28 LOC) — Apple touch icon dynamique
+#### `app/apple-icon.tsx` (28 LOC) : Apple touch icon dynamique
 
 - ImageResponse 180×180
 - Même design "N" gold on dark background, fontSize 110, letterSpacing -0.03em
 
-#### `app/opengraph-image.tsx` (73 LOC) — Social sharing image dynamique
+#### `app/opengraph-image.tsx` (73 LOC) : Social sharing image dynamique
 
 - ImageResponse 1200×630 (Twitter, LinkedIn, etc.)
 - Gradient radial background
 - Layout : "NAKAMA" label (or) + "Le Doctolib du coaching sportif" heading + description + "nakama.tech" footer coin bas-droit
 - Colores : #C9B27A (gold), #E6E8EB (light), #9AA3AD (gray), #6B7480 (dim)
 
-#### `app/twitter-image.tsx` (2 LOC) — Twitter image
+#### `app/twitter-image.tsx` (2 LOC) : Twitter image
 
 - Réexport de opengraph-image (same 1200×630 spec)
 
-#### `app/not-found.tsx` (23 LOC) — 404 page
+#### `app/not-found.tsx` (23 LOC) : 404 page
 
 - Server component
 - Heading "Page introuvable", description, lien retour `/`
 - Design : center flex, heading or, button or
 
-#### `app/global-error.tsx` (60 LOC) — Error boundary client
+#### `app/global-error.tsx` (60 LOC) : Error boundary client
 
 - `'use client'`, error reset handler
 - Fallback minimal (html + body inline styles, pas Tailwind)
 - Heading "Quelque chose s'est mal passé", bouton "Réessayer" (reset callback)
 
-### Groupe (auth) — Authentification
+### Groupe (auth) : Authentification
 
-#### `app/(auth)/layout.tsx` (8 LOC) — AuthLayout server
+#### `app/(auth)/layout.tsx` (8 LOC) : AuthLayout server
 
 - Centré, min-h-screen, flex col, background class
 
-#### `app/(auth)/connexion/page.tsx` (208 LOC) — Connexion
+#### `app/(auth)/connexion/page.tsx` (208 LOC) : Connexion
 
 - `'use client'`
 - Form RHF + Zod (connexionSchema : email, password, role enum)
@@ -325,7 +324,7 @@ typescript@^5
 - Links vers `/inscription/sportif`, `/inscription/pro`
 - Auto-login mock user au submit
 
-#### `app/(auth)/inscription/sportif/page.tsx` (458 LOC) — Onboarding sportif
+#### `app/(auth)/inscription/sportif/page.tsx` (458 LOC) : Onboarding sportif
 
 - `'use client'`, 6 steps (useState)
 - Zod au submit final (onboardingSportifSchema, vibeSchema)
@@ -334,7 +333,7 @@ typescript@^5
 - Animations : containerVariants, itemVariants (Framer)
 - Mock : `defaultSportif` hydrates store `useUserStore.setSportif()`
 
-#### `app/(auth)/inscription/pro/page.tsx` (603 LOC) — Onboarding pro
+#### `app/(auth)/inscription/pro/page.tsx` (603 LOC) : Onboarding pro
 
 - `'use client'`, 6 steps
 - Zod : onboardingProSchema (nom, prenom, specialite, sports, niveaux, description, codePostal, tarifMin, tarifMax, formats, vibe)
@@ -342,35 +341,35 @@ typescript@^5
 - Plus volumineux que sportif (gestion cartes services inline)
 - Stocke dans `useUserStore.setPro()`
 
-### Groupe (legal) — Pages légales
+### Groupe (legal) : Pages légales
 
-#### `app/(legal)/layout.tsx` (23 LOC) — LegalLayout server
+#### `app/(legal)/layout.tsx` (23 LOC) : LegalLayout server
 
 - Metadata : `robots: { index: true, follow: true }` (indexable)
 - Max-width 3xl, padding py-10
 - Back link à `/`, article prose prose-invert
 - Utile pour la conformité SEO : Google index ces pages
 
-#### `app/(legal)/cgu/page.tsx` (96 LOC) — CGU
+#### `app/(legal)/cgu/page.tsx` (96 LOC) : CGU
 
 - Metadata : title "Conditions générales d'utilisation", description
 - H1 or, "Dernière mise à jour : 26 avril 2026"
 - **Banner warning :** "Document à finaliser", placeholder RGPD
 - 8 sections : 1. Objet 2. Inscription et compte 3. Réservation et paiement 4. Annulation 5. Responsabilités 6. Données personnelles (lien /confidentialite) 7. Modification des CGU 8. Loi applicable
 
-#### `app/(legal)/confidentialite/page.tsx` (92 LOC) — Politique de confidentialité
+#### `app/(legal)/confidentialite/page.tsx` (92 LOC) : Politique de confidentialité
 
 - Metadata similar
 - **Banner warning :** "Document à finaliser" (RGPD, à valider DPO)
 - 8 sections : 1. Responsable de traitement 2. Données collectées (identité, coordonnées, données sportives, paiement, navigation) 3. Finalités 4. Bases légales 5. Conservation (3 ans post-clôture, 13 mois paiement Stripe) 6. Destinataires (Vercel, Stripe, Resend/Postmark futur) 7. Vos droits (CNIL link dpo@nakama.tech) 8. Cookies (techniques essentiels)
 
-#### `app/(legal)/mentions-legales/page.tsx` (75 LOC) — Mentions légales
+#### `app/(legal)/mentions-legales/page.tsx` (75 LOC) : Mentions légales
 
 - 4 sections : Éditeur (à compléter : SIRET, adresse, Directeur Haykel Jelidi), Contact (contact@nakama.tech), Hébergement (Vercel), Propriété intellectuelle
 
 **Note :** 3 pages placeholders avec banner "Document à finaliser". À faire valider juridiquement avant prod réelle.
 
-### Groupe (sportif) — Espace sportif
+### Groupe (sportif) : Espace sportif
 
 #### `app/(sportif)/layout.tsx` (server) + `_layout-shell.tsx` (client)
 
@@ -393,7 +392,7 @@ typescript@^5
 
 **Toutes :** noindex (robots via layout), Server/Client mix.
 
-### Groupe (pro) — Espace pro
+### Groupe (pro) : Espace pro
 
 #### `app/(pro)/layout.tsx` (server) + `_layout-shell.tsx` (client)
 
@@ -482,7 +481,7 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
 
 ---
 
-## 3. Composants — `components/`
+## 3. Composants : `components/`
 
 ### Sous-dossier `ui/` (14 fichiers shadcn/ui base-nova)
 
@@ -522,7 +521,7 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
 
 - `'use client'`
 - Sticky top z-60, dismissible X button
-- Affiche "Démo prototype — aucune donnée conservée, pas de paiement réel"
+- Affiche "Démo prototype : aucune donnée conservée, pas de paiement réel"
 - Montée en layout.tsx (children du RootLayout)
 
 #### `client-shell.tsx` (13 LOC)
@@ -607,7 +606,7 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
 
 ---
 
-## 4. Logique métier — `lib/`
+## 4. Logique métier : `lib/`
 
 ### `lib/matching.ts` (137 LOC)
 
@@ -785,7 +784,7 @@ export { healthNotes, progressionData, coachNotes } from './health';
 | `nutritionnistes.ts` | 379  | 5       | nutritionniste                                                                |
 | `prep-mental.ts`     | 375  | 5       | preparateur_mental                                                            |
 | `educateurs.ts`      | 357  | 5       | educateur_sportif                                                             |
-| `index.ts`           | 23   | —       | Concat arrays : [...coachs, ...prepPhysique, ...nutri, ...prepMental, ...edu] |
+| `index.ts`           | 23   | n/a     | Concat arrays : [...coachs, ...prepPhysique, ...nutri, ...prepMental, ...edu] |
 
 **Structure Pro :** id (pro-001...), prenom/nom, specialite, sports[], niveauEnseigne[], tarifMin, tarifMax, formats, description, codePostal, avis[], cartesServices[], vibe { pedagogieDiscipline, suiviAutonomie, dataRessenti }, photo (URL unsplash).
 
@@ -819,7 +818,7 @@ Utilisés : pages revenus (charts), profil sportif (progression).
 
 ---
 
-## 5. State Management — `stores/`
+## 5. State Management : `stores/`
 
 ### `user-store.ts` (26 LOC)
 
@@ -893,7 +892,7 @@ export const useUiStore = create<UiStore>()((set) => ({
 
 ---
 
-## 6. Hooks — `hooks/`
+## 6. Hooks : `hooks/`
 
 ### `use-mobile.ts` (23 LOC)
 
@@ -995,9 +994,9 @@ Combine store + navigation. **Utilisé :** mode-switcher component, dual CTA onb
 
 ---
 
-## 7. Types — `types/`
+## 7. Types : `types/`
 
-### `index.ts` (6 LOC) — Barrel
+### `index.ts` (6 LOC) : Barrel
 
 ```typescript
 export type { Sportif, Niveau, Genre, Objectif, VibeProfile } from './sportif';
@@ -1172,7 +1171,7 @@ export interface NoteCoach {
 
 ---
 
-## 8. Pages Router résiduel — `pages/`
+## 8. Pages Router résiduel : `pages/`
 
 ### `pages/_error.tsx` (58 LOC)
 
@@ -1205,7 +1204,7 @@ export default Error
 
 ---
 
-## 9. Assets — `public/`
+## 9. Assets : `public/`
 
 ### Contenu actuel
 
@@ -1257,10 +1256,6 @@ Conventions agents refacto :
 - Conventions code (pas `any`, cn() merger, RHF+Zod, animations, mocks)
 - Scripts npm (avec explications)
 - Husky pre-commit (lint-staged + typecheck)
-
-### `CLAUDE.md` (2 lignes)
-
-Référence `@AGENTS.md`.
 
 ### `docs/DOD-LIVRAISON.md`
 
@@ -1321,10 +1316,10 @@ Crawl public seulement (landing + connexion + inscriptions + légales), pas espa
 
 7 routes publiques + 3 légales (21 lignes) :
 
-1. `/` — weekly, priority 1
-2. `/connexion` — monthly, 0.7
-3. `/inscription/sportif`, `/inscription/pro` — monthly, 0.8 chacune
-4. `/cgu`, `/confidentialite`, `/mentions-legales` — yearly, 0.3 chacune
+1. `/` : weekly, priority 1
+2. `/connexion` : monthly, 0.7
+3. `/inscription/sportif`, `/inscription/pro` : monthly, 0.8 chacune
+4. `/cgu`, `/confidentialite`, `/mentions-legales` : yearly, 0.3 chacune
 
 ### Noindex sur espaces protégés
 
@@ -1342,7 +1337,7 @@ Seules landing + légales indexées.
 
 Montée partout (`app/layout.tsx` → enfants) avec z-60, dismissible, message "Démo prototype".
 
-### Pages légales (3 fichiers) — Conformité RGPD minimale
+### Pages légales (3 fichiers) : Conformité RGPD minimale
 
 | Page                         | Contenu                                                                                                           | État                            |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- |
@@ -1408,7 +1403,7 @@ Aucun test unitaire (Vitest), aucun E2E (Playwright).
 
 **Priorités :**
 
-1. `lib/matching.ts` — edge cases scoring (distance mockée, budget dégradé, cohérence niveau)
+1. `lib/matching.ts` : edge cases scoring (distance mockée, budget dégradé, cohérence niveau)
 2. Flow inscription → recherche → réservation (E2E Playwright)
 
 ### Photos pros en CDN distant
@@ -1417,7 +1412,7 @@ Aucun test unitaire (Vitest), aucun E2E (Playwright).
 
 → Migration local `/public/images/pros/` via script download (non implanté) → latence réduite.
 
-### Backend / Auth / Persistance — totalement absents
+### Backend / Auth / Persistance : totalement absents
 
 MVP : mock data localStorage, pas serveur.
 
@@ -1555,18 +1550,18 @@ MVP : mock data localStorage, pas serveur.
 
 | #   | Hash      | Message                                               | Date       | Auteur | Détail                                                     |
 | --- | --------- | ----------------------------------------------------- | ---------- | ------ | ---------------------------------------------------------- |
-| 1   | `e344344` | Initial commit from Create Next App                   | —          | —      | Boilerplate Next 15                                        |
-| 2   | `225280b` | feat: initial commit                                  | —          | —      | MVP baseline (routes, mocks, stores)                       |
-| 3   | `2a58f82` | chore: snapshot avant downgrade Next 15               | —          | —      | Pre-downgrade checkpoint                                   |
-| 4   | `c8ed44c` | feat(build): downgrade Next 16 → 15                   | —          | —      | Align brief (Next 15.5)                                    |
-| 5   | `e7cc840` | feat(forms+screens): Zod 4 forms + écrans             | —          | —      | Validation + 4 pages                                       |
-| 6   | `015f706` | feat: agenda mois + blocage, refacto, SEO             | —          | —      | Agenda v1 (mois), SEO complet                              |
-| 7   | `9fe1e88` | docs(readme): fix markdown table                      | —          | —      | Doc                                                        |
-| 8   | `f49d421` | feat(banner): demo banner                             | —          | —      | DemoBanner sticky                                          |
-| 9   | `7f6098f` | docs: TECHNICAL.md                                    | 26-04-2026 | —      | Audit v1                                                   |
-| 10  | `2eee29b` | feat: assets + lint + pages légales + dette           | 26-04-2026 | —      | Assets dynamiques, pages légales, pnpm lint fix, dette doc |
-| 11  | `2ccec5f` | feat(agenda): refacto mobile-first vue Jour + bascule | 26-04-2026 | —      | Agenda v2 : 3 vues, auto-bascule mobile                    |
-| 12  | `5e04b42` | fix(agenda): bascule mobile garantie                  | 26-04-2026 | —      | useMobile → boolean \| null, vue Semaine masquée mobile    |
+| 1   | `e344344` | Initial commit from Create Next App                   | n/a        | n/a    | Boilerplate Next 15                                        |
+| 2   | `225280b` | feat: initial commit                                  | n/a        | n/a    | MVP baseline (routes, mocks, stores)                       |
+| 3   | `2a58f82` | chore: snapshot avant downgrade Next 15               | n/a        | n/a    | Pre-downgrade checkpoint                                   |
+| 4   | `c8ed44c` | feat(build): downgrade Next 16 → 15                   | n/a        | n/a    | Align brief (Next 15.5)                                    |
+| 5   | `e7cc840` | feat(forms+screens): Zod 4 forms + écrans             | n/a        | n/a    | Validation + 4 pages                                       |
+| 6   | `015f706` | feat: agenda mois + blocage, refacto, SEO             | n/a        | n/a    | Agenda v1 (mois), SEO complet                              |
+| 7   | `9fe1e88` | docs(readme): fix markdown table                      | n/a        | n/a    | Doc                                                        |
+| 8   | `f49d421` | feat(banner): demo banner                             | n/a        | n/a    | DemoBanner sticky                                          |
+| 9   | `7f6098f` | docs: TECHNICAL.md                                    | 26-04-2026 | n/a    | Audit v1                                                   |
+| 10  | `2eee29b` | feat: assets + lint + pages légales + dette           | 26-04-2026 | n/a    | Assets dynamiques, pages légales, pnpm lint fix, dette doc |
+| 11  | `2ccec5f` | feat(agenda): refacto mobile-first vue Jour + bascule | 26-04-2026 | n/a    | Agenda v2 : 3 vues, auto-bascule mobile                    |
+| 12  | `5e04b42` | fix(agenda): bascule mobile garantie                  | 26-04-2026 | n/a    | useMobile → boolean \| null, vue Semaine masquée mobile    |
 
 **État :** Tous 12 commits poussés sur `origin/main`. Working tree clean. HEAD = `5e04b42`.
 

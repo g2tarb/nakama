@@ -23,7 +23,7 @@ const FEATURES_SPORTIF = [
     icon: TrendingUp,
     title: 'Progression suivie',
     description:
-      'Suis tes progrès avec ton coach. Objectifs, mesures, résultats — tout au même endroit.',
+      'Suis tes progrès avec ton coach. Objectifs, mesures, résultats : tout au même endroit.',
   },
 ];
 
@@ -37,7 +37,7 @@ const FEATURES_PRO = [
     icon: Shield,
     title: 'Gestion simplifiée',
     description:
-      'Agenda, clients, fiches athlètes — tout ton CRM métier en un seul outil.',
+      'Agenda, clients, fiches athlètes : tout ton CRM métier en un seul outil.',
   },
   {
     icon: TrendingUp,

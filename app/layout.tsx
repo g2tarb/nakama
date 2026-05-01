@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const TITLE = 'Nakama — Le Doctolib du coaching sportif';
+const TITLE = 'Nakama, le Doctolib du coaching sportif';
 const DESCRIPTION =
   'Trouve le coach sportif qui te correspond vraiment. Matching comportemental, réservation simple, progression suivie.';
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
     default: TITLE,
-    template: '%s — Nakama',
+    template: '%s · Nakama',
   },
   description: DESCRIPTION,
   applicationName: 'Nakama',

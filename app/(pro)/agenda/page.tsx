@@ -151,7 +151,7 @@ export default function AgendaPage() {
     view === 'jour'
       ? format(refDate, 'EEEE d MMMM', { locale: fr })
       : view === 'semaine'
-        ? `${format(weekDays[0]!, 'd MMM', { locale: fr })} – ${format(weekDays[6]!, 'd MMM', { locale: fr })}`
+        ? `${format(weekDays[0]!, 'd MMM', { locale: fr })} au ${format(weekDays[6]!, 'd MMM', { locale: fr })}`
         : format(refDate, 'MMMM yyyy', { locale: fr });
 
   return (
@@ -392,7 +392,7 @@ export default function AgendaPage() {
         </div>
       )}
 
-      {/* FAB Bloquer plage — icon-only mobile, label desktop */}
+      {/* FAB Bloquer plage : icon-only mobile, label desktop */}
       <button
         onClick={() => setBlockOpen(true)}
         className="bg-accent-gold text-background fixed right-4 bottom-24 z-40 flex h-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 sm:right-6 sm:gap-2 sm:px-5 lg:bottom-8"
@@ -450,7 +450,7 @@ export default function AgendaPage() {
           <DialogHeader>
             <DialogTitle>Bloquer une plage horaire</DialogTitle>
             <DialogDescription>
-              Indisponible pour cette plage — aucun client ne pourra réserver.
+              Indisponible pour cette plage : aucun client ne pourra réserver.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4">

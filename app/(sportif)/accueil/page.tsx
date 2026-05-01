@@ -44,7 +44,7 @@ export default function AccueilSportifPage() {
         </p>
       </div>
 
-      {/* Section — Matchés pour toi */}
+      {/* Section : Matchés pour toi */}
       <motion.section
         variants={containerVariants}
         initial="hidden"
@@ -77,7 +77,7 @@ export default function AccueilSportifPage() {
         </div>
       </motion.section>
 
-      {/* Section — À proximité */}
+      {/* Section : À proximité */}
       <section className="mt-10">
         <h2 className="mb-4 px-4 text-lg font-bold">À proximité</h2>
         <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
@@ -93,7 +93,7 @@ export default function AccueilSportifPage() {
         </div>
       </section>
 
-      {/* Section — Découvre par sport */}
+      {/* Section : Découvre par sport */}
       <section className="mt-10 px-4">
         <h2 className="mb-4 text-lg font-bold">Découvre par sport</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

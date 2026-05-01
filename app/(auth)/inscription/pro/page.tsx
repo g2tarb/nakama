@@ -52,33 +52,33 @@ export default function InscriptionProPage() {
   const [direction, setDirection] = useState(1);
   const [done, setDone] = useState(false);
 
-  // Étape 1 — Infos personnelles
+  // Étape 1 : Infos personnelles
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [bio, setBio] = useState('');
 
-  // Étape 2 — Expertise
+  // Étape 2 : Expertise
   const [specialite, setSpecialite] = useState<Specialite>('coach_sportif');
   const [formations, setFormations] = useState<string[]>(['']);
   const [anneesExperience, setAnneesExperience] = useState(5);
 
-  // Étape 3 — Première carte de service
+  // Étape 3 : Première carte de service
   const [carteSport, setCarteSport] = useState<Sport>('fitness');
   const [carteNom, setCarteNom] = useState('');
   const [carteTarif, setCarteTarif] = useState(50);
   const [carteDuree, setCarteDuree] = useState(60);
   const [carteDescription, setCarteDescription] = useState('');
 
-  // Étape 4 — Zones et formats
+  // Étape 4 : Zones et formats
   const [ville, setVille] = useState('Paris');
   const [codePostal, setCodePostal] = useState('75011');
   const [rayonKm, setRayonKm] = useState(10);
   const [formats, setFormats] = useState<Format[]>(['presentiel']);
 
-  // Étape 5 — Formule
+  // Étape 5 : Formule
   const [formule, setFormule] = useState<Formule>('premium');
 
-  // Étape 6 — Vibe
+  // Étape 6 : Vibe
   const [pedagogieDiscipline, setPedagogieDiscipline] = useState(5);
   const [suiviAutonomie, setSuiviAutonomie] = useState(5);
   const [dataRessenti, setDataRessenti] = useState(5);
@@ -125,7 +125,7 @@ export default function InscriptionProPage() {
     const parsed = onboardingProSchema.safeParse(input);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
-      alert(`Champ invalide : ${firstError?.path.join('.')} — ${firstError?.message}`);
+      alert(`Champ invalide : ${firstError?.path.join('.')} · ${firstError?.message}`);
       return;
     }
 
@@ -231,7 +231,7 @@ export default function InscriptionProPage() {
       </div>
 
       <StepWrapper stepKey={step} direction={direction}>
-        {/* ÉTAPE 1 — Infos personnelles */}
+        {/* ÉTAPE 1 : Infos personnelles */}
         {step === 0 && (
           <div className="space-y-5">
             <h2 className="text-center text-xl font-bold">Informations personnelles</h2>
@@ -272,7 +272,7 @@ export default function InscriptionProPage() {
           </div>
         )}
 
-        {/* ÉTAPE 2 — Expertise */}
+        {/* ÉTAPE 2 : Expertise */}
         {step === 1 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Ton expertise</h2>
@@ -341,7 +341,7 @@ export default function InscriptionProPage() {
           </div>
         )}
 
-        {/* ÉTAPE 3 — Première carte de service */}
+        {/* ÉTAPE 3 : Première carte de service */}
         {step === 2 && (
           <div className="space-y-5">
             <h2 className="text-center text-xl font-bold">Ta première offre</h2>
@@ -439,7 +439,7 @@ export default function InscriptionProPage() {
           </div>
         )}
 
-        {/* ÉTAPE 4 — Zones et formats */}
+        {/* ÉTAPE 4 : Zones et formats */}
         {step === 3 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Zone et formats</h2>
@@ -503,7 +503,7 @@ export default function InscriptionProPage() {
           </div>
         )}
 
-        {/* ÉTAPE 5 — Formule */}
+        {/* ÉTAPE 5 : Formule */}
         {step === 4 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Choisis ta formule</h2>
@@ -545,7 +545,7 @@ export default function InscriptionProPage() {
           </div>
         )}
 
-        {/* ÉTAPE 6 — Vibe */}
+        {/* ÉTAPE 6 : Vibe */}
         {step === 5 && (
           <div className="space-y-8">
             <div className="text-center">

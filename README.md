@@ -1,8 +1,8 @@
-# NAKAMA — MVP vitrine
+# NAKAMA · MVP vitrine
 
 Marketplace coaching sportif. MVP préparé pour démo investisseur (levée pré-seed 600K€), interview terrain mobile et passation CTO post-levée.
 
-> "Le Doctolib du coaching sportif" — matching comportemental sportif↔coach pro, réservation simple, progression suivie.
+> "Le Doctolib du coaching sportif" : matching comportemental sportif↔coach pro, réservation simple, progression suivie.
 
 ## Quick start
 
@@ -34,8 +34,8 @@ Stack : **pnpm 10**, **Node 20+**.
 
 **Décisions notables** :
 
-- `output: 'standalone'` + `dynamic = 'force-dynamic'` au layout root — toutes les routes sont SSR à la demande, pas de SSG (suffisant pour MVP démo, contourne un crash interne Next 15 + React 19 sur le fallback `_error` au prerender). À reconsidérer si besoin de perf critique.
-- Pages d'erreur custom : `app/not-found.tsx`, `app/global-error.tsx`, `pages/_error.tsx` (le dernier est un workaround Pages Router pour le fallback Next 15 — voir `AGENTS.md`).
+- `output: 'standalone'` + `dynamic = 'force-dynamic'` au layout root : toutes les routes sont SSR à la demande, pas de SSG (suffisant pour MVP démo, contourne un crash interne Next 15 + React 19 sur le fallback `_error` au prerender). À reconsidérer si besoin de perf critique.
+- Pages d'erreur custom : `app/not-found.tsx`, `app/global-error.tsx`, `pages/_error.tsx` (le dernier est un workaround Pages Router pour le fallback Next 15, voir `AGENTS.md`).
 - `tsconfig.json` : `strict: true` + `noUncheckedIndexedAccess` + `noImplicitOverride` + `noUnusedLocals/Parameters`. **Sans** `exactOptionalPropertyTypes` (incompatible avec les types Base UI).
 
 ## Arborescence commentée
@@ -74,7 +74,7 @@ types/                           # 7 fichiers (Sportif, Pro, Seance, Conversatio
 pages/_error.tsx                 # workaround Next 15 (voir AGENTS.md)
 ```
 
-## Mocks — où regarder
+## Mocks : où regarder
 
 Tout part de `lib/mock-data/index.ts` (barrel) :
 
@@ -92,7 +92,7 @@ Tout part de `lib/mock-data/index.ts` (barrel) :
 
 ## L'algorithme matching
 
-`lib/matching.ts` — scoring **100 pts** entre un `Sportif` et un `Pro` :
+`lib/matching.ts` : scoring **100 pts** entre un `Sportif` et un `Pro` :
 
 | Pilier          | Poids | Détail                                                                                                                            |
 | --------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -122,7 +122,7 @@ Variables à set dans le dashboard Vercel :
 
 ### Variantes locales
 
-- `pnpm build && pnpm start` — serveur Node prod
+- `pnpm build && pnpm start` : serveur Node prod
 - `output: 'standalone'` activé → `.next/standalone/` autonome pour Docker
 
 ## Roadmap post-MVP
@@ -191,14 +191,14 @@ Connexion + cartes services sont en RHF complet. Les 2 onboarding (sportif/pro) 
 
 Aucun test unitaire ni E2E. Candidats prioritaires :
 
-- `lib/matching.ts` (Vitest) — edge cases scoring
+- `lib/matching.ts` (Vitest) : edge cases scoring
 - Flow inscription → recherche → réservation (Playwright)
 
 ### Photos pros en CDN distant
 
 50 pros utilisent des photos `images.unsplash.com` whitelistées via `next.config.ts`. Latence variable selon localisation. Migration locale (`/public/images/pros/`) via script `scripts/download-photos.ts` à prévoir post-MVP.
 
-### Backend / Auth / Persistance — totalement absents
+### Backend / Auth / Persistance : totalement absents
 
 Voir Roadmap post-MVP ci-dessus. Le MVP actuel est une vitrine fonctionnelle sans persistance serveur.
 
@@ -208,7 +208,7 @@ Voir Roadmap post-MVP ci-dessus. Le MVP actuel est une vitrine fonctionnelle san
 | -------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `pnpm build` plante sur `_error: /404` | Vérifier que `pages/_error.tsx` existe (workaround Next 15)                                  |
 | Composants UI cassés                   | Vérifier que `@base-ui-components/react` est installé (vrai nom du package shadcn base-nova) |
-| Erreurs Framer Motion typings          | Ne PAS upgrader Next à 16 — la combo Next 15 + Framer 12 + React 19 est validée              |
+| Erreurs Framer Motion typings          | Ne PAS upgrader Next à 16 : la combo Next 15 + Framer 12 + React 19 est validée              |
 | Husky pre-commit échoue                | Lance `pnpm typecheck` à la main pour voir l'erreur réelle, fix, re-commit                   |
 
 ## Conventions
@@ -217,4 +217,4 @@ Voir `AGENTS.md` pour les conventions code/refacto.
 
 ## Licence
 
-Propriétaire — Nakama, prestataire 4DAYVELOPMENT.
+Propriétaire Nakama, prestataire 4DAYVELOPMENT.

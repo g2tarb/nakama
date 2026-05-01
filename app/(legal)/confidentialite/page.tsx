@@ -68,7 +68,7 @@ export default function ConfidentialitePage() {
         <h2 className="text-text-primary mt-6 text-lg font-semibold">6. Destinataires</h2>
         <p>
           Sous-traitants techniques : Vercel (hébergement), Stripe (paiement), Resend ou
-          Postmark (email transactionnel — à venir).
+          Postmark (email transactionnel, à venir).
         </p>
 
         <h2 className="text-text-primary mt-6 text-lg font-semibold">7. Vos droits</h2>

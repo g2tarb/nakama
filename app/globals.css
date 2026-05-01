@@ -3,7 +3,7 @@
 @import 'shadcn/tailwind.css';
 
 /* ============================================
-   NAKAMA — Design System
+   NAKAMA Design System
    Dark mode exclusif. Pas de toggle theme.
    ============================================ */
 
@@ -82,7 +82,7 @@
 }
 
 /* ============================================
-   Nakama palette — dark mode uniquement
+   Nakama palette : dark mode uniquement
    Mapping shadcn CSS vars → Nakama hex
    ============================================ */
 :root {
@@ -106,14 +106,14 @@
   --ring: #c9b27a;
   --radius: 10px;
 
-  /* Charts — Nakama palette */
+  /* Charts : Nakama palette */
   --chart-1: #c9b27a;
   --chart-2: #4ade80;
   --chart-3: #fbbf24;
   --chart-4: #60a5fa;
   --chart-5: #f87171;
 
-  /* Sidebar — Pro space */
+  /* Sidebar : espace Pro */
   --sidebar: #243040;
   --sidebar-foreground: #f5f5f5;
   --sidebar-primary: #c9b27a;
@@ -124,7 +124,7 @@
   --sidebar-ring: #c9b27a;
 }
 
-/* Pas de .dark — on est toujours en dark mode */
+/* Pas de .dark : on est toujours en dark mode */
 
 @layer base {
   * {

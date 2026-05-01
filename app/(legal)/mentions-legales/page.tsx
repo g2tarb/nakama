@@ -26,7 +26,7 @@ export default function MentionsLegalesPage() {
 
         <h2 className="text-text-primary mt-8 text-lg font-semibold">Éditeur</h2>
         <p>
-          Nakama — Société à compléter
+          Nakama, société à compléter
           <br />
           Adresse : à compléter
           <br />
@@ -50,7 +50,7 @@ export default function MentionsLegalesPage() {
 
         <h2 className="text-text-primary mt-6 text-lg font-semibold">Hébergement</h2>
         <p>
-          Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA —{' '}
+          Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA.{' '}
           <a
             href="https://vercel.com"
             className="text-accent-gold hover:underline"

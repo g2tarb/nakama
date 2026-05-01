@@ -1,4 +1,4 @@
-# Definition of Done — Livraison NAKAMA MVP
+# Definition of Done · Livraison NAKAMA MVP
 
 Checklist à cocher avant remise officielle à Haykel.
 
@@ -82,7 +82,7 @@ Checklist à cocher avant remise officielle à Haykel.
 
 ## Validation business
 
-- [ ] Feedback positif d'au moins 3 pros du sport sur la fiche pro / parcours sportif _(action Haykel — organiser interviews terrain)_
+- [ ] Feedback positif d'au moins 3 pros du sport sur la fiche pro / parcours sportif _(action Haykel : organiser interviews terrain)_
 - [ ] Demo investisseur réalisée _(action Haykel)_
 
 ## Bloqueurs externes (assets Haykel)

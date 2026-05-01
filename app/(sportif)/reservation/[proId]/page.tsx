@@ -69,7 +69,7 @@ export default function ReservationPage({
         ))}
       </div>
 
-      {/* ÉTAPE 1 — Choix service + créneau */}
+      {/* ÉTAPE 1 : Choix service + créneau */}
       {step === 0 && (
         <div className="space-y-6">
           <h1 className="text-xl font-bold">Que veux-tu réserver ?</h1>
@@ -168,7 +168,7 @@ export default function ReservationPage({
         </div>
       )}
 
-      {/* ÉTAPE 2 — Récapitulatif */}
+      {/* ÉTAPE 2 : Récapitulatif */}
       {step === 1 && service && selectedDate && selectedHeure && (
         <div className="space-y-6">
           <h1 className="text-xl font-bold">Ta réservation</h1>
@@ -243,7 +243,7 @@ export default function ReservationPage({
         </div>
       )}
 
-      {/* ÉTAPE 3 — Paiement simulé */}
+      {/* ÉTAPE 3 : Paiement simulé */}
       {step === 2 && service && (
         <div className="space-y-6">
           <h1 className="text-xl font-bold">Paiement</h1>

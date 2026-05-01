@@ -52,30 +52,30 @@ export default function InscriptionSportifPage() {
   const [direction, setDirection] = useState(1);
   const [done, setDone] = useState(false);
 
-  // Étape 1 — Identité
+  // Étape 1 : Identité
   const [prenom, setPrenom] = useState('');
   const [age, setAge] = useState(25);
   const [genre, setGenre] = useState<Genre>('homme');
 
-  // Étape 2 — Objectifs
+  // Étape 2 : Objectifs
   const [objectifs, setObjectifs] = useState<Objectif[]>([]);
 
-  // Étape 3 — Sports
+  // Étape 3 : Sports
   const [sports, setSports] = useState<Sport[]>([]);
 
-  // Étape 4 — Niveau
+  // Étape 4 : Niveau
   const [niveau, setNiveau] = useState<Niveau>('intermediaire');
   const [contraintes, setContraintes] = useState('');
   const [frequence, setFrequence] = useState<'1x' | '2-3x' | '4+'>('2-3x');
 
-  // Étape 5 — Localisation & budget
+  // Étape 5 : Localisation & budget
   const [ville, setVille] = useState('Paris');
   const [codePostal, setCodePostal] = useState('75011');
   const [rayonKm, setRayonKm] = useState(10);
   const [budgetMin, setBudgetMin] = useState(30);
   const [budgetMax, setBudgetMax] = useState(70);
 
-  // Étape 6 — Vibe
+  // Étape 6 : Vibe
   const [pedagogieDiscipline, setPedagogieDiscipline] = useState(5);
   const [suiviAutonomie, setSuiviAutonomie] = useState(5);
   const [dataRessenti, setDataRessenti] = useState(5);
@@ -115,7 +115,7 @@ export default function InscriptionSportifPage() {
     const parsed = onboardingSportifSchema.safeParse(input);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
-      alert(`Champ invalide : ${firstError?.path.join('.')} — ${firstError?.message}`);
+      alert(`Champ invalide : ${firstError?.path.join('.')} · ${firstError?.message}`);
       return;
     }
 
@@ -188,7 +188,7 @@ export default function InscriptionSportifPage() {
       </div>
 
       <StepWrapper stepKey={step} direction={direction}>
-        {/* ÉTAPE 1 — Qui es-tu ? */}
+        {/* ÉTAPE 1 : Qui es-tu ? */}
         {step === 0 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Qui es-tu ?</h2>
@@ -238,7 +238,7 @@ export default function InscriptionSportifPage() {
           </div>
         )}
 
-        {/* ÉTAPE 2 — Objectifs */}
+        {/* ÉTAPE 2 : Objectifs */}
         {step === 1 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Ton objectif</h2>
@@ -259,7 +259,7 @@ export default function InscriptionSportifPage() {
           </div>
         )}
 
-        {/* ÉTAPE 3 — Sports */}
+        {/* ÉTAPE 3 : Sports */}
         {step === 2 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Ton sport</h2>
@@ -280,7 +280,7 @@ export default function InscriptionSportifPage() {
           </div>
         )}
 
-        {/* ÉTAPE 4 — Niveau et contraintes */}
+        {/* ÉTAPE 4 : Niveau et contraintes */}
         {step === 3 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Niveau et contraintes</h2>
@@ -329,7 +329,7 @@ export default function InscriptionSportifPage() {
           </div>
         )}
 
-        {/* ÉTAPE 5 — Localisation & budget */}
+        {/* ÉTAPE 5 : Localisation & budget */}
         {step === 4 && (
           <div className="space-y-6">
             <h2 className="text-center text-xl font-bold">Localisation et budget</h2>
@@ -370,7 +370,7 @@ export default function InscriptionSportifPage() {
             </div>
             <div>
               <label className="text-text-secondary mb-1.5 block text-sm">
-                Budget par séance : {budgetMin}€ — {budgetMax}€
+                Budget par séance : {budgetMin}€ à {budgetMax}€
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -400,7 +400,7 @@ export default function InscriptionSportifPage() {
           </div>
         )}
 
-        {/* ÉTAPE 6 — Ta vibe (CRITIQUE) */}
+        {/* ÉTAPE 6 : Ta vibe (CRITIQUE) */}
         {step === 5 && (
           <div className="space-y-8">
             <div className="text-center">

@@ -106,8 +106,8 @@ export default function CartesServicesPage() {
           <h1 className="text-accent-gold text-xl font-bold">Cartes de service</h1>
           <p className="text-text-secondary mt-1 text-sm">
             {activeCount} carte{activeCount > 1 ? 's' : ''} active
-            {activeCount > 1 ? 's' : ''} sur {maxCartes === 99 ? '∞' : maxCartes} —
-            formule <span className="capitalize">{basePro.formule}</span>
+            {activeCount > 1 ? 's' : ''} sur {maxCartes === 99 ? '∞' : maxCartes}, formule{' '}
+            <span className="capitalize">{basePro.formule}</span>
           </p>
         </div>
         <Button onClick={handleAdd} size="sm" className="gap-2">
@@ -176,7 +176,7 @@ export default function CartesServicesPage() {
           {quotaReached ? <Lock size={24} /> : <Plus size={24} />}
           <span className="text-sm font-medium">
             {quotaReached
-              ? 'Quota atteint — passer en supérieur'
+              ? 'Quota atteint, passer en supérieur'
               : 'Créer une nouvelle carte'}
           </span>
         </button>
