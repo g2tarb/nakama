@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -25,7 +26,77 @@ const MATCHED_PROS = [
   },
 ];
 
+const SCORE_MIN = 65;
+const SCORE_MAX = 99;
+
+function useAnimatedScores(initial: number[]) {
+  const [scores, setScores] = useState(initial);
+  const scoresRef = useRef<number[]>(initial);
+  scoresRef.current = scores;
+
+  useEffect(() => {
+    const cancellers: Array<() => void> = [];
+
+    initial.forEach((_, i) => {
+      let cancelled = false;
+      let rafId: number | undefined;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+      const animateTo = (target: number) => {
+        const start = scoresRef.current[i] ?? initial[i] ?? SCORE_MIN;
+        const startTime = performance.now();
+        const duration = 1100 + Math.random() * 400;
+
+        const step = (now: number) => {
+          if (cancelled) return;
+          const t = Math.min(1, (now - startTime) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const value = Math.round(start + (target - start) * eased);
+          setScores((prev) => {
+            if (prev[i] === value) return prev;
+            const next = [...prev];
+            next[i] = value;
+            return next;
+          });
+          if (t < 1) {
+            rafId = requestAnimationFrame(step);
+          } else {
+            scheduleNext();
+          }
+        };
+        rafId = requestAnimationFrame(step);
+      };
+
+      const scheduleNext = () => {
+        const delay = 1800 + Math.random() * 2000;
+        timeoutId = setTimeout(() => {
+          if (cancelled) return;
+          const target =
+            SCORE_MIN + Math.floor(Math.random() * (SCORE_MAX - SCORE_MIN + 1));
+          animateTo(target);
+        }, delay);
+      };
+
+      scheduleNext();
+
+      cancellers.push(() => {
+        cancelled = true;
+        if (rafId) cancelAnimationFrame(rafId);
+        if (timeoutId) clearTimeout(timeoutId);
+      });
+    });
+
+    return () => cancellers.forEach((c) => c());
+  }, [initial]);
+
+  return scores;
+}
+
 export function FeatureMockup() {
+  const initialScores = MATCHED_PROS.map((p) => p.score);
+  const scores = useAnimatedScores(initialScores);
+  const topScore = scores[0] ?? initialScores[0] ?? 0;
+
   return (
     <section
       className="border-border border-t border-b px-4 py-24"
@@ -67,18 +138,20 @@ export function FeatureMockup() {
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
           className="relative flex justify-center"
         >
-          <PhoneMockup />
-          <CompatibilityCard />
+          <PhoneMockup scores={scores} />
+          <CompatibilityCard score={topScore} />
         </motion.div>
       </div>
     </section>
   );
 }
 
-function PhoneMockup() {
+function PhoneMockup({ scores }: { scores: number[] }) {
   return (
-    <div
-      className="relative w-[280px] -rotate-3 rounded-[38px] p-2"
+    <motion.div
+      animate={{ y: [0, -6, 0, -3, 0], rotate: [-3, -2.6, -3, -3.2, -3] }}
+      transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+      className="relative w-[280px] rounded-[38px] p-2"
       style={{
         background: 'var(--color-bg-deep)',
         boxShadow: '0 30px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)',
@@ -98,48 +171,68 @@ function PhoneMockup() {
             3 Nakamas trouvés
           </h3>
         </div>
-        {MATCHED_PROS.map((pro) => (
-          <div
+        {MATCHED_PROS.map((pro, i) => (
+          <motion.div
             key={pro.name}
-            className="bg-card mb-2 flex items-center gap-2.5 rounded-xl p-3"
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1],
+              delay: 0.25 + i * 0.18,
+            }}
           >
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-bold"
-              style={{
-                background: 'linear-gradient(135deg,#34465e,#1c2737)',
-                color: 'rgba(201,178,122,0.5)',
+            <motion.div
+              animate={{ y: [0, -1.5, 0, 1, 0] }}
+              transition={{
+                duration: 3.4 + i * 0.6,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: i * 0.4,
               }}
+              className="bg-card mb-2 flex items-center gap-2.5 rounded-xl p-3"
             >
-              {pro.name
-                .split(' ')
-                .map((w) => w[0])
-                .join('')}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-text-primary truncate text-[13px] font-semibold">
-                {pro.name}
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold"
+                style={{
+                  background: 'linear-gradient(135deg,#34465e,#1c2737)',
+                  color: 'rgba(201,178,122,0.5)',
+                }}
+              >
+                {pro.name
+                  .split(' ')
+                  .map((w) => w[0])
+                  .join('')}
               </div>
-              <div className="text-text-secondary text-[11px]">
-                {pro.specialty} · {pro.price} €/h
+              <div className="min-w-0 flex-1">
+                <div className="text-text-primary truncate text-[13px] font-semibold">
+                  {pro.name}
+                </div>
+                <div className="text-text-secondary text-[11px]">
+                  {pro.specialty} · {pro.price} €/h
+                </div>
               </div>
-            </div>
-            <div
-              className="text-accent-gold rounded-md px-1.5 py-[3px] text-[11px] font-bold"
-              style={{ background: 'rgba(201,178,122,0.20)' }}
-            >
-              {pro.score}%
-            </div>
-          </div>
+              <div
+                className="text-accent-gold rounded-md px-1.5 py-[3px] text-[11px] font-bold tabular-nums"
+                style={{ background: 'rgba(201,178,122,0.20)' }}
+              >
+                {scores[i] ?? pro.score}%
+              </div>
+            </motion.div>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function CompatibilityCard() {
+function CompatibilityCard({ score }: { score: number }) {
   return (
-    <div
-      className="bg-card border-border absolute right-0 bottom-7 w-[220px] rotate-[2deg] rounded-xl border p-4 md:-right-2"
+    <motion.div
+      animate={{ y: [0, 4, 0, -2, 0], rotate: [2, 1.7, 2, 2.3, 2] }}
+      transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+      className="bg-card border-border absolute right-0 bottom-7 w-[220px] rounded-xl border p-4 md:-right-2"
       style={{ boxShadow: 'var(--shadow-elevated)' }}
     >
       <div className="mb-2.5 flex items-center gap-2">
@@ -148,10 +241,12 @@ function CompatibilityCard() {
           Compatibilité
         </span>
       </div>
-      <div className="text-accent-gold text-[32px] leading-none font-bold">94 %</div>
+      <div className="text-accent-gold text-[32px] leading-none font-bold tabular-nums">
+        {score} %
+      </div>
       <div className="text-text-secondary mt-1.5 text-xs">
         Suivi rapproché · cadre adaptatif · progressivité
       </div>
-    </div>
+    </motion.div>
   );
 }
