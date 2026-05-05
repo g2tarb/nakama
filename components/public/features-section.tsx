@@ -1,121 +1,77 @@
 'use client';
 
-import { Search, Shield, TrendingUp, Users, Zap } from 'lucide-react';
+import { Calendar, SlidersHorizontal, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { FeatureCard } from './feature-card';
-import { SectionHeading } from './section-heading';
-
-const FEATURES_SPORTIF = [
+const STEPS: Array<{
+  num: string;
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}> = [
   {
-    icon: Search,
-    title: 'Matching personnalisé',
-    description:
-      'Notre algorithme analyse ta personnalité pour trouver le coach qui te correspond vraiment.',
+    num: '01',
+    icon: SlidersHorizontal,
+    title: 'Réponds au matching',
+    desc: 'Trois axes psychologiques. Cinq minutes. Pas de questionnaire interminable.',
   },
   {
-    icon: Zap,
-    title: 'Réservation simple',
-    description:
-      "Réserve ta séance en 3 clics. Choisis le créneau, confirme, c'est fait.",
-  },
-  {
-    icon: TrendingUp,
-    title: 'Progression suivie',
-    description:
-      'Suis tes progrès avec ton coach. Objectifs, mesures, résultats : tout au même endroit.',
-  },
-];
-
-const FEATURES_PRO = [
-  {
+    num: '02',
     icon: Users,
-    title: 'Visibilité',
-    description: 'Sois visible auprès de milliers de sportifs motivés dans ta zone.',
+    title: 'Découvre tes Nakamas',
+    desc: 'On te propose les coachs les plus compatibles. Filtre par sport, budget, distance.',
   },
   {
-    icon: Shield,
-    title: 'Gestion simplifiée',
-    description:
-      'Agenda, clients, fiches athlètes : tout ton CRM métier en un seul outil.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Revenus sécurisés',
-    description:
-      'Paiement sécurisé, suivi de CA, zéro impayé. Concentre-toi sur ton métier.',
+    num: '03',
+    icon: Calendar,
+    title: 'Réserve ta première séance',
+    desc: 'Paiement sécurisé, annulation jusqu’à 24 h avant. Aucun engagement.',
   },
 ];
-
-const STEPS = [
-  {
-    step: '1',
-    title: 'Inscription en 5 min',
-    description: 'Crée ton profil et définis ta personnalité sportive.',
-  },
-  {
-    step: '2',
-    title: 'Matching intelligent',
-    description: 'Notre algorithme te propose les coachs les plus compatibles.',
-  },
-  {
-    step: '3',
-    title: 'Réserve et progresse',
-    description: 'Choisis ton créneau et commence à atteindre tes objectifs.',
-  },
-];
-
-export function FeaturesSportif() {
-  return (
-    <section className="border-border border-t px-4 py-20">
-      <div className="mx-auto max-w-6xl">
-        <SectionHeading>Pour les sportifs</SectionHeading>
-        <div className="grid gap-6 md:grid-cols-3">
-          {FEATURES_SPORTIF.map((feature, i) => (
-            <FeatureCard key={feature.title} {...feature} index={i} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function FeaturesPro() {
-  return (
-    <section className="border-border border-t px-4 py-20">
-      <div className="mx-auto max-w-6xl">
-        <SectionHeading>Pour les professionnels</SectionHeading>
-        <div className="grid gap-6 md:grid-cols-3">
-          {FEATURES_PRO.map((feature, i) => (
-            <FeatureCard key={feature.title} {...feature} index={i} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 export function HowItWorks() {
   return (
-    <section id="comment-ca-marche" className="border-border border-t px-4 py-20">
-      <div className="mx-auto max-w-4xl text-center">
-        <SectionHeading>Comment ça marche</SectionHeading>
+    <section id="comment-ca-marche" className="px-4 py-24">
+      <div className="mx-auto max-w-[1080px]">
+        <div className="mb-16 text-center">
+          <span className="nk-eyebrow">Comment ça marche</span>
+          <h2 className="nk-h1 text-accent-gold mt-3">Trois étapes, pas une de plus</h2>
+        </div>
+
         <div className="grid gap-8 md:grid-cols-3">
-          {STEPS.map(({ step, title, description }, i) => (
-            <motion.div
-              key={step}
+          {STEPS.map(({ num, icon: Icon, title, desc }, i) => (
+            <motion.article
+              key={num}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="flex flex-col items-center gap-4"
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{
+                duration: 0.4,
+                ease: [0.22, 1, 0.36, 1],
+                delay: i * 0.08,
+              }}
+              className="bg-card border-border/40 relative rounded-xl border p-8"
             >
-              <div className="border-accent-gold text-accent-gold flex size-14 items-center justify-center rounded-full border-2 text-xl font-bold">
-                {step}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-2 right-5 text-[92px] leading-none font-extrabold"
+                style={{
+                  color: 'rgba(201, 178, 122, 0.07)',
+                  letterSpacing: '-0.04em',
+                }}
+              >
+                {num}
+              </span>
+              <div
+                className="relative mb-5 inline-flex h-11 w-11 items-center justify-center rounded-[10px]"
+                style={{ background: 'var(--color-accent-gold-wash)' }}
+              >
+                <Icon size={22} className="text-accent-gold" />
               </div>
-              <h3 className="text-lg font-semibold">{title}</h3>
-              <p className="text-text-secondary text-sm">{description}</p>
-            </motion.div>
+              <h3 className="nk-h3 text-text-primary mb-2">{title}</h3>
+              <p className="text-text-secondary text-[14.5px] leading-relaxed">{desc}</p>
+            </motion.article>
           ))}
         </div>
       </div>
