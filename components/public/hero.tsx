@@ -4,13 +4,18 @@ import Link from 'next/link';
 import { Calendar, Dumbbell, MapPin, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { BackgroundVideo } from './background-video';
+import { RotatingHeadline } from './rotating-headline';
+
 const POPULAIRES = ['Yoga', 'Boxe', 'Musculation', 'Crossfit', 'Running'];
 const SPORT_ACTIF_INDEX = 2;
 
 export function Hero() {
   return (
-    <section className="nk-hero-bg px-4 py-20 md:py-28">
-      <div className="mx-auto max-w-[1080px] text-center">
+    <section className="nk-hero-bg relative isolate overflow-hidden px-4 py-20 md:py-28">
+      <BackgroundVideo src="/videos/nakama-fond.mp4" />
+
+      <div className="relative mx-auto max-w-[1080px] text-center">
         <motion.span
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -20,15 +25,7 @@ export function Hero() {
           Matching comportemental · plateforme française
         </motion.span>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-          className="nk-display text-text-primary mt-6"
-        >
-          Trouve le <span className="text-accent-gold">Nakama</span> qui te fera
-          progresser
-        </motion.h1>
+        <RotatingHeadline />
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}

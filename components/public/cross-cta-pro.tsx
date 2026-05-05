@@ -1,14 +1,18 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
+import { BackgroundVideo } from './background-video';
+
 export function CrossCtaPro() {
   return (
     <section
       id="pros"
-      className="px-4 py-20"
+      className="relative isolate overflow-hidden px-4 py-20"
       style={{ background: 'var(--color-bg-overlay)' }}
     >
-      <div className="mx-auto max-w-[880px] text-center">
+      <BackgroundVideo src="/videos/nakama-fond.mp4" />
+
+      <div className="relative mx-auto max-w-[880px] text-center">
         <span className="nk-eyebrow">Tu accompagnes des sportifs ?</span>
         <h2 className="nk-h1 text-accent-gold mt-3 mb-4">Rejoins l’espace pro</h2>
         <p className="text-text-secondary mx-auto mb-8 max-w-[640px] text-base leading-relaxed">

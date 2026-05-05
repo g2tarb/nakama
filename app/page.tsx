@@ -6,7 +6,6 @@ import { CrossCtaPro } from '@/components/public/cross-cta-pro';
 import { FeatureMockup } from '@/components/public/feature-mockup';
 import { HowItWorks } from '@/components/public/features-section';
 import { Hero } from '@/components/public/hero';
-import { SocialProof } from '@/components/public/social-proof';
 import { Testimonials } from '@/components/public/testimonials';
 
 export default function LandingPage() {
@@ -54,7 +53,6 @@ export default function LandingPage() {
       </header>
 
       <Hero />
-      <SocialProof />
       <HowItWorks />
       <FeatureMockup />
       <Testimonials />
