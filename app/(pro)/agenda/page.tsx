@@ -155,32 +155,31 @@ export default function AgendaPage() {
         : format(refDate, 'MMMM yyyy', { locale: fr });
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] px-4 py-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center justify-between gap-3 sm:justify-start">
-          <h1 className="text-accent-gold text-xl font-bold">Agenda</h1>
+    <div className="relative mx-auto min-h-[calc(100vh-4rem)] w-full max-w-[1280px] px-4 py-6 lg:px-10 lg:py-8">
+      <div className="mb-5 flex flex-col gap-4 sm:mb-7">
+        <div>
+          <span className="nk-eyebrow">Planning</span>
+          <h1 className="nk-h1 text-text-primary mt-1.5 tracking-[-0.02em]">Agenda</h1>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={goToday}
-            className="border-border text-text-secondary hover:bg-surface rounded-lg border px-3 py-1 text-xs font-medium"
+            className="border-border/60 text-text-secondary hover:border-accent-muted hover:text-text-primary rounded-full border px-3 py-1.5 text-xs font-medium transition-colors active:translate-y-px"
           >
             Aujourd&apos;hui
           </button>
-        </div>
 
-        {/* Toggle + nav */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="border-border bg-surface flex flex-1 overflow-hidden rounded-lg border sm:flex-initial">
+          <div className="border-border/60 flex flex-1 overflow-hidden rounded-full border p-0.5 sm:flex-initial">
             {(['jour', 'semaine', 'mois'] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
                 className={cn(
-                  'flex-1 px-3 py-1.5 text-xs font-medium capitalize transition-colors sm:flex-initial',
-                  // Vue Semaine masquée sur mobile (grille 700px non utilisable)
+                  'flex-1 rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors sm:flex-initial',
                   v === 'semaine' && 'hidden sm:block',
                   view === v
-                    ? 'bg-accent-gold text-background'
+                    ? 'bg-primary text-primary-foreground'
                     : 'text-text-secondary hover:text-text-primary',
                 )}
               >
@@ -189,23 +188,23 @@ export default function AgendaPage() {
             ))}
           </div>
 
-          <div className="border-border bg-surface flex items-center gap-1 rounded-lg border px-1">
+          <div className="border-border/60 ml-auto flex items-center gap-1 rounded-full border px-1 py-0.5">
             <button
               onClick={navigatePrev}
-              className="hover:bg-surface-elevated rounded p-1.5"
+              className="hover:bg-card hover:text-accent-gold text-text-secondary rounded-full p-1.5 transition-colors active:translate-y-px"
               aria-label="Précédent"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={15} />
             </button>
-            <span className="min-w-[90px] text-center text-xs font-medium capitalize sm:min-w-[140px] sm:text-sm">
+            <span className="text-text-primary min-w-[90px] text-center text-xs font-medium capitalize sm:min-w-[160px] sm:text-sm">
               {periodLabel}
             </span>
             <button
               onClick={navigateNext}
-              className="hover:bg-surface-elevated rounded p-1.5"
+              className="hover:bg-card hover:text-accent-gold text-text-secondary rounded-full p-1.5 transition-colors active:translate-y-px"
               aria-label="Suivant"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={15} />
             </button>
           </div>
         </div>
@@ -598,28 +597,43 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
   }
 
   return (
-    <ul className="space-y-2">
+    <ul className="flex flex-col gap-2">
       {seances.map((s) => {
         const client = sportifs.find((c) => c.id === s.sportifId);
+        const isPending = s.statut === 'en_attente';
         return (
           <li
             key={s.id}
-            className="border-border bg-surface flex items-center gap-3 rounded-lg border p-3"
+            className="bg-card border-border/40 hover:bg-surface-elevated flex items-center gap-3 rounded-xl border p-4 transition-colors"
           >
-            <div className="text-accent-gold w-12 shrink-0 text-center">
-              <p className="text-sm font-bold">{format(new Date(s.date), 'HH:mm')}</p>
-              <p className="text-text-tertiary text-[10px]">{s.dureeMinutes}min</p>
+            <div className="w-14 shrink-0 text-center">
+              <p className="text-accent-gold nk-mono text-sm font-bold tabular-nums">
+                {format(new Date(s.date), 'HH:mm')}
+              </p>
+              <p className="text-text-tertiary mt-0.5 text-[10px]">
+                {s.dureeMinutes} min
+              </p>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
+              <p className="text-text-primary truncate text-sm font-medium">
                 {client ? `${client.prenom} ${client.nom}` : 'Client'}
               </p>
               <p className="text-text-tertiary truncate text-xs">
                 {s.lieu ?? 'Lieu à confirmer'}
               </p>
             </div>
-            <span className="text-accent-gold shrink-0 text-sm font-semibold">
-              {s.tarif}€
+            <span
+              className={cn(
+                'shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium',
+                isPending
+                  ? 'bg-warning/15 text-warning'
+                  : 'bg-accent-gold/15 text-accent-gold',
+              )}
+            >
+              {isPending ? 'Attente' : 'Confirmé'}
+            </span>
+            <span className="text-accent-gold shrink-0 text-sm font-bold tabular-nums">
+              {s.tarif} €
             </span>
           </li>
         );
@@ -627,19 +641,20 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
       {blocks.map((b) => (
         <li
           key={b.id}
-          className="border-border bg-surface/50 flex items-center gap-3 rounded-lg border p-3"
+          className="border-border/40 bg-card/50 flex items-center gap-3 rounded-xl border border-dashed p-4"
         >
-          <div className="text-text-tertiary w-12 shrink-0 text-center text-sm font-bold">
+          <div className="text-text-tertiary nk-mono w-14 shrink-0 text-center text-sm font-bold tabular-nums">
             {b.heureDebut}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-text-secondary truncate text-sm font-medium">
-              🚫 {b.raison}
-            </p>
+            <p className="text-text-secondary truncate text-sm font-medium">{b.raison}</p>
             <p className="text-text-tertiary truncate text-xs">
-              Jusqu&apos;à {b.heureFin}
+              Indisponible jusqu&apos;à {b.heureFin}
             </p>
           </div>
+          <span className="bg-text-tertiary/15 text-text-tertiary shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium">
+            Bloqué
+          </span>
         </li>
       ))}
     </ul>

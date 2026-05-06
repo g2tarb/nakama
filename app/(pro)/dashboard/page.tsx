@@ -1,28 +1,29 @@
 'use client';
 
 import { useMemo } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowUpRight,
-  Calendar,
-  MessageCircle,
+  Bell,
+  Check,
+  ChevronRight,
+  Clock,
   Plus,
   Star,
+  TrendingDown,
   TrendingUp,
-  Users,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
-import { format } from 'date-fns';
+import { format, isToday, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-import { Button } from '@/components/ui/button';
 import { useCountUp } from '@/hooks/use-count-up';
 import { useUserStore } from '@/stores/user-store';
 import { pros, seances, sportifs } from '@/lib/mock-data';
 import { containerVariants, itemVariants } from '@/lib/animations';
+import { cn } from '@/lib/utils';
 
-// Données sparkline revenus (6 derniers mois)
 const SPARKLINE_DATA = [
   { month: 'Nov', value: 1200 },
   { month: 'Déc', value: 1850 },
@@ -32,283 +33,333 @@ const SPARKLINE_DATA = [
   { month: 'Avr', value: 2580 },
 ];
 
+const NEW_REQUESTS = [
+  {
+    sportifId: 'sportif-001',
+    score: 91,
+    message: 'Bonjour, je cherche à reprendre le sport après deux ans de pause.',
+  },
+  {
+    sportifId: 'sportif-002',
+    score: 87,
+    message: 'Préparation marathon, 3 séances par semaine en extérieur.',
+  },
+  {
+    sportifId: 'sportif-003',
+    score: 84,
+    message: 'Renforcement et perte de poids, créneau midi de préférence.',
+  },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
-  const pro = useUserStore((s) => s.pro) ?? pros[4]!; // Julie Martin par défaut
+  const pro = useUserStore((s) => s.pro) ?? pros[4]!;
 
-  const revenuAnimated = useCountUp(2580, 1000);
+  const today = useMemo(() => new Date(), []);
 
-  // Prochaines séances (futures)
-  const prochainesSeances = useMemo(() => {
-    const now = new Date();
-    return seances
-      .filter(
-        (s) => s.proId === pro.id && new Date(s.date) > now && s.statut !== 'annulee',
-      )
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 4);
-  }, [pro.id]);
-
-  // Nouveaux clients (sportifs mock)
-  const nouveauxClients = sportifs.slice(0, 3);
+  const todaySeances = useMemo(
+    () =>
+      seances
+        .filter(
+          (s) =>
+            s.proId === pro.id && isToday(parseISO(s.date)) && s.statut !== 'annulee',
+        )
+        .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime()),
+    [pro.id],
+  );
 
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="px-4 py-6 lg:px-8"
+      className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-10 lg:py-8"
     >
-      {/* Header salutation */}
-      <motion.div
+      <motion.header
         variants={itemVariants}
-        className="mb-8 flex items-center justify-between"
+        className="mb-7 flex flex-wrap items-start justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-bold">
-            Bonjour {pro.prenom} {String.fromCodePoint(0x1f44b)}
+          <span className="nk-eyebrow capitalize">
+            {format(today, 'EEEE d MMMM yyyy', { locale: fr })}
+          </span>
+          <h1 className="nk-h1 text-text-primary mt-1.5 tracking-[-0.02em]">
+            Bonjour <span className="text-accent-gold">{pro.prenom}</span>
           </h1>
-          <p className="text-text-secondary text-sm">Voici ton activité du moment</p>
         </div>
-        <div className="relative size-10 overflow-hidden rounded-full">
-          <Image
-            src={pro.photo}
-            alt={pro.prenom}
-            fill
-            sizes="40px"
-            className="object-cover"
-          />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="border-border/60 hover:border-accent-muted text-text-primary hover:bg-surface-elevated relative flex h-10 w-10 items-center justify-center rounded-[10px] border transition-all active:translate-y-px"
+          >
+            <Bell size={16} />
+            <span
+              aria-hidden="true"
+              className="bg-accent-gold ring-background absolute top-2 right-2 h-1.5 w-1.5 rounded-full ring-2"
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/agenda')}
+            className="bg-primary text-primary-foreground hover:bg-accent-gold-hover inline-flex items-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold transition-all hover:-translate-y-px active:translate-y-px"
+          >
+            <Plus size={15} />
+            Nouvelle séance
+          </button>
         </div>
+      </motion.header>
+
+      <motion.div
+        variants={itemVariants}
+        className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4"
+      >
+        <KpiCard
+          label="Séances cette semaine"
+          value="18"
+          delta="+12 % vs n-1"
+          deltaPositive
+          icon={TrendingUp}
+        />
+        <KpiCard label="Revenus du mois" value="2 580 €" delta="+8 %" deltaPositive />
+        <KpiCard
+          label="Note moyenne"
+          value={pro.note.toFixed(1)}
+          delta={`${pro.nbAvis} avis`}
+          icon={Star}
+        />
+        <KpiCard label="Taux de remplissage" value="86 %" delta="+4 pts" deltaPositive />
       </motion.div>
 
-      {/* Grille principale */}
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* Bloc Revenus (8 cols desktop) */}
-        <motion.div
+      <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+        <motion.section
           variants={itemVariants}
-          className="border-border bg-surface rounded-xl border p-6 lg:col-span-8"
+          className="bg-card border-border/40 rounded-xl border p-5 lg:p-6"
         >
-          <p className="text-text-secondary text-sm">Revenus d&apos;avril</p>
-          <div className="mt-1 flex items-baseline gap-3">
-            <span className="text-accent-gold text-4xl font-bold">{revenuAnimated}€</span>
-            <span className="text-success flex items-center gap-1 text-sm font-medium">
-              <ArrowUpRight size={14} />
-              +12% vs mars
-            </span>
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-text-primary text-[16px] font-semibold tracking-[-0.01em]">
+                Aujourd’hui
+              </h3>
+              <span className="text-text-tertiary text-[12px] capitalize">
+                {format(today, 'EEEE d MMMM', { locale: fr })} · {todaySeances.length}{' '}
+                séance{todaySeances.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/agenda')}
+              className="border-accent-muted text-accent-gold hover:bg-accent-gold-wash inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-all active:translate-y-px"
+            >
+              Voir l’agenda
+              <ChevronRight size={13} />
+            </button>
           </div>
-          <div className="mt-4 h-16">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={SPARKLINE_DATA}>
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#C9B27A"
-                  strokeWidth={2}
-                  dot={false}
-                  isAnimationActive
-                  animationDuration={1200}
-                  animationEasing="ease-out"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
 
-        {/* Bloc Prochaines séances (4 cols desktop) */}
-        <motion.div
-          variants={itemVariants}
-          className="border-border bg-surface rounded-xl border p-6 lg:col-span-4"
-        >
-          <p className="mb-4 text-sm font-semibold">Aujourd&apos;hui et demain</p>
-          <div className="space-y-3">
-            {prochainesSeances.length > 0 ? (
-              prochainesSeances.map((seance) => {
+          {todaySeances.length === 0 ? (
+            <p className="text-text-tertiary py-10 text-center text-sm">
+              Aucune séance aujourd’hui. Profite-en pour planifier la suite.
+            </p>
+          ) : (
+            <ul className="flex flex-col">
+              {todaySeances.map((seance, i) => {
                 const client = sportifs.find((s) => s.id === seance.sportifId);
                 const carte = pro.cartesServices.find(
                   (c) => c.id === seance.carteServiceId,
                 );
+                const start = parseISO(seance.date);
+                const isPending = seance.statut === 'en_attente';
+                const dur =
+                  seance.dureeMinutes >= 60
+                    ? `${Math.round((seance.dureeMinutes / 60) * 10) / 10} h`
+                    : `${seance.dureeMinutes} min`;
                 return (
-                  <div key={seance.id} className="flex items-center gap-3">
-                    <span className="text-accent-gold w-12 shrink-0 text-sm font-bold">
-                      {format(new Date(seance.date), 'HH:mm')}
+                  <li
+                    key={seance.id}
+                    className={cn(
+                      'grid grid-cols-[60px_1fr_auto_auto] items-center gap-4 py-3.5',
+                      i > 0 && 'border-border/40 border-t',
+                    )}
+                  >
+                    <span className="text-accent-gold nk-mono text-[14px] font-semibold tabular-nums">
+                      {format(start, 'HH:mm')}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
+                      <div className="text-text-primary truncate text-sm font-medium">
                         {client ? `${client.prenom} ${client.nom}` : 'Client'}
-                      </p>
-                      <p className="text-text-tertiary truncate text-xs">{carte?.nom}</p>
+                      </div>
+                      <div className="text-text-secondary truncate text-xs">
+                        {carte?.nom ?? 'Séance'} · {dur}
+                      </div>
                     </div>
-                  </div>
+                    <span
+                      className={cn(
+                        'rounded-full px-2.5 py-1 text-[11px] font-medium',
+                        isPending
+                          ? 'bg-warning/15 text-warning'
+                          : 'bg-accent-gold/15 text-accent-gold',
+                      )}
+                    >
+                      {isPending ? 'En attente' : 'Confirmé'}
+                    </span>
+                    <ChevronRight size={16} className="text-text-tertiary" />
+                  </li>
                 );
-              })
-            ) : (
-              <p className="text-text-tertiary text-sm">Aucune séance à venir</p>
-            )}
+              })}
+            </ul>
+          )}
+        </motion.section>
+
+        <motion.section
+          variants={itemVariants}
+          className="bg-card border-border/40 rounded-xl border p-5"
+        >
+          <h3 className="text-text-primary text-[15px] font-semibold">
+            Nouvelles demandes
+          </h3>
+          <span className="text-text-tertiary text-[12px]">
+            {NEW_REQUESTS.length} athlètes ont matché
+          </span>
+
+          <div className="mt-4 flex flex-col gap-3.5">
+            {NEW_REQUESTS.map((req, i) => {
+              const sportif = sportifs.find((s) => s.id === req.sportifId);
+              return (
+                <div
+                  key={req.sportifId + i}
+                  className={cn(
+                    'pb-3.5',
+                    i !== NEW_REQUESTS.length - 1 && 'border-border/40 border-b',
+                  )}
+                >
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <span className="text-text-primary truncate text-[14px] font-medium">
+                      {sportif
+                        ? `${sportif.prenom} ${sportif.nom.charAt(0)}.`
+                        : 'Athlète'}
+                    </span>
+                    <span
+                      className="text-accent-gold rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums"
+                      style={{ background: 'rgba(201,178,122,0.20)' }}
+                    >
+                      {req.score} %
+                    </span>
+                  </div>
+                  <p className="text-text-secondary text-[12.5px] leading-snug">
+                    « {req.message} »
+                  </p>
+                  <div className="mt-2.5 flex gap-1.5">
+                    <button
+                      type="button"
+                      className="bg-primary text-primary-foreground hover:bg-accent-gold-hover inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all active:translate-y-px"
+                    >
+                      <Check size={13} />
+                      Accepter
+                    </button>
+                    <button
+                      type="button"
+                      className="border-border/60 text-text-secondary hover:border-accent-muted hover:text-text-primary inline-flex flex-1 items-center justify-center rounded-lg border px-3 py-1.5 text-[12px] transition-all active:translate-y-px"
+                    >
+                      Plus tard
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.section>
+      </div>
+
+      <motion.section
+        variants={itemVariants}
+        className="bg-card border-border/40 mt-5 rounded-xl border p-5 lg:p-6"
+      >
+        <div className="flex items-baseline justify-between gap-3">
+          <div>
+            <span className="nk-label text-accent-muted">Revenus d’avril</span>
+            <div className="mt-1.5 flex items-baseline gap-3">
+              <RevenueValue target={2580} />
+              <span className="text-success inline-flex items-center gap-1 text-[13px] font-medium">
+                <TrendingUp size={13} />
+                +8 % vs mars
+              </span>
+            </div>
           </div>
           <button
-            onClick={() => router.push('/agenda')}
-            className="text-accent-gold mt-4 text-xs font-medium hover:underline"
+            type="button"
+            onClick={() => router.push('/revenus')}
+            className="text-accent-gold hover:text-accent-gold-hover inline-flex items-center gap-1 text-[12px] font-medium transition-colors"
           >
-            Voir tout l&apos;agenda →
+            Détail revenus
+            <ChevronRight size={13} />
           </button>
-        </motion.div>
+        </div>
+        <div className="mt-4 h-20">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={SPARKLINE_DATA}>
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#C9B27A"
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive
+                animationDuration={1200}
+                animationEasing="ease-out"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.section>
 
-        {/* Bloc Nouveaux clients (4 cols) */}
-        <motion.div
-          variants={itemVariants}
-          className="border-border bg-surface rounded-xl border p-6 lg:col-span-4"
-        >
-          <p className="mb-4 text-sm font-semibold">Nouveaux clients cette semaine</p>
-          <div className="flex items-center gap-2">
-            {/* Avatar stack */}
-            <div className="flex -space-x-2">
-              {nouveauxClients.map((client) => (
-                <div
-                  key={client.id}
-                  className="border-surface relative size-10 overflow-hidden rounded-full border-2"
-                >
-                  <Image
-                    src={client.photo}
-                    alt={client.prenom}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-            <span className="text-accent-gold ml-1 text-sm font-semibold">
-              +{nouveauxClients.length}
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4 w-full gap-2"
-            onClick={() => router.push('/clients')}
-          >
-            <MessageCircle size={14} />
-            Envoyer un message de bienvenue
-          </Button>
-        </motion.div>
-
-        {/* Grille Indicateurs (8 cols) */}
-        <motion.div
-          variants={itemVariants}
-          className="grid gap-4 sm:grid-cols-3 lg:col-span-8"
-        >
-          {/* Taux remplissage */}
-          <div className="border-border bg-surface flex flex-col items-center rounded-xl border p-5">
-            <KpiGauge value={72} label="Remplissage" />
-          </div>
-
-          {/* NPS moyen */}
-          <div className="border-border bg-surface flex flex-col items-center rounded-xl border p-5">
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star
-                  key={i}
-                  size={18}
-                  className={
-                    i < Math.round(pro.note) ? 'fill-warning text-warning' : 'text-border'
-                  }
-                />
-              ))}
-            </div>
-            <span className="text-accent-gold mt-2 text-2xl font-bold">{pro.note}</span>
-            <span className="text-text-tertiary text-xs">Note moyenne</span>
-          </div>
-
-          {/* Fidélité */}
-          <div className="border-border bg-surface flex flex-col items-center rounded-xl border p-5">
-            <span className="text-accent-gold text-3xl font-bold">86%</span>
-            <span className="text-text-tertiary text-xs">Taux de fidélité</span>
-            <span className="text-success mt-1 flex items-center gap-1 text-xs">
-              <ArrowUpRight size={12} />
-              +4%
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Actions rapides (full width) */}
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:col-span-12"
-        >
-          {[
-            {
-              icon: Plus,
-              label: 'Créer carte service',
-              href: '/cartes-services',
-            },
-            {
-              icon: Users,
-              label: 'Inviter client',
-              href: '/clients',
-            },
-            {
-              icon: Calendar,
-              label: 'Voir agenda',
-              href: '/agenda',
-            },
-            {
-              icon: TrendingUp,
-              label: 'Voir revenus',
-              href: '/revenus',
-            },
-          ].map(({ icon: Icon, label, href }) => (
-            <button
-              key={label}
-              onClick={() => router.push(href)}
-              className="border-border bg-surface hover:bg-surface-elevated flex items-center gap-3 rounded-xl border p-4 transition-colors"
-            >
-              <Icon size={20} className="text-accent-gold shrink-0" />
-              <span className="text-sm font-medium">{label}</span>
-            </button>
-          ))}
-        </motion.div>
-      </div>
+      <Clock aria-hidden="true" className="hidden" />
     </motion.div>
   );
 }
 
-// Sous-composant jauge circulaire SVG
-function KpiGauge({ value, label }: { value: number; label: string }) {
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-
+function KpiCard({
+  label,
+  value,
+  delta,
+  deltaPositive,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  delta?: string;
+  deltaPositive?: boolean;
+  icon?: LucideIcon;
+}) {
+  const TrendIcon = deltaPositive ? TrendingUp : TrendingDown;
   return (
-    <>
-      <div className="relative">
-        <svg width={88} height={88} className="-rotate-90">
-          <circle
-            cx={44}
-            cy={44}
-            r={radius}
-            fill="none"
-            stroke="var(--color-border)"
-            strokeWidth={6}
-          />
-          <motion.circle
-            cx={44}
-            cy={44}
-            r={radius}
-            fill="none"
-            stroke="var(--color-accent-gold)"
-            strokeWidth={6}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          />
-        </svg>
-        <span className="text-accent-gold absolute inset-0 flex items-center justify-center text-lg font-bold">
-          {value}%
-        </span>
+    <div className="bg-card border-border/40 rounded-xl border p-5">
+      <div className="flex items-start justify-between gap-2">
+        <span className="nk-label text-accent-muted">{label}</span>
+        {Icon && <Icon size={14} className="text-accent-gold/70" />}
       </div>
-      <span className="text-text-tertiary mt-2 text-xs">{label}</span>
-    </>
+      <div className="text-text-primary mt-3 text-[28px] font-bold tracking-[-0.02em] tabular-nums">
+        {value}
+      </div>
+      {delta && (
+        <div
+          className={cn(
+            'mt-2 inline-flex items-center gap-1 text-[12px]',
+            deltaPositive ? 'text-success' : 'text-text-tertiary',
+          )}
+        >
+          {deltaPositive !== undefined && <TrendIcon size={12} />}
+          {delta}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RevenueValue({ target }: { target: number }) {
+  const value = useCountUp(target, 1100);
+  return (
+    <span className="text-accent-gold text-[34px] font-bold tracking-[-0.02em] tabular-nums">
+      {value.toLocaleString('fr-FR')} €
+    </span>
   );
 }

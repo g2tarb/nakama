@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowUpRight } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -30,58 +30,80 @@ const MONTHLY_DATA = [
   { month: 'Avr', value: 2580 },
 ];
 
+const CLIENTS_DATA = [
+  { month: 'Nov', clients: 8 },
+  { month: 'Déc', clients: 10 },
+  { month: 'Jan', clients: 12 },
+  { month: 'Fév', clients: 14 },
+  { month: 'Mar', clients: 16 },
+  { month: 'Avr', clients: 18 },
+];
+
 const PIE_COLORS = ['#C9B27A', '#4ADE80', '#60A5FA', '#F87171', '#FBBF24'];
+
+const TOOLTIP_STYLE = {
+  background: '#2A3749',
+  border: '1px solid rgba(58,74,94,0.6)',
+  borderRadius: 10,
+  fontSize: 12,
+  boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+};
 
 export default function RevenusPage() {
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
-  const ca = useCountUp(2580, 1000);
+  const ca = useCountUp(2580, 1100);
 
   const pieData = pro.cartesServices.map((c) => ({
     name: c.nom,
     value: c.caGenere,
   }));
 
-  const clientsData = [
-    { month: 'Nov', clients: 8 },
-    { month: 'Déc', clients: 10 },
-    { month: 'Jan', clients: 12 },
-    { month: 'Fév', clients: 14 },
-    { month: 'Mar', clients: 16 },
-    { month: 'Avr', clients: 18 },
-  ];
-
-  const topClients = sportifs.slice(0, 3).map((s) => ({
-    ...s,
-    nbSeances: seances.filter((se) => se.sportifId === s.id).length,
-    ca: seances
-      .filter((se) => se.sportifId === s.id && se.statut === 'terminee')
-      .reduce((sum, se) => sum + se.tarif, 0),
-  }));
+  const topClients = sportifs
+    .slice(0, 5)
+    .map((s) => ({
+      ...s,
+      nbSeances: seances.filter((se) => se.sportifId === s.id && se.statut === 'terminee')
+        .length,
+      ca: seances
+        .filter((se) => se.sportifId === s.id && se.statut === 'terminee')
+        .reduce((sum, se) => sum + se.tarif, 0),
+    }))
+    .sort((a, b) => b.ca - a.ca);
 
   return (
-    <div className="px-4 py-6 lg:px-8">
-      <h1 className="text-accent-gold mb-2 text-xl font-bold">Mes revenus</h1>
-      <p className="text-text-secondary mb-8 text-sm">Avril 2026</p>
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-10 lg:py-8">
+      <header className="mb-6">
+        <span className="nk-eyebrow">Avril 2026</span>
+        <h1 className="nk-h1 text-text-primary mt-1.5 tracking-[-0.02em]">Mes revenus</h1>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* CA principal */}
-        <div className="border-border bg-surface rounded-xl border p-6 lg:col-span-5">
-          <p className="text-text-secondary text-sm">Chiffre d&apos;affaires</p>
-          <div className="mt-1 flex items-baseline gap-3">
-            <span className="text-accent-gold text-4xl font-bold">{ca}€</span>
-            <span className="text-success flex items-center gap-1 text-sm font-medium">
-              <ArrowUpRight size={14} />
-              +10.3%
+      <div className="grid gap-4 lg:grid-cols-12">
+        <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-5 lg:p-6">
+          <span className="nk-label text-accent-muted">Chiffre d’affaires</span>
+          <div className="mt-2 flex items-baseline gap-3">
+            <span className="text-accent-gold text-[40px] font-bold tracking-[-0.02em] tabular-nums">
+              {ca.toLocaleString('fr-FR')} €
+            </span>
+            <span className="text-success inline-flex items-center gap-1 text-sm font-medium">
+              <TrendingUp size={13} />
+              +10,3 % vs mars
             </span>
           </div>
-        </div>
+          <div className="border-border/40 mt-5 grid grid-cols-3 gap-3 border-t pt-4">
+            <Stat label="Séances" value="32" />
+            <Stat label="Tarif moyen" value="80 €" />
+            <Stat label="Clients" value="18" accent />
+          </div>
+        </section>
 
-        {/* Courbe CA */}
-        <div className="border-border bg-surface rounded-xl border p-6 lg:col-span-7">
-          <h3 className="mb-4 text-sm font-semibold">Évolution du CA (12 mois)</h3>
+        <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-7 lg:p-6">
+          <h3 className="nk-label text-accent-muted mb-4">Évolution sur 8 mois</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={MONTHLY_DATA}>
+              <LineChart
+                data={MONTHLY_DATA}
+                margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+              >
                 <XAxis
                   dataKey="month"
                   tick={{ fill: '#8A95A5', fontSize: 11 }}
@@ -94,29 +116,25 @@ export default function RevenusPage() {
                   tickLine={false}
                   width={40}
                 />
-                <Tooltip
-                  contentStyle={{
-                    background: '#2A3749',
-                    border: '1px solid #3A4A5E',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
+                <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ stroke: '#3A4A5E' }} />
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke="#C9B27A"
                   strokeWidth={2}
                   dot={{ fill: '#C9B27A', r: 3 }}
+                  activeDot={{ r: 5, fill: '#C9B27A' }}
+                  isAnimationActive
+                  animationDuration={1100}
+                  animationEasing="ease-out"
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
 
-        {/* Camembert */}
-        <div className="border-border bg-surface rounded-xl border p-6 lg:col-span-5">
-          <h3 className="mb-4 text-sm font-semibold">Répartition par service</h3>
+        <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-5 lg:p-6">
+          <h3 className="nk-label text-accent-muted mb-4">Répartition par service</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -124,51 +142,45 @@ export default function RevenusPage() {
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
+                  innerRadius={42}
+                  outerRadius={72}
                   paddingAngle={3}
                   dataKey="value"
+                  isAnimationActive
+                  animationDuration={900}
                 >
-                  {pieData.map((_, i) => {
-                    const color = PIE_COLORS[i % PIE_COLORS.length] ?? '#C9B27A';
-                    return <Cell key={i} fill={color} />;
-                  })}
+                  {pieData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: '#2A3749',
-                    border: '1px solid #3A4A5E',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-2 flex flex-wrap gap-3">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
             {pieData.map((d, i) => (
               <span
                 key={d.name}
-                className="text-text-secondary flex items-center gap-1.5 text-xs"
+                className="text-text-secondary inline-flex items-center gap-1.5 text-[12px]"
               >
                 <span
-                  className="size-2 rounded-full"
-                  style={{
-                    background: PIE_COLORS[i % PIE_COLORS.length],
-                  }}
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
                 />
                 {d.name}
               </span>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Clients actifs */}
-        <div className="border-border bg-surface rounded-xl border p-6 lg:col-span-7">
-          <h3 className="mb-4 text-sm font-semibold">Clients actifs</h3>
+        <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-7 lg:p-6">
+          <h3 className="nk-label text-accent-muted mb-4">Clients actifs</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={clientsData}>
+              <BarChart
+                data={CLIENTS_DATA}
+                margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+              >
                 <XAxis
                   dataKey="month"
                   tick={{ fill: '#8A95A5', fontSize: 11 }}
@@ -182,48 +194,75 @@ export default function RevenusPage() {
                   width={30}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: '#2A3749',
-                    border: '1px solid #3A4A5E',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  cursor={{ fill: 'rgba(201,178,122,0.06)' }}
                 />
-                <Bar dataKey="clients" fill="#C9B27A" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="clients"
+                  fill="#C9B27A"
+                  radius={[6, 6, 0, 0]}
+                  isAnimationActive
+                  animationDuration={900}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
 
-        {/* Top clients */}
-        <div className="border-border bg-surface rounded-xl border p-6 lg:col-span-12">
-          <h3 className="mb-4 text-sm font-semibold">Top clients</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-border text-text-tertiary border-b text-left text-xs">
-                  <th className="pb-2 font-medium">Client</th>
-                  <th className="pb-2 font-medium">Séances</th>
-                  <th className="pb-2 text-right font-medium">CA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topClients.map((client) => (
-                  <tr key={client.id} className="border-border/50 border-b">
-                    <td className="py-3 font-medium">
-                      {client.prenom} {client.nom}
-                    </td>
-                    <td className="text-text-secondary py-3">{client.nbSeances}</td>
-                    <td className="text-accent-gold py-3 text-right font-semibold">
-                      {client.ca}€
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-12 lg:p-6">
+          <h3 className="nk-label text-accent-muted mb-4">Top clients</h3>
+          <ul className="flex flex-col">
+            {topClients.map((client, i) => (
+              <li
+                key={client.id}
+                className={
+                  'grid grid-cols-[24px_1fr_auto_auto] items-center gap-4 py-3 ' +
+                  (i > 0 ? 'border-border/40 border-t' : '')
+                }
+              >
+                <span className="text-text-tertiary nk-mono text-xs font-semibold tabular-nums">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-text-primary truncate text-sm font-medium">
+                    {client.prenom} {client.nom}
+                  </p>
+                </div>
+                <span className="text-text-secondary text-xs tabular-nums">
+                  {client.nbSeances} séance{client.nbSeances > 1 ? 's' : ''}
+                </span>
+                <span className="text-accent-gold text-sm font-bold tabular-nums">
+                  {client.ca.toLocaleString('fr-FR')} €
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-text-tertiary text-[11px]">{label}</span>
+      <span
+        className={
+          'mt-0.5 text-[16px] font-bold tabular-nums ' +
+          (accent ? 'text-accent-gold' : 'text-text-primary')
+        }
+      >
+        {value}
+      </span>
     </div>
   );
 }

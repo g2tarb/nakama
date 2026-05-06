@@ -104,38 +104,52 @@ export default function ParametresPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 lg:px-8">
-      <h1 className="text-accent-gold mb-6 text-xl font-bold">Paramètres</h1>
+    <div className="mx-auto w-full max-w-[720px] px-4 py-6 lg:px-10 lg:py-8">
+      <header className="mb-6">
+        <span className="nk-eyebrow">Compte</span>
+        <h1 className="nk-h1 text-text-primary mt-1.5 tracking-[-0.02em]">Réglages</h1>
+      </header>
 
-      <div className="space-y-2">
+      <ul className="flex flex-col gap-2">
         {MENU_ITEMS.map(({ key, icon: Icon, label, description }) => (
-          <button
-            key={key}
-            onClick={() => setOpenMenu(key)}
-            className="border-border bg-surface hover:bg-surface-elevated flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-colors"
-          >
-            <Icon size={20} className="text-text-secondary shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="font-medium">{label}</p>
-                {key === 'formule' && (
-                  <Badge className="bg-accent-gold/10 text-accent-gold text-xs capitalize">
-                    {pro.formule}
-                  </Badge>
-                )}
+          <li key={key}>
+            <button
+              type="button"
+              onClick={() => setOpenMenu(key)}
+              className="bg-card border-border/40 hover:bg-surface-elevated flex w-full items-center gap-3.5 rounded-xl border p-4 text-left transition-colors active:translate-y-px"
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]"
+                style={{ background: 'var(--color-accent-gold-wash)' }}
+              >
+                <Icon size={17} className="text-accent-gold" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-text-primary text-[14.5px] font-medium">{label}</p>
+                  {key === 'formule' && (
+                    <span className="bg-accent-gold/15 text-accent-gold rounded-full px-2 py-0.5 text-[10.5px] font-semibold tracking-[0.04em] uppercase">
+                      {pro.formule}
+                    </span>
+                  )}
+                </div>
+                <p className="text-text-tertiary mt-0.5 text-[12px]">{description}</p>
               </div>
-              <p className="text-text-tertiary text-xs">{description}</p>
-            </div>
-            <ChevronRight size={16} className="text-text-tertiary" />
-          </button>
+              <ChevronRight size={16} className="text-text-tertiary shrink-0" />
+            </button>
+          </li>
         ))}
+      </ul>
 
+      <div className="border-border/40 mt-6 border-t pt-6">
         <button
+          type="button"
           onClick={() => setLogoutOpen(true)}
-          className="border-danger/20 bg-danger/5 hover:bg-danger/10 flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-colors"
+          className="border-danger/30 bg-danger/5 hover:bg-danger/15 flex w-full items-center justify-center gap-2 rounded-xl border p-3.5 transition-colors active:translate-y-px"
         >
-          <LogOut size={20} className="text-danger" />
-          <span className="text-danger font-medium">Déconnexion</span>
+          <LogOut size={16} className="text-danger" />
+          <span className="text-danger text-[14px] font-medium">Se déconnecter</span>
         </button>
       </div>
 
