@@ -4,18 +4,25 @@ import { useEffect, useRef, useState } from 'react';
 
 const REPLAY_DELAY_MS = 5000;
 
+type Phase = 'pending' | 'playing' | 'pausing';
+
 type Props = {
   src: string;
   /** Voile gradient appliqué au-dessus de la vidéo pour préserver la lisibilité du texte. */
   overlay?: string;
+  /** Contenu affiché pendant la pause (5 s) entre deux lectures de vidéo. */
+  pauseContent?: React.ReactNode;
 };
 
 export function BackgroundVideo({
   src,
   overlay = 'linear-gradient(180deg, rgba(30,42,58,0.78) 0%, rgba(30,42,58,0.86) 60%, rgba(30,42,58,0.95) 100%)',
+  pauseContent,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoVisible, setVideoVisible] = useState(false);
+  const [phase, setPhase] = useState<Phase>('pending');
+  // re-mounts pauseContent à chaque cycle pour relancer les animations d'entrée
+  const [cycleKey, setCycleKey] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -23,20 +30,21 @@ export function BackgroundVideo({
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-    const handleCanPlay = () => setVideoVisible(true);
+    const handleCanPlay = () => setPhase('playing');
 
     const handleEnded = () => {
-      setVideoVisible(false);
+      setPhase('pausing');
+      setCycleKey((k) => k + 1);
       timeoutId = setTimeout(() => {
         video.currentTime = 0;
         video.play().then(
-          () => setVideoVisible(true),
-          () => setVideoVisible(false),
+          () => setPhase('playing'),
+          () => setPhase('pending'),
         );
       }, REPLAY_DELAY_MS);
     };
 
-    const handleError = () => setVideoVisible(false);
+    const handleError = () => setPhase('pending');
 
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('ended', handleEnded);
@@ -49,6 +57,9 @@ export function BackgroundVideo({
       video.removeEventListener('error', handleError);
     };
   }, []);
+
+  const videoVisible = phase === 'playing';
+  const showPause = phase === 'pausing' && pauseContent;
 
   return (
     <>
@@ -68,6 +79,15 @@ export function BackgroundVideo({
         aria-hidden="true"
         style={{ opacity: videoVisible ? 1 : 0, background: overlay }}
       />
+      {showPause && (
+        <div
+          key={cycleKey}
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          aria-hidden="true"
+        >
+          {pauseContent}
+        </div>
+      )}
     </>
   );
 }

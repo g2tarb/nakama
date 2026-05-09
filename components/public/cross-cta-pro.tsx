@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 import { BackgroundVideo } from './background-video';
+import { NakamaShineLogo } from './nakama-shine-logo';
 
 export function CrossCtaPro() {
   return (
@@ -10,7 +11,7 @@ export function CrossCtaPro() {
       className="relative isolate overflow-hidden px-4 py-20"
       style={{ background: 'var(--color-bg-overlay)' }}
     >
-      <BackgroundVideo src="/videos/nakama-fond.mp4" />
+      <BackgroundVideo src="/videos/nakama-fond.mp4" pauseContent={<NakamaShineLogo />} />
 
       <div className="relative mx-auto max-w-[880px] text-center">
         <span className="nk-eyebrow">Tu accompagnes des sportifs ?</span>
