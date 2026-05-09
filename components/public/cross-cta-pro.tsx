@@ -20,12 +20,11 @@ export function CrossCtaPro() {
           partir de 29 € par mois.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            href="/inscription/pro"
-            className="bg-primary text-primary-foreground hover:bg-accent-gold-hover inline-flex items-center gap-2 rounded-[10px] border border-transparent px-6 py-3 text-[15px] font-semibold transition-all hover:-translate-y-px active:translate-y-px"
-          >
-            Créer mon profil pro
-            <ArrowRight size={16} />
+          <Link href="/inscription/pro" className="nk-btn">
+            <span>
+              Créer mon profil pro
+              <ArrowRight size={16} />
+            </span>
           </Link>
           <Link
             href="/pro/abonnement"

@@ -126,13 +126,11 @@ export function HeroSearchBar() {
           active={openField === 'ville'}
           onClick={() => setOpenField(openField === 'ville' ? null : 'ville')}
         />
-        <button
-          type="button"
-          onClick={handleSearch}
-          className="bg-primary text-primary-foreground hover:bg-accent-gold-hover focus-visible:ring-ring/50 m-1 inline-flex items-center justify-center gap-2 rounded-[10px] px-6 py-3 text-[15px] font-semibold transition-all hover:-translate-y-px focus-visible:ring-3 active:translate-y-px"
-        >
-          <Search size={16} />
-          Rechercher
+        <button type="button" onClick={handleSearch} className="nk-btn m-1">
+          <span>
+            <Search size={16} />
+            Rechercher
+          </span>
         </button>
       </div>
 

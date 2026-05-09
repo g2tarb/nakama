@@ -8,8 +8,10 @@ import { RotatingHeadline } from './rotating-headline';
 
 export function Hero() {
   return (
-    <section className="nk-hero-bg relative isolate overflow-hidden px-4 py-20 md:py-28">
-      <BackgroundVideo src="/videos/nakama-fond.mp4" />
+    <section className="nk-hero-bg relative isolate px-4 py-20 md:py-28">
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <BackgroundVideo src="/videos/nakama-fond.mp4" />
+      </div>
 
       <div className="relative mx-auto max-w-[1080px] text-center">
         <motion.span

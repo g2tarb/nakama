@@ -276,3 +276,141 @@
     radial-gradient(700px 400px at 100% 30%, rgba(201, 178, 122, 0.04), transparent 60%),
     var(--background);
 }
+
+/* ============================================
+   Bouton or premium signature
+   Gradient or animé qui slide au hover, pill noir intérieur
+   Usage : <button class="nk-btn"><span>Mon label</span></button>
+   ============================================ */
+.nk-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(
+    to right,
+    #77530a,
+    #ffd277,
+    #77530a,
+    #77530a,
+    #ffd277,
+    #77530a
+  );
+  background-size: 250%;
+  background-position: left center;
+  color: #ffd277;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background-position 1s ease,
+    transform 0.15s ease;
+}
+
+.nk-btn > span {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  padding: 0 22px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.842);
+  transition: background-position 1s ease;
+}
+
+.nk-btn:hover {
+  background-position: right center;
+}
+
+.nk-btn:active {
+  transform: scale(0.96);
+}
+
+.nk-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.nk-btn:focus-visible {
+  outline: 2px solid #c9b27a;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Spinner Nakama — page transitions
+   Usage : <div class="nk-spinner" aria-label="Chargement" role="status" />
+   ============================================ */
+.nk-spinner {
+  --size: 26px;
+  --first-block-clr: #c9b27a;
+  --second-block-clr: #2a3749;
+  width: 84px;
+  height: 84px;
+  position: relative;
+}
+
+.nk-spinner::before,
+.nk-spinner::after {
+  box-sizing: border-box;
+  position: absolute;
+  content: '';
+  width: var(--size);
+  height: var(--size);
+  border-radius: 6px;
+}
+
+.nk-spinner::before {
+  top: 50%;
+  left: 50%;
+  background: var(--first-block-clr);
+  animation: nk-spinner-up 2.4s cubic-bezier(0, 0, 0.24, 1.21) infinite;
+}
+
+.nk-spinner::after {
+  top: calc(50% - var(--size));
+  left: calc(50% - var(--size));
+  background: var(--second-block-clr);
+  border: 1px solid #3a4a5e;
+  animation: nk-spinner-down 2.4s cubic-bezier(0, 0, 0.24, 1.21) infinite;
+}
+
+@keyframes nk-spinner-up {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  75% {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes nk-spinner-down {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(100%);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%);
+  }
+  75% {
+    transform: translateY(100%);
+  }
+}
