@@ -58,36 +58,36 @@ export function HowItWorks() {
               }}
               className="bg-card border-border/40 group/step relative isolate overflow-hidden rounded-xl border p-8"
             >
-              {/* Image en fond */}
+              {/* Image en fond — apparaît au hover */}
               <Image
                 src={image}
                 alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                className="-z-20 object-cover opacity-90 transition-transform duration-700 ease-out group-hover/step:scale-105"
+                className="-z-20 object-cover opacity-0 transition-all duration-700 ease-out group-hover/step:scale-105 group-hover/step:opacity-100"
               />
-              {/* Voile bleu nuit pour lisibilité */}
+              {/* Voile soft (style testimonials) — apparaît au hover */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 -z-10"
+                className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-700 ease-out group-hover/step:opacity-100"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(30,42,58,0.65) 0%, rgba(30,42,58,0.85) 50%, rgba(30,42,58,0.95) 100%)',
+                    'linear-gradient(180deg, rgba(30,42,58,0) 40%, rgba(30,42,58,0.55) 100%)',
                 }}
               />
 
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute -top-2 right-5 text-[92px] leading-none font-extrabold"
+                className="pointer-events-none absolute -top-2 right-5 text-[92px] leading-none font-extrabold transition-colors duration-700"
                 style={{
-                  color: 'rgba(201, 178, 122, 0.18)',
+                  color: 'rgba(201, 178, 122, 0.07)',
                   letterSpacing: '-0.04em',
                 }}
               >
                 {num}
               </span>
               <div
-                className="relative mb-5 inline-flex h-11 w-11 items-center justify-center rounded-[10px] backdrop-blur-sm"
+                className="relative mb-5 inline-flex h-11 w-11 items-center justify-center rounded-[10px]"
                 style={{ background: 'var(--color-accent-gold-wash)' }}
               >
                 <Icon size={22} className="text-accent-gold" />
