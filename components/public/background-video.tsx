@@ -4,25 +4,24 @@ import { useEffect, useRef, useState } from 'react';
 
 const REPLAY_DELAY_MS = 5000;
 
-type Phase = 'pending' | 'playing' | 'pausing';
+export type VideoPhase = 'pending' | 'playing' | 'pausing';
 
 type Props = {
   src: string;
   /** Voile gradient appliqué au-dessus de la vidéo pour préserver la lisibilité du texte. */
   overlay?: string;
-  /** Contenu affiché pendant la pause (5 s) entre deux lectures de vidéo. */
-  pauseContent?: React.ReactNode;
+  /** Callback notifié à chaque changement de phase. */
+  onPhaseChange?: (phase: VideoPhase, cycleKey: number) => void;
 };
 
 export function BackgroundVideo({
   src,
   overlay = 'linear-gradient(180deg, rgba(30,42,58,0.78) 0%, rgba(30,42,58,0.86) 60%, rgba(30,42,58,0.95) 100%)',
-  pauseContent,
+  onPhaseChange,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [phase, setPhase] = useState<Phase>('pending');
-  // re-mounts pauseContent à chaque cycle pour relancer les animations d'entrée
-  const [cycleKey, setCycleKey] = useState(0);
+  const [phase, setPhase] = useState<VideoPhase>('pending');
+  const cycleKeyRef = useRef(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -30,21 +29,26 @@ export function BackgroundVideo({
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-    const handleCanPlay = () => setPhase('playing');
+    const updatePhase = (next: VideoPhase) => {
+      setPhase(next);
+      onPhaseChange?.(next, cycleKeyRef.current);
+    };
+
+    const handleCanPlay = () => updatePhase('playing');
 
     const handleEnded = () => {
-      setPhase('pausing');
-      setCycleKey((k) => k + 1);
+      cycleKeyRef.current += 1;
+      updatePhase('pausing');
       timeoutId = setTimeout(() => {
         video.currentTime = 0;
         video.play().then(
-          () => setPhase('playing'),
-          () => setPhase('pending'),
+          () => updatePhase('playing'),
+          () => updatePhase('pending'),
         );
       }, REPLAY_DELAY_MS);
     };
 
-    const handleError = () => setPhase('pending');
+    const handleError = () => updatePhase('pending');
 
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('ended', handleEnded);
@@ -56,10 +60,9 @@ export function BackgroundVideo({
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('error', handleError);
     };
-  }, []);
+  }, [onPhaseChange]);
 
   const videoVisible = phase === 'playing';
-  const showPause = phase === 'pausing' && pauseContent;
 
   return (
     <>
@@ -79,15 +82,6 @@ export function BackgroundVideo({
         aria-hidden="true"
         style={{ opacity: videoVisible ? 1 : 0, background: overlay }}
       />
-      {showPause && (
-        <div
-          key={cycleKey}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          aria-hidden="true"
-        >
-          {pauseContent}
-        </div>
-      )}
     </>
   );
 }

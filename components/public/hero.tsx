@@ -1,19 +1,27 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 
-import { BackgroundVideo } from './background-video';
+import { BackgroundVideo, type VideoPhase } from './background-video';
 import { HeroSearchBar } from './hero-search-bar';
-import { NakamaShineLogo } from './nakama-shine-logo';
 import { RotatingHeadline } from './rotating-headline';
 
 export function Hero() {
+  const [videoPhase, setVideoPhase] = useState<VideoPhase>('pending');
+  const [shineKey, setShineKey] = useState(0);
+
+  const handlePhaseChange = useCallback((phase: VideoPhase, cycleKey: number) => {
+    setVideoPhase(phase);
+    if (phase === 'pausing') setShineKey(cycleKey);
+  }, []);
+
   return (
     <section className="nk-hero-bg relative isolate px-4 py-20 md:py-28">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <BackgroundVideo
           src="/videos/nakama-fond.mp4"
-          pauseContent={<NakamaShineLogo />}
+          onPhaseChange={handlePhaseChange}
         />
       </div>
 
@@ -27,7 +35,7 @@ export function Hero() {
           Matching comportemental · plateforme française
         </motion.span>
 
-        <RotatingHeadline />
+        <RotatingHeadline shine={videoPhase === 'pausing'} shineKey={shineKey} />
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}
