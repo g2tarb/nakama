@@ -279,16 +279,20 @@
 
 /* ============================================
    Bouton or premium signature
-   Gradient or animé qui slide au hover, pill noir intérieur
-   Usage : <button class="nk-btn"><span>Mon label</span></button>
+   Gradient or animé qui slide au hover, pill noir intérieur via ::before.
+   Hauteur/padding flexibles → respecte les size variants Button shadcn.
+   Usage direct : <button class="nk-btn">Label</button>
+   Ou via <Button variant="default"> qui hérite automatiquement.
    ============================================ */
 .nk-btn {
   position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  padding: 0;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 18px;
   border: none;
   border-radius: 10px;
   background: linear-gradient(
@@ -302,9 +306,8 @@
   );
   background-size: 250%;
   background-position: left center;
-  color: #ffd277;
+  color: #ffd277 !important;
   font-weight: 600;
-  font-size: 14px;
   cursor: pointer;
   overflow: hidden;
   transition:
@@ -312,19 +315,18 @@
     transform 0.15s ease;
 }
 
-.nk-btn > span {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
-  padding: 0 22px;
+.nk-btn::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.842);
-  transition: background-position 1s ease;
+  z-index: -1;
+}
+
+.nk-btn > * {
+  position: relative;
+  z-index: 0;
 }
 
 .nk-btn:hover {
