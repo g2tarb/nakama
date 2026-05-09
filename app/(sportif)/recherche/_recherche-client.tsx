@@ -15,6 +15,7 @@ import type { Pro, Sport, Specialite, Format } from '@/types';
 interface RechercheClientProps {
   initialPros: Pro[];
   scoreMap: Record<string, number>;
+  initialVille?: string;
 }
 
 function PillToggle({
@@ -53,6 +54,7 @@ export default function RechercheClient(props: RechercheClientProps) {
 function RechercheContent({
   initialPros,
   scoreMap: serverScoreMap,
+  initialVille,
 }: RechercheClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -120,7 +122,9 @@ function RechercheContent({
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-accent-gold text-xl font-bold">Trouve ton Nakama</h1>
+          <h1 className="text-accent-gold text-xl font-bold">
+            {initialVille ? `Pros à ${initialVille}` : 'Trouve ton Nakama'}
+          </h1>
           <p className="text-text-secondary mt-1 text-sm">
             {filteredPros.length} professionnel
             {filteredPros.length > 1 ? 's' : ''} trouvé

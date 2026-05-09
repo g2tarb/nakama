@@ -21,6 +21,7 @@ import { fr } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
+import { suggestPlaces, type PlaceSuggestion } from '@/lib/mapbox/suggest';
 
 type SportSlug =
   | 'fitness'
@@ -47,12 +48,11 @@ const SPORTS: Array<{ slug: SportSlug; label: string; icon: LucideIcon }> = [
 
 const POPULAIRES: SportSlug[] = ['yoga', 'boxe', 'musculation', 'crossfit', 'running'];
 
-const VILLES_SUGGESTIONS = [
+const VILLES_FALLBACK = [
   'Paris 11e',
   'Boulogne-Billancourt',
   'Vincennes',
   'Levallois-Perret',
-  'Saint-Denis',
   'Lyon',
   'Marseille',
   'Bordeaux',
@@ -366,9 +366,35 @@ function VilleAutocomplete({
   onChange: (v: string) => void;
   onPick: (v: string) => void;
 }) {
-  const filtered = value
-    ? VILLES_SUGGESTIONS.filter((v) => v.toLowerCase().includes(value.toLowerCase()))
-    : VILLES_SUGGESTIONS;
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const lastQueryRef = useRef<string>('');
+
+  // Debounce 250 ms sur le fetch Mapbox
+  useEffect(() => {
+    const trimmed = value.trim();
+    if (trimmed.length < 2) {
+      setSuggestions([]);
+      setIsLoading(false);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      lastQueryRef.current = trimmed;
+      setIsLoading(true);
+      try {
+        const results = await suggestPlaces(trimmed);
+        // ignore les réponses obsolètes (l'utilisateur a tapé entre temps)
+        if (lastQueryRef.current === trimmed) {
+          setSuggestions(results);
+        }
+      } finally {
+        if (lastQueryRef.current === trimmed) setIsLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [value]);
+
+  const showFallback = value.trim().length < 2 && suggestions.length === 0;
 
   return (
     <div>
@@ -381,9 +407,48 @@ function VilleAutocomplete({
         placeholder="Ville ou code postal"
         className="border-border/60 bg-card focus:border-accent-muted focus:ring-accent-gold/15 placeholder:text-text-tertiary text-text-primary h-10 w-full rounded-[10px] border px-3 text-sm focus:ring-3 focus:outline-none"
       />
-      {filtered.length > 0 && (
-        <ul className="mt-2 flex max-h-[220px] flex-col gap-0.5 overflow-y-auto">
-          {filtered.map((v) => (
+
+      {isLoading && (
+        <div className="text-text-tertiary mt-3 flex items-center gap-2 px-2 text-[12px]">
+          <span className="border-accent-muted/40 border-t-accent-gold inline-block h-3 w-3 animate-spin rounded-full border-2" />
+          Recherche…
+        </div>
+      )}
+
+      {!isLoading && suggestions.length > 0 && (
+        <ul className="mt-2 flex max-h-[260px] flex-col gap-0.5 overflow-y-auto">
+          {suggestions.map((s) => (
+            <li key={s.id}>
+              <button
+                type="button"
+                onClick={() => onPick(s.name)}
+                className="hover:bg-surface-elevated text-text-primary flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors"
+              >
+                <MapPin size={14} className="text-accent-muted mt-0.5 shrink-0" />
+                <span className="flex flex-col">
+                  <span>{s.name}</span>
+                  {s.fullName !== s.name && (
+                    <span className="text-text-tertiary text-[11px]">{s.fullName}</span>
+                  )}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!isLoading && suggestions.length === 0 && !showFallback && (
+        <p className="text-text-tertiary mt-3 px-2 text-[12px]">
+          Aucun résultat. Essaie un code postal ou une autre ville.
+        </p>
+      )}
+
+      {showFallback && (
+        <ul className="mt-3 flex max-h-[260px] flex-col gap-0.5 overflow-y-auto">
+          <li className="text-text-tertiary px-2 pb-1 text-[11px] tracking-[0.06em] uppercase">
+            Suggestions
+          </li>
+          {VILLES_FALLBACK.map((v) => (
             <li key={v}>
               <button
                 type="button"
