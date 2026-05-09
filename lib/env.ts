@@ -1,9 +1,16 @@
 import { z } from 'zod';
 
+const postgresUrl = z
+  .string()
+  .regex(
+    /^postgres(ql)?:\/\//,
+    'DATABASE_URL doit commencer par postgres:// ou postgresql://',
+  );
+
 const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  DATABASE_URL: z.string().url(),
-  DATABASE_URL_DIRECT: z.string().url().optional(),
+  DATABASE_URL: postgresUrl,
+  DATABASE_URL_DIRECT: postgresUrl.optional(),
   MAPBOX_ACCESS_TOKEN: z.string().min(1),
   R2_ACCOUNT_ID: z.string().min(1),
   R2_ACCESS_KEY_ID: z.string().min(1),
