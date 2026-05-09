@@ -9,21 +9,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useUserStore } from '@/stores/user-store';
 import { useModeStore } from '@/stores/mode-store';
-import { defaultSportif, pros } from '@/lib/mock-data';
+import { signInAction, signUpAction } from '@/lib/auth/actions';
 import { connexionSchema, type ConnexionInput } from '@/lib/schemas';
 
 type Tab = 'connexion' | 'inscription';
 
 export default function ConnexionPage() {
   const router = useRouter();
-  const setSportif = useUserStore((s) => s.setSportif);
-  const setPro = useUserStore((s) => s.setPro);
   const setMode = useModeStore((s) => s.setMode);
 
   const [tab, setTab] = useState<Tab>('connexion');
   const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
@@ -39,17 +37,43 @@ export default function ConnexionPage() {
 
   const role = watch('role');
 
-  const onSubmit = (data: ConnexionInput) => {
-    if (data.role === 'sportif') {
-      setSportif(defaultSportif);
-      setMode('sportif');
-      router.push('/accueil');
-    } else {
-      const demoPro = pros[4]!;
-      setPro(demoPro);
-      setMode('pro');
-      router.push('/dashboard');
+  const onSubmit = async (data: ConnexionInput) => {
+    setServerError(null);
+
+    if (tab === 'connexion') {
+      const r = await signInAction({ email: data.email, password: data.password });
+      if (!r.ok) {
+        setServerError(r.error);
+        return;
+      }
+      const userRole = r.data?.role ?? data.role;
+      setMode(userRole === 'pro' ? 'pro' : 'sportif');
+      router.push(userRole === 'pro' ? '/dashboard' : '/accueil');
+      router.refresh();
+      return;
     }
+
+    // inscription : crée le compte auth + redirige vers l onboarding dédié
+    const r = await signUpAction({
+      email: data.email,
+      password: data.password,
+      role: data.role,
+      prenom: '',
+      nom: '',
+    });
+    if (!r.ok) {
+      setServerError(r.error);
+      return;
+    }
+    if (r.data?.needsEmailVerification) {
+      setServerError(
+        'Compte créé. Confirme ton email pour continuer (ou désactive la vérification dans Supabase).',
+      );
+      return;
+    }
+    setMode(data.role);
+    router.push(data.role === 'pro' ? '/inscription/pro' : '/inscription/sportif');
+    router.refresh();
   };
 
   return (
@@ -170,13 +194,26 @@ export default function ConnexionPage() {
           </div>
         </div>
 
+        {serverError && (
+          <p
+            role="alert"
+            className="bg-danger/10 border-danger/30 text-danger -mt-2 rounded-md border px-3 py-2 text-xs"
+          >
+            {serverError}
+          </p>
+        )}
+
         <Button
           type="submit"
           size="lg"
           disabled={isSubmitting}
           className="mt-2 h-12 w-full text-base"
         >
-          {tab === 'connexion' ? 'Se connecter' : "S'inscrire"}
+          {isSubmitting
+            ? 'Patiente…'
+            : tab === 'connexion'
+              ? 'Se connecter'
+              : "S'inscrire"}
         </Button>
       </form>
 

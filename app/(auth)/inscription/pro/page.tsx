@@ -10,11 +10,11 @@ import { ProgressBar } from '@/components/sportif/onboarding/progress-bar';
 import { StepWrapper } from '@/components/sportif/onboarding/step-wrapper';
 import { VibeSlider } from '@/components/sportif/onboarding/vibe-slider';
 import { cn } from '@/lib/utils';
-import { useUserStore } from '@/stores/user-store';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, SPECIALITES, FORMULES } from '@/lib/constants';
 import { onboardingProSchema } from '@/lib/schemas';
-import type { Pro, Sport, Specialite, Format, Formule } from '@/types';
+import { completeProOnboarding } from '@/lib/auth/onboarding';
+import type { Sport, Specialite, Format, Formule } from '@/types';
 
 const TOTAL_STEPS = 6;
 
@@ -45,12 +45,12 @@ function PillButton({
 
 export default function InscriptionProPage() {
   const router = useRouter();
-  const setPro = useUserStore((s) => s.setPro);
   const setMode = useModeStore((s) => s.setMode);
 
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [done, setDone] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   // Étape 1 : Infos personnelles
   const [prenom, setPrenom] = useState('');
@@ -97,7 +97,8 @@ export default function InscriptionProPage() {
     setFormats((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
   }
 
-  function handleValidation() {
+  async function handleValidation() {
+    setServerError(null);
     const input = {
       prenom: prenom || 'Julie',
       nom: (nom || 'MARTIN').toUpperCase(),
@@ -125,57 +126,42 @@ export default function InscriptionProPage() {
     const parsed = onboardingProSchema.safeParse(input);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
-      alert(`Champ invalide : ${firstError?.path.join('.')} · ${firstError?.message}`);
+      setServerError(
+        `Champ invalide : ${firstError?.path.join('.')} · ${firstError?.message}`,
+      );
       return;
     }
 
-    const data = parsed.data;
-    const pro: Pro = {
-      id: 'pro-user',
-      prenom: data.prenom,
-      nom: data.nom,
-      photo:
-        'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop&q=80',
-      specialite: data.specialite,
-      sports: [data.premiereCarte.sport],
-      bio: data.bio,
-      anneesExperience: data.anneesExperience,
-      formations: data.formations,
-      ville: data.ville,
-      codePostal: data.codePostal,
-      rayonKm: data.rayonKm,
-      formats: data.formats,
-      formule: data.formule,
-      note: 4.8,
-      nbAvis: 0,
-      avis: [],
-      cartesServices: [
-        {
-          id: 'cs-user-001',
-          nom: data.premiereCarte.nom,
-          sport: data.premiereCarte.sport,
-          description: data.premiereCarte.description,
-          tarifHeure: data.premiereCarte.tarifHeure,
-          dureeMinutes: data.premiereCarte.dureeMinutes,
-          tags: [],
-          format: data.premiereCarte.format,
-          actif: true,
-          nbReservations: 0,
-          caGenere: 0,
-        },
-      ],
+    const r = await completeProOnboarding({
+      prenom: parsed.data.prenom,
+      nom: parsed.data.nom,
+      specialite: parsed.data.specialite,
+      sports: [parsed.data.premiereCarte.sport],
+      formats: parsed.data.formats,
+      bio: parsed.data.bio,
+      formations: parsed.data.formations,
+      anneesExperience: parsed.data.anneesExperience,
+      ville: parsed.data.ville,
+      codePostal: parsed.data.codePostal,
+      rayonKm: parsed.data.rayonKm,
       niveauEnseigne: ['debutant', 'intermediaire', 'avance'],
-      tarifMin: data.premiereCarte.tarifHeure,
-      tarifMax: data.premiereCarte.tarifHeure,
-      vibe: data.vibe,
-    };
+      formule: parsed.data.formule,
+      tarifMin: parsed.data.premiereCarte.tarifHeure,
+      tarifMax: parsed.data.premiereCarte.tarifHeure,
+      vibe: parsed.data.vibe,
+    });
 
-    setPro(pro);
+    if (!r.ok) {
+      setServerError(r.error);
+      return;
+    }
+
     setMode('pro');
     setDone(true);
 
     setTimeout(() => {
       router.push('/dashboard');
+      router.refresh();
     }, 1200);
   }
 
@@ -580,6 +566,15 @@ export default function InscriptionProPage() {
           </div>
         )}
       </StepWrapper>
+
+      {serverError && (
+        <p
+          role="alert"
+          className="bg-danger/10 border-danger/30 text-danger mt-6 rounded-md border px-3 py-2 text-xs"
+        >
+          {serverError}
+        </p>
+      )}
 
       {/* Navigation */}
       <div className="mt-8 flex gap-3">

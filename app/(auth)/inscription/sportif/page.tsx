@@ -10,11 +10,11 @@ import { ProgressBar } from '@/components/sportif/onboarding/progress-bar';
 import { StepWrapper } from '@/components/sportif/onboarding/step-wrapper';
 import { VibeSlider } from '@/components/sportif/onboarding/vibe-slider';
 import { cn } from '@/lib/utils';
-import { useUserStore } from '@/stores/user-store';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, OBJECTIFS, NIVEAUX, FREQUENCES } from '@/lib/constants';
 import { onboardingSportifSchema } from '@/lib/schemas';
-import type { Sportif, Genre, Objectif, Sport, Niveau } from '@/types';
+import { completeSportifOnboarding } from '@/lib/auth/onboarding';
+import type { Genre, Objectif, Sport, Niveau } from '@/types';
 
 const TOTAL_STEPS = 6;
 
@@ -45,12 +45,12 @@ function PillButton({
 
 export default function InscriptionSportifPage() {
   const router = useRouter();
-  const setSportif = useUserStore((s) => s.setSportif);
   const setMode = useModeStore((s) => s.setMode);
 
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [done, setDone] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   // Étape 1 : Identité
   const [prenom, setPrenom] = useState('');
@@ -94,7 +94,8 @@ export default function InscriptionSportifPage() {
     return arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
   }
 
-  function handleValidation() {
+  async function handleValidation() {
+    setServerError(null);
     const input = {
       prenom: prenom || 'Thomas',
       age,
@@ -115,24 +116,27 @@ export default function InscriptionSportifPage() {
     const parsed = onboardingSportifSchema.safeParse(input);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
-      alert(`Champ invalide : ${firstError?.path.join('.')} · ${firstError?.message}`);
+      setServerError(
+        `Champ invalide : ${firstError?.path.join('.')} · ${firstError?.message}`,
+      );
       return;
     }
 
-    const sportif: Sportif = {
-      id: 'sportif-user',
-      nom: 'DEMO',
-      photo:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80',
+    const r = await completeSportifOnboarding({
       ...parsed.data,
-    };
+      nom: '—',
+    });
+    if (!r.ok) {
+      setServerError(r.error);
+      return;
+    }
 
-    setSportif(sportif);
     setMode('sportif');
     setDone(true);
 
     setTimeout(() => {
       router.push('/accueil');
+      router.refresh();
     }, 1200);
   }
 
@@ -435,6 +439,15 @@ export default function InscriptionSportifPage() {
           </div>
         )}
       </StepWrapper>
+
+      {serverError && (
+        <p
+          role="alert"
+          className="bg-danger/10 border-danger/30 text-danger mt-6 rounded-md border px-3 py-2 text-xs"
+        >
+          {serverError}
+        </p>
+      )}
 
       {/* Navigation */}
       <div className="mt-8 flex gap-3">

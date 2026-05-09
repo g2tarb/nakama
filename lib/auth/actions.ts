@@ -11,10 +11,10 @@ import { clientConfig } from '@/lib/env';
 
 const signUpSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, 'Minimum 8 caractères'),
+  password: z.string().min(6, 'Minimum 6 caractères'),
   role: z.enum(['sportif', 'pro']),
-  prenom: z.string().min(1),
-  nom: z.string().min(1),
+  prenom: z.string().optional().default(''),
+  nom: z.string().optional().default(''),
 });
 
 const signInSchema = z.object({

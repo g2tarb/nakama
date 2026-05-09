@@ -30,6 +30,7 @@ import { useModeStore } from '@/stores/mode-store';
 import { pros } from '@/lib/mock-data';
 import { FORMULES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { signOutAction } from '@/lib/auth/actions';
 import type { Formule } from '@/types';
 
 type MenuKey = 'profil' | 'formule' | 'paiement' | 'notifs' | 'privacy' | 'help';
@@ -97,10 +98,15 @@ export default function ParametresPage() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [selectedFormule, setSelectedFormule] = useState<Formule>(pro.formule);
 
-  function handleLogout() {
+  async function handleLogout() {
     clearUser();
     setMode('public');
-    router.push('/');
+    try {
+      // signOutAction redirige côté serveur ; on tente quand même router.push en fallback
+      await signOutAction();
+    } catch {
+      router.push('/');
+    }
   }
 
   return (

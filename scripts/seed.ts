@@ -10,7 +10,9 @@
  *    Les emails sont déterministes : {role}-{slug}@nakama-demo.local
  *    Mots de passe : 'demo-password-2026' pour tous.
  */
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config(); // fallback .env
 
 import { createClient } from '@supabase/supabase-js';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -114,9 +116,7 @@ async function seedPros() {
       await db
         .insert(schema.cartesServices)
         .values({
-          id: c.id as `${string}-${string}-${string}-${string}-${string}` extends string
-            ? string
-            : never,
+          // id auto-généré par la DB (gen_random_uuid)
           proId: userId,
           nom: c.nom,
           sport: c.sport,
