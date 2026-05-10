@@ -225,6 +225,80 @@ a {
   overscroll-behavior: contain;
 }
 
+/* ============================================
+   Skeleton shimmer
+   ============================================ */
+.nk-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(58, 74, 94, 0.18) 0%,
+    rgba(58, 74, 94, 0.45) 50%,
+    rgba(58, 74, 94, 0.18) 100%
+  );
+  background-size: 200% 100%;
+  animation: nk-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes nk-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ============================================
+   Floating Action Button or — base mobile
+   ============================================ */
+.nk-fab {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(6rem + env(safe-area-inset-bottom));
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #77530a,
+    #ffd277,
+    #77530a,
+    #77530a,
+    #ffd277,
+    #77530a
+  );
+  background-size: 250%;
+  background-position: left center;
+  color: var(--background);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 4px rgba(201, 178, 122, 0.12);
+  transition:
+    background-position 1s ease,
+    transform 0.15s ease;
+  touch-action: manipulation;
+}
+.nk-fab:hover {
+  background-position: right center;
+}
+.nk-fab:active {
+  transform: scale(0.96);
+}
+@media (min-width: 1024px) {
+  .nk-fab {
+    bottom: 2rem;
+  }
+}
+
 /* Custom vibe slider */
 .vibe-slider {
   -webkit-appearance: none;

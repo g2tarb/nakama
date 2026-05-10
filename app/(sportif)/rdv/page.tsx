@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { CalendarDays, ChevronRight, Clock, List, MapPin } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { CalendarDays, ChevronRight, Clock, List, MapPin, Plus } from 'lucide-react';
 import {
   format,
   isAfter,
@@ -30,6 +31,7 @@ const STATUT_BADGE: Record<Seance['statut'], { label: string; className: string 
 };
 
 export default function RdvPage() {
+  const router = useRouter();
   const [view, setView] = useState<ViewMode>('liste');
   const [filter, setFilter] = useState<ListFilter>('venir');
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
@@ -73,7 +75,7 @@ export default function RdvPage() {
   );
 
   return (
-    <div className="mx-auto max-w-[480px] px-4 pt-6 pb-8 md:max-w-[640px]">
+    <div className="relative mx-auto max-w-[480px] px-4 pt-6 pb-8 md:max-w-[640px]">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="nk-h1 text-text-primary tracking-[-0.02em]">Mes séances</h1>
         <div
@@ -293,6 +295,17 @@ export default function RdvPage() {
           </div>
         </div>
       )}
+
+      {/* FAB or pour réserver une séance */}
+      <button
+        type="button"
+        onClick={() => router.push('/recherche')}
+        className="nk-fab"
+        aria-label="Réserver une séance"
+      >
+        <Plus size={18} />
+        Réserver
+      </button>
     </div>
   );
 }
