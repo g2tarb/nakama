@@ -173,14 +173,16 @@ export function ProLayoutShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 pb-24 lg:pb-0">{children}</main>
+        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
+          {children}
+        </main>
       </div>
 
       <nav
-        className="border-border/60 bg-background/85 fixed inset-x-0 bottom-0 z-50 h-20 border-t backdrop-blur-md lg:hidden"
+        className="border-border/60 bg-background/85 pb-safe fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md lg:hidden"
         aria-label="Navigation principale"
       >
-        <div className="mx-auto flex h-full max-w-[480px] items-stretch px-2">
+        <div className="mx-auto flex h-20 max-w-[480px] items-stretch px-2">
           {MOBILE_NAV.map(({ href, label, icon: Icon }) => {
             const isActive = href === activeMobileHref;
             return (

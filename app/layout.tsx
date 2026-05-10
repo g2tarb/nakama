@@ -19,9 +19,12 @@ const DESCRIPTION =
 export const dynamic = 'force-dynamic';
 
 export const viewport: Viewport = {
-  themeColor: '#0B0F14',
+  themeColor: '#1E2A3A',
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -42,6 +45,15 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Nakama' }],
   creator: 'Nakama',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Nakama',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

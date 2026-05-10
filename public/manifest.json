@@ -1,0 +1,28 @@
+{
+  "name": "Nakama — Trouve ton coach sportif",
+  "short_name": "Nakama",
+  "description": "Plateforme de matching comportemental entre sportifs et coachs sportifs.",
+  "start_url": "/accueil",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1E2A3A",
+  "theme_color": "#1E2A3A",
+  "lang": "fr-FR",
+  "categories": ["sports", "lifestyle", "health"],
+  "icons": [
+    {
+      "src": "/logos/nakama-symbol.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": []
+}

@@ -6,6 +6,7 @@ import { Bell, Calendar, Home, MessageCircle, Search, User } from 'lucide-react'
 import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
+import { PageTransition } from '@/components/common/page-transition';
 
 const NAV_ITEMS = [
   { href: '/accueil', label: 'Accueil', icon: Home },
@@ -59,10 +60,12 @@ export function SportifLayoutShell({ children }: { children: React.ReactNode }) 
         </div>
       </header>
 
-      <main className="flex-1 pb-24 md:pb-0">{children}</main>
+      <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <PageTransition>{children}</PageTransition>
+      </main>
 
-      <nav className="border-border bg-background/85 fixed inset-x-0 bottom-0 z-50 h-20 border-t backdrop-blur-md md:hidden">
-        <div className="mx-auto flex h-full max-w-[480px] items-stretch px-2">
+      <nav className="border-border bg-background/85 pb-safe fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md md:hidden">
+        <div className="mx-auto flex h-20 max-w-[480px] items-stretch px-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = href === activeTabHref;
             return (

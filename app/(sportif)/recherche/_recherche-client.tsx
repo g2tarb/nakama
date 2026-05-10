@@ -2,10 +2,10 @@
 
 import { Suspense, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SlidersHorizontal, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SlidersHorizontal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { BottomSheet } from '@/components/common/bottom-sheet';
 import { ProArticleCard } from '@/components/sportif/pro-article-card';
 import { cn } from '@/lib/utils';
 import { useMatchedPros } from '@/hooks/use-matching';
@@ -142,99 +142,102 @@ function RechercheContent({
         </Button>
       </div>
 
-      {/* Panneau filtres */}
-      <AnimatePresence>
-        {showFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="border-border bg-surface mb-6 overflow-hidden rounded-xl border"
-          >
-            <div className="space-y-5 p-4">
-              {/* Fermer */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Filtres</h3>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="text-text-tertiary hover:text-text-primary"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Spécialité */}
-              <div>
-                <p className="text-text-secondary mb-2 text-xs font-medium">Spécialité</p>
-                <div className="flex flex-wrap gap-2">
-                  {SPECIALITES.map(({ value, label }) => (
-                    <PillToggle
-                      key={value}
-                      label={label}
-                      selected={selectedSpecialites.includes(value)}
-                      onClick={() =>
-                        setSelectedSpecialites(toggle(selectedSpecialites, value))
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Sport */}
-              <div>
-                <p className="text-text-secondary mb-2 text-xs font-medium">Sport</p>
-                <div className="flex flex-wrap gap-2">
-                  {SPORTS_DISPONIBLES.map(({ value, label }) => (
-                    <PillToggle
-                      key={value}
-                      label={label}
-                      selected={selectedSports.includes(value)}
-                      onClick={() => setSelectedSports(toggle(selectedSports, value))}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Format */}
-              <div>
-                <p className="text-text-secondary mb-2 text-xs font-medium">Format</p>
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      { value: 'presentiel', label: 'Présentiel' },
-                      { value: 'distanciel', label: 'Distanciel' },
-                      { value: 'hybride', label: 'Hybride' },
-                    ] as const
-                  ).map(({ value, label }) => (
-                    <PillToggle
-                      key={value}
-                      label={label}
-                      selected={selectedFormats.includes(value)}
-                      onClick={() => setSelectedFormats(toggle(selectedFormats, value))}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Tarif */}
-              <div>
-                <p className="text-text-secondary mb-1.5 text-xs font-medium">
-                  Tarif maximum : {tarifMax}€/h
-                </p>
-                <input
-                  type="range"
-                  min={20}
-                  max={150}
-                  value={tarifMax}
-                  onChange={(e) => setTarifMax(Number(e.target.value))}
-                  className="vibe-slider w-full"
+      <BottomSheet
+        open={showFilters}
+        onClose={() => setShowFilters(false)}
+        title="Filtres"
+      >
+        <div className="flex flex-col gap-6">
+          <div>
+            <p className="nk-label text-accent-muted mb-3">Spécialité</p>
+            <div className="flex flex-wrap gap-2">
+              {SPECIALITES.map(({ value, label }) => (
+                <PillToggle
+                  key={value}
+                  label={label}
+                  selected={selectedSpecialites.includes(value)}
+                  onClick={() =>
+                    setSelectedSpecialites(toggle(selectedSpecialites, value))
+                  }
                 />
-              </div>
+              ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+
+          <div>
+            <p className="nk-label text-accent-muted mb-3">Sport</p>
+            <div className="flex flex-wrap gap-2">
+              {SPORTS_DISPONIBLES.map(({ value, label }) => (
+                <PillToggle
+                  key={value}
+                  label={label}
+                  selected={selectedSports.includes(value)}
+                  onClick={() => setSelectedSports(toggle(selectedSports, value))}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="nk-label text-accent-muted mb-3">Format</p>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { value: 'presentiel', label: 'Présentiel' },
+                  { value: 'distanciel', label: 'Distanciel' },
+                  { value: 'hybride', label: 'Hybride' },
+                ] as const
+              ).map(({ value, label }) => (
+                <PillToggle
+                  key={value}
+                  label={label}
+                  selected={selectedFormats.includes(value)}
+                  onClick={() => setSelectedFormats(toggle(selectedFormats, value))}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="nk-label text-accent-muted">Tarif maximum</p>
+              <span className="text-accent-gold text-[14px] font-bold tabular-nums">
+                {tarifMax} €/h
+              </span>
+            </div>
+            <input
+              type="range"
+              min={20}
+              max={150}
+              value={tarifMax}
+              onChange={(e) => setTarifMax(Number(e.target.value))}
+              className="vibe-slider w-full"
+            />
+          </div>
+
+          <div className="border-border/40 -mx-5 mt-2 -mb-1 flex gap-3 border-t px-5 pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedSports([]);
+                setSelectedSpecialites([]);
+                setSelectedFormats([]);
+                setTarifMax(150);
+              }}
+              className="border-border/60 text-text-secondary hover:text-text-primary nk-tap flex-1 rounded-xl border py-3 text-[13.5px] font-medium"
+            >
+              Réinitialiser
+            </button>
+            <Button
+              size="lg"
+              onClick={() => setShowFilters(false)}
+              className="h-12 flex-1"
+            >
+              Voir {filteredPros.length} pro{filteredPros.length > 1 ? 's' : ''}
+            </Button>
+          </div>
+        </div>
+      </BottomSheet>
 
       {/* Résultats — carousel article-style */}
       {filteredPros.length === 0 ? (

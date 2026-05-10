@@ -164,6 +164,67 @@
   display: none;
 }
 
+/* ============================================
+   Mobile app-feel utilities
+   ============================================ */
+
+/* Safe-area insets : pad les bottom navs sur iPhone notch/dynamic island */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom);
+}
+
+/* Smooth iOS-like scroll momentum */
+html,
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Disable touch callout / select sur les boutons (feel app) */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Tap haptic feel : à appliquer sur les éléments cliquables principaux */
+.nk-tap {
+  transition:
+    transform 0.12s var(--ease-out-nakama),
+    background 0.18s var(--ease-out-nakama);
+  touch-action: manipulation;
+}
+.nk-tap:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  .nk-tap:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Mobile : pas de hover effect (évite les hover sticky sur tap) */
+@media (hover: none) {
+  .group\/card:hover .group-hover\/card\:scale-105,
+  .group\/step:hover .group-hover\/step\:scale-105 {
+    transform: none;
+  }
+}
+
+/* iOS : prevent rubber-band sur les containers fixed */
+.fixed-no-bounce {
+  position: fixed;
+  overscroll-behavior: contain;
+}
+
 /* Custom vibe slider */
 .vibe-slider {
   -webkit-appearance: none;
