@@ -1,8 +1,15 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Three.js lazy-loaded pour ne pas plomber le bundle initial
+const ThreeBackground = dynamic(
+  () => import('./three-background').then((mod) => mod.ThreeBackground),
+  { ssr: false, loading: () => null },
+);
 
 const HIGHLIGHTS = [
   'Score de compatibilité de 0 à 100 %',
@@ -99,10 +106,24 @@ export function FeatureMockup() {
 
   return (
     <section
-      className="border-border border-t border-b px-4 py-24"
+      className="border-border relative isolate border-t border-b px-4 py-24"
       style={{ background: 'var(--color-bg-overlay)' }}
     >
-      <div className="mx-auto grid max-w-[1180px] items-center gap-16 md:grid-cols-2">
+      {/* Three.js background : N or et bleu animés */}
+      <div className="absolute inset-0 -z-20 overflow-hidden">
+        <ThreeBackground />
+      </div>
+      {/* Voile bleu nuit pour lisibilité du texte par-dessus */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(36,49,64,0.55) 0%, rgba(36,49,64,0.78) 50%, rgba(36,49,64,0.92) 100%)',
+        }}
+      />
+
+      <div className="relative mx-auto grid max-w-[1180px] items-center gap-16 md:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
