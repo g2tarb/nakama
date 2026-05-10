@@ -12,45 +12,27 @@ const COLORS = {
   background: '#1E2A3A',
 };
 
-/* ──────────────── N letter geometry ────────────────
-   Path SVG du logo Nakama (32x32) :
-   M6 6 L16 22 L26 6 L26 26 L20 26 L20 18 L16 24 L12 18 L12 26 L6 26 Z
-   Recentré et extrudé en 3D.
+/* ──────────────── N letter — 3 box (2 barres + diagonale) ────────────────
+   Construction simple et lisible : la lettre est un Group de 3 mesh.
+   Les box sont biseautés avec depth via boxGeometry pour avoir du volume.
+   Géométries partagées entre toutes les instances pour la perf.
    ──────────────────────────────────────────────────── */
-function useNGeometry() {
+function useNGeometries() {
   return useMemo(() => {
-    const shape = new THREE.Shape();
-    // Path original (centré sur 16,16)
-    const points: Array<[number, number]> = [
-      [6, 6],
-      [16, 22],
-      [26, 6],
-      [26, 26],
-      [20, 26],
-      [20, 18],
-      [16, 24],
-      [12, 18],
-      [12, 26],
-      [6, 26],
-    ];
-    // Recentre autour de 0 et inverse Y (Three.js a Y vers le haut)
-    const center = 16;
-    shape.moveTo(points[0]![0] - center, center - points[0]![1]);
-    for (let i = 1; i < points.length; i++) {
-      shape.lineTo(points[i]![0] - center, center - points[i]![1]);
-    }
-    shape.closePath();
+    // Constantes du N
+    const BAR_WIDTH = 2.4;
+    const HEIGHT = 8;
+    const DEPTH = 1.6;
+    const SPAN = 5; // distance entre les 2 barres (gauche/droite)
 
-    const geom = new THREE.ExtrudeGeometry(shape, {
-      depth: 4,
-      bevelEnabled: true,
-      bevelThickness: 0.6,
-      bevelSize: 0.6,
-      bevelSegments: 4,
-      curveSegments: 1,
-    });
-    geom.center();
-    return geom;
+    // Barre verticale (gauche et droite — même geom)
+    const bar = new THREE.BoxGeometry(BAR_WIDTH, HEIGHT, DEPTH);
+
+    // Diagonale (longueur = hypoténuse, on la rotate ensuite)
+    const diagLength = Math.sqrt(SPAN * SPAN + HEIGHT * HEIGHT);
+    const diagonal = new THREE.BoxGeometry(BAR_WIDTH, diagLength, DEPTH);
+
+    return { bar, diagonal, BAR_WIDTH, HEIGHT, DEPTH, SPAN, diagLength };
   }, []);
 }
 
@@ -61,7 +43,7 @@ interface NLetterProps {
   isGold: boolean;
   speed: number;
   rotationSpeed: number;
-  geometry: THREE.ExtrudeGeometry;
+  geos: ReturnType<typeof useNGeometries>;
 }
 
 function NLetter({
@@ -71,47 +53,68 @@ function NLetter({
   isGold,
   speed,
   rotationSpeed,
-  geometry,
+  geos,
 }: NLetterProps) {
-  const ref = useRef<THREE.Mesh>(null);
+  const ref = useRef<THREE.Group>(null);
   const initialY = position[1];
   const phase = useMemo(() => Math.random() * Math.PI * 2, []);
 
   useFrame((state) => {
     if (!ref.current) return;
     const t = state.clock.elapsedTime;
-    // Float vertical sinusoidal
     ref.current.position.y = initialY + Math.sin(t * speed + phase) * 0.6;
-    // Rotation continue
     ref.current.rotation.x += rotationSpeed * 0.4;
     ref.current.rotation.y += rotationSpeed;
     ref.current.rotation.z += rotationSpeed * 0.2;
   });
 
-  const meshProps: ThreeElements['mesh'] = {
+  const material = isGold ? (
+    <meshStandardMaterial
+      color={COLORS.gold}
+      emissive={COLORS.gold}
+      emissiveIntensity={0.18}
+      metalness={0.85}
+      roughness={0.22}
+    />
+  ) : (
+    <meshStandardMaterial color={COLORS.blueDark} metalness={0.5} roughness={0.55} />
+  );
+
+  // Angle de la diagonale (de top-left bar à bottom-right bar)
+  const diagAngle = Math.atan2(geos.SPAN, geos.HEIGHT);
+
+  const groupProps: ThreeElements['group'] = {
     ref,
     position,
     rotation,
     scale,
-    geometry,
-    castShadow: true,
-    receiveShadow: true,
   };
 
   return (
-    <mesh {...meshProps}>
-      {isGold ? (
-        <meshStandardMaterial
-          color={COLORS.gold}
-          emissive={COLORS.gold}
-          emissiveIntensity={0.18}
-          metalness={0.85}
-          roughness={0.22}
-        />
-      ) : (
-        <meshStandardMaterial color={COLORS.blueDark} metalness={0.5} roughness={0.55} />
-      )}
-    </mesh>
+    <group {...groupProps}>
+      {/* Barre verticale gauche */}
+      <mesh
+        position={[-geos.SPAN / 2, 0, 0]}
+        geometry={geos.bar}
+        castShadow
+        receiveShadow
+      >
+        {material}
+      </mesh>
+      {/* Barre verticale droite */}
+      <mesh position={[geos.SPAN / 2, 0, 0]} geometry={geos.bar} castShadow receiveShadow>
+        {material}
+      </mesh>
+      {/* Diagonale (de haut-gauche vers bas-droit) */}
+      <mesh
+        rotation={[0, 0, -diagAngle]}
+        geometry={geos.diagonal}
+        castShadow
+        receiveShadow
+      >
+        {material}
+      </mesh>
+    </group>
   );
 }
 
@@ -159,7 +162,7 @@ function generateParticles(count = 36): ParticleConfig[] {
 }
 
 function Scene() {
-  const geometry = useNGeometry();
+  const geos = useNGeometries();
   const particles = useMemo(() => generateParticles(36), []);
 
   return (
@@ -180,7 +183,7 @@ function Scene() {
       />
 
       {particles.map((p, i) => (
-        <NLetter key={i} {...p} geometry={geometry} />
+        <NLetter key={i} {...p} geos={geos} />
       ))}
 
       <CameraRig />
