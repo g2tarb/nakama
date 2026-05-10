@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Calendar, Home, MessageCircle, User } from 'lucide-react';
+import { Bell, Calendar, Home, MessageCircle, Search, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { href: '/accueil', label: 'Accueil', icon: Home },
+  { href: '/recherche', label: 'Recherche', icon: Search },
   { href: '/rdv', label: 'RDV', icon: Calendar },
   { href: '/messages', label: 'Messages', icon: MessageCircle },
   { href: '/profil', label: 'Profil', icon: User },
