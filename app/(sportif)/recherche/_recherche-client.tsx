@@ -6,7 +6,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
-import { ProCard } from '@/components/sportif/pro-card';
+import { ProArticleCard } from '@/components/sportif/pro-article-card';
 import { cn } from '@/lib/utils';
 import { useMatchedPros } from '@/hooks/use-matching';
 import { SPORTS_DISPONIBLES, SPECIALITES } from '@/lib/constants';
@@ -236,7 +236,7 @@ function RechercheContent({
         )}
       </AnimatePresence>
 
-      {/* Résultats */}
+      {/* Résultats — carousel article-style */}
       {filteredPros.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-text-secondary text-lg font-semibold">Aucun résultat</p>
@@ -245,21 +245,55 @@ function RechercheContent({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {filteredPros.map((pro) => {
-            const score = matchScoreMap.get(pro.id);
-            return (
-              <ProCard
-                key={pro.id}
-                pro={pro}
-                {...(score != null ? { compatibilityScore: score } : {})}
-                className="w-full"
-                onClick={() => router.push(`/pros/${pro.id}`)}
-              />
-            );
-          })}
+        <div className="flex flex-col gap-8">
+          {/* Carousel principal — top 12 par compat */}
+          <CarouselRow label="Top compatibles">
+            {filteredPros.slice(0, 12).map((pro) => {
+              const score = matchScoreMap.get(pro.id);
+              return (
+                <ProArticleCard
+                  key={pro.id}
+                  pro={pro}
+                  {...(score != null ? { compatibilityScore: score } : {})}
+                  onClick={() => router.push(`/pros/${pro.id}`)}
+                />
+              );
+            })}
+          </CarouselRow>
+
+          {filteredPros.length > 12 && (
+            <CarouselRow label="À découvrir aussi">
+              {filteredPros.slice(12).map((pro) => {
+                const score = matchScoreMap.get(pro.id);
+                return (
+                  <ProArticleCard
+                    key={pro.id}
+                    pro={pro}
+                    {...(score != null ? { compatibilityScore: score } : {})}
+                    onClick={() => router.push(`/pros/${pro.id}`)}
+                  />
+                );
+              })}
+            </CarouselRow>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+function CarouselRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <div className="mb-3 flex items-baseline justify-between px-1">
+        <h2 className="nk-h3 text-text-primary">{label}</h2>
+        <span className="text-text-tertiary hidden text-[11px] sm:inline">
+          ← glisse →
+        </span>
+      </div>
+      <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3">
+        {children}
+      </div>
+    </section>
   );
 }
