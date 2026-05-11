@@ -54,8 +54,8 @@ export const ProCard = memo(function ProCard({
           <div
             className="text-accent-gold absolute top-2 left-2 inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-bold tabular-nums backdrop-blur-sm"
             style={{
-              background: 'rgba(201,178,122,0.22)',
-              boxShadow: '0 0 12px rgba(201,178,122,0.18)',
+              background: 'rgba(229,181,71,0.22)',
+              boxShadow: '0 0 12px rgba(229,181,71,0.18)',
             }}
           >
             {animatedScore}%

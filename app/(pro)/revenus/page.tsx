@@ -39,11 +39,11 @@ const CLIENTS_DATA = [
   { month: 'Avr', clients: 18 },
 ];
 
-const PIE_COLORS = ['#C9B27A', '#4ADE80', '#60A5FA', '#F87171', '#FBBF24'];
+const PIE_COLORS = ['#E5B547', '#4ADE80', '#60A5FA', '#F87171', '#FBBF24'];
 
 const TOOLTIP_STYLE = {
-  background: '#2A3749',
-  border: '1px solid rgba(58,74,94,0.6)',
+  background: '#131313',
+  border: '1px solid rgba(51,51,51,0.6)',
   borderRadius: 10,
   fontSize: 12,
   boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
@@ -81,7 +81,7 @@ export default function RevenusPage() {
         <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-5 lg:p-6">
           <span className="nk-label text-accent-muted">Chiffre d’affaires</span>
           <div className="mt-2 flex items-baseline gap-3">
-            <span className="text-accent-gold text-[40px] font-bold tracking-[-0.02em] tabular-nums">
+            <span className="text-accent-gold text-glow-or text-[40px] font-bold tracking-[-0.02em] tabular-nums">
               {ca.toLocaleString('fr-FR')} €
             </span>
             <span className="text-success inline-flex items-center gap-1 text-sm font-medium">
@@ -106,24 +106,24 @@ export default function RevenusPage() {
               >
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   width={40}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ stroke: '#3A4A5E' }} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ stroke: '#262626' }} />
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#C9B27A"
+                  stroke="#E5B547"
                   strokeWidth={2}
-                  dot={{ fill: '#C9B27A', r: 3 }}
-                  activeDot={{ r: 5, fill: '#C9B27A' }}
+                  dot={{ fill: '#E5B547', r: 3 }}
+                  activeDot={{ r: 5, fill: '#E5B547' }}
                   isAnimationActive
                   animationDuration={1100}
                   animationEasing="ease-out"
@@ -183,23 +183,23 @@ export default function RevenusPage() {
               >
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   width={30}
                 />
                 <Tooltip
                   contentStyle={TOOLTIP_STYLE}
-                  cursor={{ fill: 'rgba(201,178,122,0.06)' }}
+                  cursor={{ fill: 'rgba(229,181,71,0.06)' }}
                 />
                 <Bar
                   dataKey="clients"
-                  fill="#C9B27A"
+                  fill="#E5B547"
                   radius={[6, 6, 0, 0]}
                   isAnimationActive
                   animationDuration={900}

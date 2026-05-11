@@ -54,8 +54,8 @@ export function Testimonials() {
                 <div
                   className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold"
                   style={{
-                    background: 'linear-gradient(135deg,#34465e,#1c2737)',
-                    color: 'rgba(201,178,122,0.5)',
+                    background: 'linear-gradient(135deg,#262626,#131313)',
+                    color: 'rgba(229,181,71,0.5)',
                   }}
                 >
                   {t.name

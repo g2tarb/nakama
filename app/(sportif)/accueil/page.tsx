@@ -270,8 +270,8 @@ function NextSessionCard({
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold"
             style={{
-              background: 'linear-gradient(135deg,#34465e,#1c2737)',
-              color: 'rgba(201,178,122,0.6)',
+              background: 'linear-gradient(135deg,#262626,#131313)',
+              color: 'rgba(229,181,71,0.6)',
             }}
           >
             {proInitials}

@@ -217,8 +217,8 @@ function PhoneMockup({ scores }: { scores: number[] }) {
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold"
                 style={{
-                  background: 'linear-gradient(135deg,#34465e,#1c2737)',
-                  color: 'rgba(201,178,122,0.5)',
+                  background: 'linear-gradient(135deg,#262626,#131313)',
+                  color: 'rgba(229,181,71,0.5)',
                 }}
               >
                 {pro.name
@@ -236,7 +236,7 @@ function PhoneMockup({ scores }: { scores: number[] }) {
               </div>
               <div
                 className="text-accent-gold rounded-md px-1.5 py-[3px] text-[11px] font-bold tabular-nums"
-                style={{ background: 'rgba(201,178,122,0.20)' }}
+                style={{ background: 'rgba(229,181,71,0.20)' }}
               >
                 {scores[i] ?? pro.score}%
               </div>

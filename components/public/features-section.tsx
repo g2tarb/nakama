@@ -72,7 +72,7 @@ export function HowItWorks() {
                 className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-700 ease-out group-hover/step:opacity-100"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(30,42,58,0) 40%, rgba(30,42,58,0.55) 100%)',
+                    'linear-gradient(180deg, rgba(10,10,10,0) 40%, rgba(10,10,10,0.55) 100%)',
                 }}
               />
 
@@ -80,7 +80,7 @@ export function HowItWorks() {
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-2 right-5 text-[92px] leading-none font-extrabold transition-colors duration-700"
                 style={{
-                  color: 'rgba(201, 178, 122, 0.07)',
+                  color: 'rgba(229, 181, 71, 0.07)',
                   letterSpacing: '-0.04em',
                 }}
               >

@@ -5,11 +5,11 @@ import { Canvas, useFrame, type ThreeElements } from '@react-three/fiber';
 import * as THREE from 'three';
 
 const COLORS = {
-  gold: '#C9B27A',
-  goldHot: '#FFD277',
-  blueDark: '#243140',
-  blueMid: '#3A4A5E',
-  background: '#1E2A3A',
+  gold: '#E5B547',
+  goldHot: '#F4C757',
+  blueDark: '#131313',
+  blueMid: '#262626',
+  background: '#0A0A0A',
 };
 
 /* ──────────────── N letter — 3 box (2 barres + diagonale) ────────────────
@@ -173,7 +173,7 @@ function Scene() {
       {/* Key light or chaud */}
       <directionalLight position={[10, 12, 6]} intensity={1.6} color={COLORS.goldHot} />
       {/* Rim light bleu froid */}
-      <directionalLight position={[-10, -6, -4]} intensity={0.9} color="#5B7CA0" />
+      <directionalLight position={[-10, -6, -4]} intensity={0.9} color="#6B6B6B" />
       {/* Spot ponctuel pour faire scintiller le gold */}
       <pointLight
         position={[0, 4, 8]}

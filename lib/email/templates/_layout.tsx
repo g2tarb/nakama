@@ -13,14 +13,14 @@ import {
 import { clientConfig } from '@/lib/env';
 
 const COLORS = {
-  bg: '#1E2A3A',
-  card: '#2A3749',
-  border: '#3A4A5E',
+  bg: '#0A0A0A',
+  card: '#131313',
+  border: '#262626',
   text: '#F5F5F5',
-  textSecondary: '#BDC5D1',
-  textMuted: '#8A95A8',
-  gold: '#C9B27A',
-  goldMuted: '#8A7F5F',
+  textSecondary: '#A0A0A0',
+  textMuted: '#A0A0A0',
+  gold: '#E5B547',
+  goldMuted: '#6B6B6B',
 };
 
 export function EmailLayout({

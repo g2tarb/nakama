@@ -50,8 +50,8 @@ export function SportifLayoutShell({ children }: { children: React.ReactNode }) 
               aria-label="Mon profil"
               className="ring-border hover:ring-accent-muted flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-1 transition-all active:translate-y-px"
               style={{
-                background: 'linear-gradient(135deg,#34465e,#1c2737)',
-                color: 'rgba(201,178,122,0.6)',
+                background: 'linear-gradient(135deg,#262626,#131313)',
+                color: 'rgba(229,181,71,0.6)',
               }}
             >
               EY

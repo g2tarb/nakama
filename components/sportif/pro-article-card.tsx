@@ -64,7 +64,7 @@ export const ProArticleCard = memo(function ProArticleCard({
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 35%, rgba(30,42,58,0.65) 100%)',
+              'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 35%, rgba(10,10,10,0.65) 100%)',
           }}
         />
 
@@ -73,8 +73,8 @@ export const ProArticleCard = memo(function ProArticleCard({
           <div
             className="text-accent-gold absolute top-3 left-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-bold tabular-nums backdrop-blur-md"
             style={{
-              background: 'rgba(201,178,122,0.22)',
-              boxShadow: '0 0 16px rgba(201,178,122,0.2)',
+              background: 'rgba(229,181,71,0.22)',
+              boxShadow: '0 0 16px rgba(229,181,71,0.2)',
             }}
           >
             ✦ {animatedScore} %

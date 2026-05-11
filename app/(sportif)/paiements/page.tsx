@@ -60,7 +60,7 @@ export default function PaiementsPage() {
         variants={itemVariants}
         className="relative mb-5 overflow-hidden rounded-2xl p-5 text-white shadow-[var(--shadow-elevated)]"
         style={{
-          background: 'linear-gradient(135deg, #1E2A3A 0%, #2A3749 50%, #344258 100%)',
+          background: 'linear-gradient(135deg, #0A0A0A 0%, #131313 50%, #1C1C1C 100%)',
           aspectRatio: '1.6/1',
         }}
       >
@@ -70,7 +70,7 @@ export default function PaiementsPage() {
           className="absolute -top-12 -right-12 h-44 w-44 rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(201,178,122,0.32) 0%, transparent 70%)',
+              'radial-gradient(circle, rgba(229,181,71,0.32) 0%, transparent 70%)',
           }}
         />
 

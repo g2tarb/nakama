@@ -16,7 +16,7 @@ type Props = {
 
 export function BackgroundVideo({
   src,
-  overlay = 'linear-gradient(180deg, rgba(30,42,58,0.78) 0%, rgba(30,42,58,0.86) 60%, rgba(30,42,58,0.95) 100%)',
+  overlay = 'linear-gradient(180deg, rgba(10,10,10,0.78) 0%, rgba(10,10,10,0.86) 60%, rgba(10,10,10,0.95) 100%)',
   onPhaseChange,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);

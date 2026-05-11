@@ -49,7 +49,7 @@ export function BookingConfirmedEmail({
         style={{
           marginTop: 24,
           padding: 18,
-          backgroundColor: '#1E2A3A',
+          backgroundColor: '#0A0A0A',
           borderRadius: 12,
           border: `1px solid ${EMAIL_COLORS.border}`,
         }}

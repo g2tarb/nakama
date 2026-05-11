@@ -240,7 +240,7 @@ export default function DashboardPage() {
                     </span>
                     <span
                       className="text-accent-gold rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums"
-                      style={{ background: 'rgba(201,178,122,0.20)' }}
+                      style={{ background: 'rgba(229,181,71,0.20)' }}
                     >
                       {req.score} %
                     </span>
@@ -300,7 +300,7 @@ export default function DashboardPage() {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#C9B27A"
+                stroke="#E5B547"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive
@@ -358,7 +358,7 @@ function KpiCard({
 function RevenueValue({ target }: { target: number }) {
   const value = useCountUp(target, 1100);
   return (
-    <span className="text-accent-gold text-[34px] font-bold tracking-[-0.02em] tabular-nums">
+    <span className="text-accent-gold text-glow-or text-[34px] font-bold tracking-[-0.02em] tabular-nums">
       {value.toLocaleString('fr-FR')} €
     </span>
   );

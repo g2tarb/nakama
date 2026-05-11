@@ -36,20 +36,20 @@
   --color-ring: var(--ring);
 
   /* --- Nakama-specific tokens --- */
-  --color-surface: #2a3749;
-  --color-surface-elevated: #344258;
-  --color-bg-overlay: #243140;
-  --color-bg-deep: #0e131a;
-  --color-accent-gold: #c9b27a;
-  --color-accent-gold-hover: #d4be8a;
-  --color-accent-muted: #8a7f5f;
-  --color-accent-gold-wash: rgba(201, 178, 122, 0.12);
-  --color-accent-gold-glow: rgba(201, 178, 122, 0.15);
+  --color-surface: #131313;
+  --color-surface-elevated: #1c1c1c;
+  --color-bg-overlay: #131313;
+  --color-bg-deep: #0a0a0a;
+  --color-accent-gold: #e5b547;
+  --color-accent-gold-hover: #f4c757;
+  --color-accent-muted: #6b6b6b;
+  --color-accent-gold-wash: rgba(229, 181, 71, 0.12);
+  --color-accent-gold-glow: rgba(229, 181, 71, 0.15);
   --color-text-primary: #f5f5f5;
-  --color-text-secondary: #bdc5d1;
-  --color-text-tertiary: #8a95a5;
-  --color-border-soft: rgba(58, 74, 94, 0.4);
-  --color-border-strong: #4a5c73;
+  --color-text-secondary: #a0a0a0;
+  --color-text-tertiary: #6b6b6b;
+  --color-border-soft: rgba(51, 51, 51, 0.4);
+  --color-border-strong: #333333;
   --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-danger: #f87171;
@@ -69,7 +69,9 @@
   /* --- Shadows (minimal in dark mode) --- */
   --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.25);
   --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 24px rgba(201, 178, 122, 0.15);
+  --shadow-glow: 0 0 24px rgba(229, 181, 71, 0.15);
+  --shadow-glow-or: 0 0 24px rgba(229, 181, 71, 0.25);
+  --shadow-glow-or-strong: 0 0 24px rgba(229, 181, 71, 0.4);
 
   /* --- Motion (signature easeOut) --- */
   --ease-out-nakama: cubic-bezier(0.22, 1, 0.36, 1);
@@ -100,45 +102,64 @@
    Mapping shadcn CSS vars → Nakama hex
    ============================================ */
 :root {
-  --background: #1e2a3a;
+  --background: #0a0a0a;
   --foreground: #f5f5f5;
-  --card: #2a3749;
+  --card: #131313;
   --card-foreground: #f5f5f5;
-  --popover: #344258;
+  --popover: #1c1c1c;
   --popover-foreground: #f5f5f5;
-  --primary: #c9b27a;
-  --primary-foreground: #1e2a3a;
-  --secondary: #2a3749;
+  --primary: #e5b547;
+  --primary-foreground: #0a0a0a;
+  --secondary: #131313;
   --secondary-foreground: #f5f5f5;
-  --muted: #344258;
-  --muted-foreground: #8a95a5;
-  --accent: #c9b27a;
-  --accent-foreground: #1e2a3a;
+  --muted: #1c1c1c;
+  --muted-foreground: #6b6b6b;
+  --accent: #e5b547;
+  --accent-foreground: #0a0a0a;
   --destructive: #f87171;
-  --border: #3a4a5e;
-  --input: #3a4a5e;
-  --ring: #c9b27a;
+  --border: #262626;
+  --input: #262626;
+  --ring: #e5b547;
   --radius: 10px;
 
+  /* Tokens or signal */
+  --or-hover: #f4c757;
+  --or-glow: rgba(229, 181, 71, 0.25);
+  --or-glow-strong: rgba(229, 181, 71, 0.4);
+  --border-strong: #333333;
+
   /* Charts : Nakama palette */
-  --chart-1: #c9b27a;
+  --chart-1: #e5b547;
   --chart-2: #4ade80;
   --chart-3: #fbbf24;
   --chart-4: #60a5fa;
   --chart-5: #f87171;
 
   /* Sidebar : espace Pro */
-  --sidebar: #243040;
+  --sidebar: #131313;
   --sidebar-foreground: #f5f5f5;
-  --sidebar-primary: #c9b27a;
-  --sidebar-primary-foreground: #1e2a3a;
-  --sidebar-accent: #344258;
+  --sidebar-primary: #e5b547;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1c1c1c;
   --sidebar-accent-foreground: #f5f5f5;
-  --sidebar-border: #3a4a5e;
-  --sidebar-ring: #c9b27a;
+  --sidebar-border: #262626;
+  --sidebar-ring: #e5b547;
 }
 
 /* Pas de .dark : on est toujours en dark mode */
+
+/* ============================================
+   Or signal — utility classes glow
+   ============================================ */
+.glow-or {
+  box-shadow: 0 0 24px var(--or-glow);
+}
+.glow-or-strong {
+  box-shadow: 0 0 24px var(--or-glow-strong);
+}
+.text-glow-or {
+  text-shadow: 0 0 20px var(--or-glow-strong);
+}
 
 @layer base {
   * {
@@ -231,9 +252,9 @@ a {
 .nk-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(58, 74, 94, 0.18) 0%,
-    rgba(58, 74, 94, 0.45) 50%,
-    rgba(58, 74, 94, 0.18) 100%
+    rgba(51, 51, 51, 0.18) 0%,
+    rgba(51, 51, 51, 0.45) 50%,
+    rgba(51, 51, 51, 0.18) 100%
   );
   background-size: 200% 100%;
   animation: nk-skeleton-shimmer 1.6s ease-in-out infinite;
@@ -267,10 +288,10 @@ a {
   background: linear-gradient(
     to right,
     #77530a,
-    #ffd277,
+    #f4c757,
     #77530a,
     #77530a,
-    #ffd277,
+    #f4c757,
     #77530a
   );
   background-size: 250%;
@@ -281,7 +302,7 @@ a {
   cursor: pointer;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.4),
-    0 0 0 4px rgba(201, 178, 122, 0.12);
+    0 0 0 4px rgba(229, 181, 71, 0.12);
   transition:
     background-position 1s ease,
     transform 0.15s ease;
@@ -322,7 +343,7 @@ a {
   cursor: pointer;
   box-shadow:
     0 0 0 1px var(--color-accent-muted),
-    0 0 24px rgba(201, 178, 122, 0.25);
+    0 0 24px rgba(229, 181, 71, 0.25);
   transition: transform 0.15s var(--ease-out-nakama);
 }
 
@@ -343,7 +364,7 @@ a {
   cursor: pointer;
   box-shadow:
     0 0 0 1px var(--color-accent-muted),
-    0 0 24px rgba(201, 178, 122, 0.25);
+    0 0 24px rgba(229, 181, 71, 0.25);
 }
 
 /* ============================================
@@ -407,8 +428,8 @@ a {
 /* Hero radial gradient signature (or beige discret) */
 .nk-hero-bg {
   background:
-    radial-gradient(900px 500px at 50% -10%, rgba(201, 178, 122, 0.1), transparent 60%),
-    radial-gradient(700px 400px at 100% 30%, rgba(201, 178, 122, 0.04), transparent 60%),
+    radial-gradient(900px 500px at 50% -10%, rgba(229, 181, 71, 0.1), transparent 60%),
+    radial-gradient(700px 400px at 100% 30%, rgba(229, 181, 71, 0.04), transparent 60%),
     var(--background);
 }
 
@@ -433,21 +454,23 @@ a {
   background: linear-gradient(
     to right,
     #77530a,
-    #ffd277,
+    #f4c757,
     #77530a,
     #77530a,
-    #ffd277,
+    #f4c757,
     #77530a
   );
   background-size: 250%;
   background-position: left center;
-  color: #ffd277 !important;
+  color: #f4c757 !important;
   font-weight: 600;
   cursor: pointer;
   overflow: hidden;
+  box-shadow: 0 0 24px var(--or-glow);
   transition:
     background-position 1s ease,
-    transform 0.15s ease;
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 .nk-btn::before {
@@ -466,6 +489,7 @@ a {
 
 .nk-btn:hover {
   background-position: right center;
+  box-shadow: 0 0 24px var(--or-glow-strong);
 }
 
 .nk-btn:active {
@@ -478,7 +502,7 @@ a {
 }
 
 .nk-btn:focus-visible {
-  outline: 2px solid #c9b27a;
+  outline: 2px solid #e5b547;
   outline-offset: 2px;
 }
 
@@ -496,11 +520,11 @@ a {
   background: linear-gradient(
     100deg,
     #77530a 0%,
-    #c9b27a 22%,
-    #ffd277 38%,
+    #e5b547 22%,
+    #f4c757 38%,
     #fff5d4 50%,
-    #ffd277 62%,
-    #c9b27a 78%,
+    #f4c757 62%,
+    #e5b547 78%,
     #77530a 100%
   );
   background-size: 250% 100%;
@@ -509,9 +533,9 @@ a {
   -webkit-text-fill-color: transparent;
   color: transparent;
   text-shadow:
-    0 0 24px rgba(201, 178, 122, 0.4),
-    0 0 48px rgba(201, 178, 122, 0.18);
-  filter: drop-shadow(0 4px 24px rgba(201, 178, 122, 0.35));
+    0 0 24px rgba(229, 181, 71, 0.4),
+    0 0 48px rgba(229, 181, 71, 0.18);
+  filter: drop-shadow(0 4px 24px rgba(229, 181, 71, 0.35));
   animation:
     nk-shine-shimmer 2.4s ease-in-out infinite,
     nk-shine-pulse 1.6s ease-in-out infinite;
@@ -533,11 +557,11 @@ a {
   0%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 4px 24px rgba(201, 178, 122, 0.35));
+    filter: drop-shadow(0 4px 24px rgba(229, 181, 71, 0.35));
   }
   50% {
     transform: scale(1.05);
-    filter: drop-shadow(0 6px 36px rgba(201, 178, 122, 0.6));
+    filter: drop-shadow(0 6px 36px rgba(229, 181, 71, 0.6));
   }
 }
 
@@ -547,8 +571,8 @@ a {
    ============================================ */
 .nk-spinner {
   --size: 26px;
-  --first-block-clr: #c9b27a;
-  --second-block-clr: #2a3749;
+  --first-block-clr: #e5b547;
+  --second-block-clr: #131313;
   width: 84px;
   height: 84px;
   position: relative;
@@ -575,7 +599,7 @@ a {
   top: calc(50% - var(--size));
   left: calc(50% - var(--size));
   background: var(--second-block-clr);
-  border: 1px solid #3a4a5e;
+  border: 1px solid #262626;
   animation: nk-spinner-down 2.4s cubic-bezier(0, 0, 0.24, 1.21) infinite;
 }
 

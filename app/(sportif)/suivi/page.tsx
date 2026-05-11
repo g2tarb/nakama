@@ -38,8 +38,8 @@ const CHARGE_DATA = [
 ];
 
 const TOOLTIP = {
-  background: '#2A3749',
-  border: '1px solid rgba(58,74,94,0.6)',
+  background: '#131313',
+  border: '1px solid rgba(51,51,51,0.6)',
   borderRadius: 10,
   fontSize: 12,
   boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
@@ -119,28 +119,28 @@ export default function SuiviPage() {
             <AreaChart data={POIDS_DATA}>
               <defs>
                 <linearGradient id="poidsFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#C9B27A" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#C9B27A" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#E5B547" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#E5B547" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
                 dataKey="date"
-                tick={{ fill: '#8A95A5', fontSize: 11 }}
+                tick={{ fill: '#6B6B6B', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: '#8A95A5', fontSize: 11 }}
+                tick={{ fill: '#6B6B6B', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
                 width={36}
                 domain={['dataMin - 1', 'dataMax + 1']}
               />
-              <Tooltip contentStyle={TOOLTIP} cursor={{ stroke: '#3A4A5E' }} />
+              <Tooltip contentStyle={TOOLTIP} cursor={{ stroke: '#262626' }} />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#C9B27A"
+                stroke="#E5B547"
                 strokeWidth={2}
                 fill="url(#poidsFill)"
                 isAnimationActive
@@ -168,23 +168,23 @@ export default function SuiviPage() {
             <LineChart data={CHARGE_DATA}>
               <XAxis
                 dataKey="date"
-                tick={{ fill: '#8A95A5', fontSize: 11 }}
+                tick={{ fill: '#6B6B6B', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: '#8A95A5', fontSize: 11 }}
+                tick={{ fill: '#6B6B6B', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
                 width={36}
               />
-              <Tooltip contentStyle={TOOLTIP} cursor={{ stroke: '#3A4A5E' }} />
+              <Tooltip contentStyle={TOOLTIP} cursor={{ stroke: '#262626' }} />
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#C9B27A"
+                stroke="#E5B547"
                 strokeWidth={2}
-                dot={{ fill: '#C9B27A', r: 3 }}
+                dot={{ fill: '#E5B547', r: 3 }}
                 activeDot={{ r: 5 }}
                 isAnimationActive
                 animationDuration={1100}

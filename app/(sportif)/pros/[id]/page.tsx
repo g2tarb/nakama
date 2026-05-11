@@ -69,7 +69,7 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(30,42,58,0.6) 75%, var(--color-background) 100%)',
+              'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(10,10,10,0.6) 75%, var(--color-background) 100%)',
           }}
         />
 
@@ -96,8 +96,8 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
             className="text-accent-gold absolute bottom-12 left-4 inline-flex items-center rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums backdrop-blur-sm"
             style={{
-              background: 'rgba(201,178,122,0.22)',
-              boxShadow: '0 0 16px rgba(201,178,122,0.2)',
+              background: 'rgba(229,181,71,0.22)',
+              boxShadow: '0 0 16px rgba(229,181,71,0.2)',
             }}
           >
             {animatedScore} % compatible

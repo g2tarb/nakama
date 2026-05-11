@@ -14,7 +14,7 @@ function Error({ statusCode }: ErrorProps) {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1rem',
-        background: '#0B0F14',
+        background: '#0A0A0A',
         color: '#E6E8EB',
         fontFamily: 'system-ui, sans-serif',
         textAlign: 'center',
@@ -22,7 +22,7 @@ function Error({ statusCode }: ErrorProps) {
     >
       <p
         style={{
-          color: '#C9B27A',
+          color: '#E5B547',
           fontSize: '0.75rem',
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
@@ -40,7 +40,7 @@ function Error({ statusCode }: ErrorProps) {
       >
         Quelque chose s&apos;est mal passé
       </h1>
-      <p style={{ color: '#9AA3AD', maxWidth: '28rem' }}>
+      <p style={{ color: '#A0A0A0', maxWidth: '28rem' }}>
         {statusCode === 404
           ? "Cette page n'existe pas ou a été déplacée."
           : 'Une erreur inattendue est survenue. Réessaie dans quelques instants.'}
