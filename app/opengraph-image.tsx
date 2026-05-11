@@ -10,7 +10,7 @@ export default function OpenGraphImage() {
       style={{
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(circle at 30% 30%, #1A2230 0%, #0B0F14 70%)',
+        background: 'radial-gradient(circle at 30% 30%, #1C1C1C 0%, #0A0A0A 70%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
@@ -25,7 +25,7 @@ export default function OpenGraphImage() {
           fontWeight: 600,
           letterSpacing: '0.2em',
           textTransform: 'uppercase',
-          color: '#C9B27A',
+          color: '#E5B547',
           marginBottom: 24,
         }}
       >
@@ -35,7 +35,7 @@ export default function OpenGraphImage() {
         style={{
           fontSize: 84,
           fontWeight: 800,
-          color: '#E6E8EB',
+          color: '#F5F5F5',
           lineHeight: 1.05,
           letterSpacing: '-0.02em',
           maxWidth: 900,
@@ -47,7 +47,7 @@ export default function OpenGraphImage() {
         style={{
           fontSize: 32,
           fontWeight: 400,
-          color: '#9AA3AD',
+          color: '#A0A0A0',
           marginTop: 32,
           maxWidth: 880,
           lineHeight: 1.3,
@@ -61,7 +61,7 @@ export default function OpenGraphImage() {
           bottom: 60,
           right: 96,
           fontSize: 20,
-          color: '#6B7480',
+          color: '#6B6B6B',
           fontWeight: 500,
         }}
       >

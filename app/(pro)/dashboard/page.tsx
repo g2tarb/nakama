@@ -102,7 +102,7 @@ export default function DashboardPage() {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#C9B27A"
+                  stroke="#E5B547"
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive

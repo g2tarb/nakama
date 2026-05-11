@@ -30,7 +30,7 @@ const MONTHLY_DATA = [
   { month: 'Avr', value: 2580 },
 ];
 
-const PIE_COLORS = ['#C9B27A', '#4ADE80', '#60A5FA', '#F87171', '#FBBF24'];
+const PIE_COLORS = ['#E5B547', '#4ADE80', '#60A5FA', '#F87171', '#FBBF24'];
 
 export default function RevenusPage() {
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
@@ -84,20 +84,20 @@ export default function RevenusPage() {
               <LineChart data={MONTHLY_DATA}>
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   width={40}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#2A3749',
-                    border: '1px solid #3A4A5E',
+                    background: '#131313',
+                    border: '1px solid #262626',
                     borderRadius: 8,
                     fontSize: 12,
                   }}
@@ -105,9 +105,9 @@ export default function RevenusPage() {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#C9B27A"
+                  stroke="#E5B547"
                   strokeWidth={2}
-                  dot={{ fill: '#C9B27A', r: 3 }}
+                  dot={{ fill: '#E5B547', r: 3 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -130,14 +130,14 @@ export default function RevenusPage() {
                   dataKey="value"
                 >
                   {pieData.map((_, i) => {
-                    const color = PIE_COLORS[i % PIE_COLORS.length] ?? '#C9B27A';
+                    const color = PIE_COLORS[i % PIE_COLORS.length] ?? '#E5B547';
                     return <Cell key={i} fill={color} />;
                   })}
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: '#2A3749',
-                    border: '1px solid #3A4A5E',
+                    background: '#131313',
+                    border: '1px solid #262626',
                     borderRadius: 8,
                     fontSize: 12,
                   }}
@@ -171,25 +171,25 @@ export default function RevenusPage() {
               <BarChart data={clientsData}>
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#8A95A5', fontSize: 11 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   width={30}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#2A3749',
-                    border: '1px solid #3A4A5E',
+                    background: '#131313',
+                    border: '1px solid #262626',
                     borderRadius: 8,
                     fontSize: 12,
                   }}
                 />
-                <Bar dataKey="clients" fill="#C9B27A" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="clients" fill="#E5B547" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

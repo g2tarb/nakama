@@ -9,13 +9,13 @@ export default function Icon() {
       style={{
         width: '100%',
         height: '100%',
-        background: '#0B0F14',
+        background: '#0A0A0A',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: 22,
         fontWeight: 800,
-        color: '#C9B27A',
+        color: '#E5B547',
         fontFamily: 'system-ui, sans-serif',
       }}
     >

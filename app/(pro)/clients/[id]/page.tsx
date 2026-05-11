@@ -274,21 +274,21 @@ export default function FicheAthletePage({
                       <LineChart data={poidsData}>
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: '#8A95A5', fontSize: 11 }}
+                          tick={{ fill: '#6B6B6B', fontSize: 11 }}
                           axisLine={false}
                           tickLine={false}
                         />
                         <YAxis
                           domain={['auto', 'auto']}
-                          tick={{ fill: '#8A95A5', fontSize: 11 }}
+                          tick={{ fill: '#6B6B6B', fontSize: 11 }}
                           axisLine={false}
                           tickLine={false}
                           width={40}
                         />
                         <Tooltip
                           contentStyle={{
-                            background: '#2A3749',
-                            border: '1px solid #3A4A5E',
+                            background: '#131313',
+                            border: '1px solid #262626',
                             borderRadius: 8,
                             fontSize: 12,
                           }}
@@ -296,9 +296,9 @@ export default function FicheAthletePage({
                         <Line
                           type="monotone"
                           dataKey="value"
-                          stroke="#C9B27A"
+                          stroke="#E5B547"
                           strokeWidth={2}
-                          dot={{ fill: '#C9B27A', r: 4 }}
+                          dot={{ fill: '#E5B547', r: 4 }}
                           activeDot={{ r: 6 }}
                         />
                       </LineChart>
@@ -318,21 +318,21 @@ export default function FicheAthletePage({
                       <LineChart data={chargeData}>
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: '#8A95A5', fontSize: 11 }}
+                          tick={{ fill: '#6B6B6B', fontSize: 11 }}
                           axisLine={false}
                           tickLine={false}
                         />
                         <YAxis
                           domain={['auto', 'auto']}
-                          tick={{ fill: '#8A95A5', fontSize: 11 }}
+                          tick={{ fill: '#6B6B6B', fontSize: 11 }}
                           axisLine={false}
                           tickLine={false}
                           width={40}
                         />
                         <Tooltip
                           contentStyle={{
-                            background: '#2A3749',
-                            border: '1px solid #3A4A5E',
+                            background: '#131313',
+                            border: '1px solid #262626',
                             borderRadius: 8,
                             fontSize: 12,
                           }}
