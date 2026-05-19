@@ -10,7 +10,6 @@ import {
   Footprints,
   HandMetal,
   Medal,
-  Search,
   Sparkles,
   Swords,
   Zap,
@@ -21,6 +20,7 @@ import { fr } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 
 import { ProCard } from '@/components/sportif/pro-card';
+import { HeroSearchBar } from '@/components/sportif/hero-search-bar';
 import { useMatchedPros } from '@/hooks/use-matching';
 import { defaultSportif, pros, seances } from '@/lib/mock-data';
 import { SPORTS_DISPONIBLES } from '@/lib/constants';
@@ -73,124 +73,99 @@ export default function AccueilSportifPage() {
   );
 
   return (
-    <div className="mx-auto max-w-[480px] pb-8 md:max-w-[640px]">
-      <header className="px-4 pt-6">
-        <span className="nk-eyebrow">Bonjour</span>
-        <h1 className="nk-h1 text-text-primary mt-1">
-          Salut <span className="text-accent-gold">{defaultSportif.prenom}</span>
-        </h1>
-        <p className="text-text-secondary mt-1.5 text-[14px]">
-          Trouve ton Nakama du jour.
-        </p>
-      </header>
+    <div className="pb-8">
+      <HeroSearchBar prenom={defaultSportif.prenom} />
 
-      <section className="mt-6 px-4">
-        <button
-          type="button"
-          onClick={() => router.push('/recherche')}
-          className="bg-card border-border/40 hover:border-accent-muted hover:bg-surface-elevated group flex h-14 w-full items-center gap-3 rounded-[14px] border px-4 text-left transition-all active:translate-y-px"
+      <div className="mx-auto max-w-[480px] md:max-w-[640px]">
+        {nextSeance && nextSeancePro && (
+          <NextSessionCard
+            date={parseISO(nextSeance.date)}
+            duration={nextSeance.dureeMinutes}
+            status={nextSeance.statut}
+            proName={`${nextSeancePro.prenom} ${nextSeancePro.nom}`}
+            proInitials={`${nextSeancePro.prenom[0] ?? ''}${nextSeancePro.nom[0] ?? ''}`}
+            proSpec={nextSeancePro.specialite}
+            onClick={() => router.push('/rdv')}
+          />
+        )}
+
+        <motion.section
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          className="mt-10"
         >
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-            style={{ background: 'var(--color-accent-gold-wash)' }}
-          >
-            <Search size={16} className="text-accent-gold" />
-          </span>
-          <span className="text-text-secondary group-hover:text-text-primary text-sm transition-colors">
-            Trouve ton Nakama…
-          </span>
-        </button>
-      </section>
+          <SectionHeading>Matchés pour toi</SectionHeading>
+          <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
+            {(matchedPros.length > 0
+              ? matchedPros.slice(0, 5)
+              : pros.slice(0, 5).map((p) => ({
+                  proId: p.id,
+                  scoreTotal: pseudoScore(p.id),
+                }))
+            ).map((match) => {
+              const pro = pros.find((p) => p.id === match.proId);
+              if (!pro) return null;
+              return (
+                <motion.div key={pro.id} variants={itemVariants} className="snap-start">
+                  <ProCard
+                    pro={pro}
+                    compatibilityScore={match.scoreTotal}
+                    onClick={() => router.push(`/pros/${pro.id}`)}
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
 
-      {nextSeance && nextSeancePro && (
-        <NextSessionCard
-          date={parseISO(nextSeance.date)}
-          duration={nextSeance.dureeMinutes}
-          status={nextSeance.statut}
-          proName={`${nextSeancePro.prenom} ${nextSeancePro.nom}`}
-          proInitials={`${nextSeancePro.prenom[0] ?? ''}${nextSeancePro.nom[0] ?? ''}`}
-          proSpec={nextSeancePro.specialite}
-          onClick={() => router.push('/rdv')}
-        />
-      )}
-
-      <motion.section
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-40px' }}
-        className="mt-10"
-      >
-        <SectionHeading>Matchés pour toi</SectionHeading>
-        <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
-          {(matchedPros.length > 0
-            ? matchedPros.slice(0, 5)
-            : pros.slice(0, 5).map((p) => ({
-                proId: p.id,
-                scoreTotal: pseudoScore(p.id),
-              }))
-          ).map((match) => {
-            const pro = pros.find((p) => p.id === match.proId);
-            if (!pro) return null;
-            return (
-              <motion.div key={pro.id} variants={itemVariants} className="snap-start">
+        <section className="mt-10">
+          <SectionHeading>À proximité</SectionHeading>
+          <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
+            {prosProximite.slice(0, 5).map((pro) => (
+              <div key={pro.id} className="snap-start">
                 <ProCard
                   pro={pro}
-                  compatibilityScore={match.scoreTotal}
+                  distance={pseudoDistance(pro.id)}
                   onClick={() => router.push(`/pros/${pro.id}`)}
                 />
-              </motion.div>
-            );
-          })}
-        </div>
-      </motion.section>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      <section className="mt-10">
-        <SectionHeading>À proximité</SectionHeading>
-        <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
-          {prosProximite.slice(0, 5).map((pro) => (
-            <div key={pro.id} className="snap-start">
-              <ProCard
-                pro={pro}
-                distance={pseudoDistance(pro.id)}
-                onClick={() => router.push(`/pros/${pro.id}`)}
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-10 px-4">
-        <h2 className="nk-h3 text-text-primary mb-4">Découvre par sport</h2>
-        <div className="grid grid-cols-3 gap-3 md:grid-cols-4">
-          {SPORTS_DISPONIBLES.filter((s) => s.value !== 'autre').map(
-            ({ value, label }) => {
-              const Icon = SPORT_ICONS[value] ?? Sparkles;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => router.push(`/recherche?sport=${value}`)}
-                  className={cn(
-                    'border-border/40 bg-card flex h-24 flex-col items-center justify-center gap-2 rounded-xl border text-[13px] font-medium transition-all',
-                    'hover:border-accent-muted hover:bg-surface-elevated active:translate-y-px',
-                  )}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="flex h-9 w-9 items-center justify-center rounded-[10px] transition-colors"
-                    style={{ background: 'var(--color-accent-gold-wash)' }}
+        <section className="mt-10 px-4">
+          <h2 className="nk-h3 text-text-primary mb-4">Découvre par sport</h2>
+          <div className="grid grid-cols-3 gap-3 md:grid-cols-4">
+            {SPORTS_DISPONIBLES.filter((s) => s.value !== 'autre').map(
+              ({ value, label }) => {
+                const Icon = SPORT_ICONS[value] ?? Sparkles;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => router.push(`/recherche?sport=${value}`)}
+                    className={cn(
+                      'border-border/40 bg-card flex h-24 flex-col items-center justify-center gap-2 rounded-xl border text-[13px] font-medium transition-all',
+                      'hover:border-accent-muted hover:bg-surface-elevated active:translate-y-px',
+                    )}
                   >
-                    <Icon size={18} className="text-accent-gold" />
-                  </span>
-                  <span className="text-text-secondary">{label}</span>
-                </button>
-              );
-            },
-          )}
-        </div>
-      </section>
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 items-center justify-center rounded-[10px] transition-colors"
+                      style={{ background: 'var(--color-accent-gold-wash)' }}
+                    >
+                      <Icon size={18} className="text-accent-gold" />
+                    </span>
+                    <span className="text-text-secondary">{label}</span>
+                  </button>
+                );
+              },
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
