@@ -49,7 +49,7 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
     SPORTS_DISPONIBLES.find((s) => s.value === value)?.label ?? value;
 
   return (
-    <div className="pb-40 md:pb-24">
+    <div className="pt-8 pb-40 md:pb-24">
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
