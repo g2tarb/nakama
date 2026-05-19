@@ -9,11 +9,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCountUp } from '@/hooks/use-count-up';
 import { pros } from '@/lib/mock-data';
-import { SPECIALITES, SPORTS_DISPONIBLES } from '@/lib/constants';
+import { SPORTS_DISPONIBLES } from '@/lib/constants';
 import { formatPrice, formatPricePerHour, formatDate } from '@/lib/formatters';
 import { useUserStore } from '@/stores/user-store';
 import { computeMatchScore } from '@/lib/matching';
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 
 export default function FicheProPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -42,8 +42,7 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
     );
   }
 
-  const specialiteLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specialiteLabel = getSpecialiteLabel(pro.specialite);
 
   const sportLabel = (value: string) =>
     SPORTS_DISPONIBLES.find((s) => s.value === value)?.label ?? value;

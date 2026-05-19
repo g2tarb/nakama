@@ -18,10 +18,9 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 import { useUserStore } from '@/stores/user-store';
 import { pros } from '@/lib/mock-data';
-import { SPECIALITES } from '@/lib/constants';
 
 type SidebarItem = {
   href: string;
@@ -60,8 +59,7 @@ export function ProLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
 
-  const specLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specLabel = getSpecialiteLabel(pro.specialite);
 
   const activeMobileHref = MOBILE_NAV.find(
     ({ href }) => pathname === href || (pathname?.startsWith(`${href}/`) ?? false),

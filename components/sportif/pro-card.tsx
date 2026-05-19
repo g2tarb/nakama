@@ -4,11 +4,10 @@ import { memo, useState } from 'react';
 import Image from 'next/image';
 import { Heart, MapPin, Star } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 import type { Pro } from '@/types';
 import { useCountUp } from '@/hooks/use-count-up';
 import { formatPricePerHour } from '@/lib/formatters';
-import { SPECIALITES } from '@/lib/constants';
 
 interface ProCardProps {
   pro: Pro;
@@ -27,8 +26,7 @@ export const ProCard = memo(function ProCard({
 }: ProCardProps) {
   const [favorited, setFavorited] = useState(false);
   const animatedScore = useCountUp(compatibilityScore ?? 0, 900);
-  const specialiteLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specialiteLabel = getSpecialiteLabel(pro.specialite);
 
   return (
     <article

@@ -6,10 +6,10 @@ import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { PillButton } from '@/components/common/pill-button';
 import { ProgressBar } from '@/components/sportif/onboarding/progress-bar';
 import { StepWrapper } from '@/components/sportif/onboarding/step-wrapper';
 import { VibeSlider } from '@/components/sportif/onboarding/vibe-slider';
-import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/formatters';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, OBJECTIFS, NIVEAUX, FREQUENCES } from '@/lib/constants';
@@ -18,31 +18,6 @@ import { completeSportifOnboarding } from '@/lib/auth/onboarding';
 import type { Genre, Objectif, Sport, Niveau } from '@/types';
 
 const TOTAL_STEPS = 6;
-
-function PillButton({
-  selected,
-  onClick,
-  children,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'rounded-full border px-4 py-2 text-sm font-medium transition-all',
-        selected
-          ? 'border-accent-gold bg-accent-gold text-background'
-          : 'border-border text-text-primary hover:border-text-tertiary',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 export default function InscriptionSportifPage() {
   const router = useRouter();

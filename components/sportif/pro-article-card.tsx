@@ -4,11 +4,11 @@ import { memo, useState } from 'react';
 import Image from 'next/image';
 import { ArrowRight, Heart, MapPin, Star } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 import type { Pro } from '@/types';
 import { useCountUp } from '@/hooks/use-count-up';
 import { formatPricePerHour } from '@/lib/formatters';
-import { SPECIALITES, SPORTS_DISPONIBLES } from '@/lib/constants';
+import { SPORTS_DISPONIBLES } from '@/lib/constants';
 
 interface ProArticleCardProps {
   pro: Pro;
@@ -28,8 +28,7 @@ export const ProArticleCard = memo(function ProArticleCard({
   const [favorited, setFavorited] = useState(false);
   const animatedScore = useCountUp(compatibilityScore ?? 0, 900);
 
-  const specialiteLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specialiteLabel = getSpecialiteLabel(pro.specialite);
   const sportLabel = (slug: string) =>
     SPORTS_DISPONIBLES.find((s) => s.value === slug)?.label ?? slug;
 
