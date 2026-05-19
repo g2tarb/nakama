@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { CalendarDays, ChevronRight, Clock, List, MapPin, Plus } from 'lucide-react';
+
+import { formatPrice } from '@/lib/formatters';
 import {
   format,
   isAfter,
@@ -17,18 +19,11 @@ import { fr } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
+import { getStatutBadgeProps } from '@/lib/constants';
 import { seances, pros } from '@/lib/mock-data';
-import type { Seance } from '@/types';
 
 type ViewMode = 'liste' | 'calendrier';
 type ListFilter = 'venir' | 'passees';
-
-const STATUT_BADGE: Record<Seance['statut'], { label: string; className: string }> = {
-  confirmee: { label: 'Confirmé', className: 'bg-accent-gold/15 text-accent-gold' },
-  en_attente: { label: 'En attente', className: 'bg-warning/15 text-warning' },
-  annulee: { label: 'Annulé', className: 'bg-muted text-text-tertiary' },
-  terminee: { label: 'Terminé', className: 'bg-success/15 text-success' },
-};
 
 export default function RdvPage() {
   const router = useRouter();
@@ -131,7 +126,7 @@ export default function RdvPage() {
             >
               {filteredSeances.map((seance) => {
                 const pro = pros.find((p) => p.id === seance.proId);
-                const badge = STATUT_BADGE[seance.statut];
+                const badge = getStatutBadgeProps(seance.statut);
                 const carte = pro?.cartesServices.find(
                   (c) => c.id === seance.carteServiceId,
                 );
@@ -204,7 +199,7 @@ export default function RdvPage() {
                         {seance.lieu}
                       </span>
                       <span className="text-accent-gold ml-auto text-sm font-bold tabular-nums">
-                        {seance.tarif} €
+                        {formatPrice(seance.tarif)}
                       </span>
                     </div>
                   </motion.li>

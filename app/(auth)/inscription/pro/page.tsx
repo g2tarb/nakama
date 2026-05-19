@@ -6,10 +6,12 @@ import { motion } from 'framer-motion';
 import { Check, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { PillButton } from '@/components/common/pill-button';
 import { ProgressBar } from '@/components/sportif/onboarding/progress-bar';
 import { StepWrapper } from '@/components/sportif/onboarding/step-wrapper';
 import { VibeSlider } from '@/components/sportif/onboarding/vibe-slider';
 import { cn } from '@/lib/utils';
+import { formatPrice, formatPricePerHour } from '@/lib/formatters';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, SPECIALITES, FORMULES } from '@/lib/constants';
 import { onboardingProSchema } from '@/lib/schemas';
@@ -17,31 +19,6 @@ import { completeProOnboarding } from '@/lib/auth/onboarding';
 import type { Sport, Specialite, Format, Formule } from '@/types';
 
 const TOTAL_STEPS = 6;
-
-function PillButton({
-  selected,
-  onClick,
-  children,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'rounded-full border px-4 py-2 text-sm font-medium transition-all',
-        selected
-          ? 'border-accent-gold bg-accent-gold text-background'
-          : 'border-border text-text-primary hover:border-text-tertiary',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 export default function InscriptionProPage() {
   const router = useRouter();
@@ -363,7 +340,7 @@ export default function InscriptionProPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-text-secondary mb-1.5 block text-sm">
-                  Tarif/heure : {carteTarif}€
+                  Tarif/heure : {formatPrice(carteTarif)}
                 </label>
                 <input
                   type="range"
@@ -414,7 +391,7 @@ export default function InscriptionProPage() {
                     </p>
                   </div>
                   <span className="text-accent-gold text-lg font-bold">
-                    {carteTarif}€/h
+                    {formatPricePerHour(carteTarif)}
                   </span>
                 </div>
                 {carteDescription && (
@@ -508,7 +485,7 @@ export default function InscriptionProPage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold">{label}</h3>
                     <span className="text-accent-gold text-xl font-bold">
-                      {prix}€
+                      {formatPrice(prix)}
                       <span className="text-text-tertiary text-xs font-normal">
                         /mois
                       </span>

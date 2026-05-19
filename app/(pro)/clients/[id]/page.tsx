@@ -20,7 +20,7 @@ import {
   coachNotes,
 } from '@/lib/mock-data';
 import { RESSENTI_EMOJIS } from '@/lib/constants';
-import { formatDate, formatDuration } from '@/lib/formatters';
+import { formatDate, formatDuration, formatPrice } from '@/lib/formatters';
 
 type Tab = 'sante' | 'progression' | 'notes' | 'historique';
 
@@ -421,7 +421,7 @@ export default function FicheAthletePage({
                       </div>
                       <p className="text-text-tertiary mt-1 text-xs">
                         {seance.lieu} · {formatDuration(seance.dureeMinutes)} ·{' '}
-                        {seance.tarif}€
+                        {formatPrice(seance.tarif)}
                       </p>
 
                       {seance.chargePercue != null && (

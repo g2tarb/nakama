@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
@@ -23,6 +23,9 @@ import { useUserStore } from '@/stores/user-store';
 import { pros, seances, sportifs } from '@/lib/mock-data';
 import { containerVariants, itemVariants } from '@/lib/animations';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
+import { SeanceDetailDialog } from '@/components/pro/seance-detail-dialog';
+import type { Seance } from '@/types';
 
 const SPARKLINE_DATA = [
   { month: 'Nov', value: 1200 },
@@ -54,6 +57,7 @@ const NEW_REQUESTS = [
 export default function DashboardPage() {
   const router = useRouter();
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
+  const [selectedSeance, setSelectedSeance] = useState<Seance | null>(null);
 
   const today = useMemo(() => new Date(), []);
 
@@ -121,7 +125,12 @@ export default function DashboardPage() {
           deltaPositive
           icon={TrendingUp}
         />
-        <KpiCard label="Revenus du mois" value="2 580 €" delta="+8 %" deltaPositive />
+        <KpiCard
+          label="Revenus du mois"
+          value={formatPrice(2580)}
+          delta="+8 %"
+          deltaPositive
+        />
         <KpiCard
           label="Note moyenne"
           value={pro.note.toFixed(1)}
@@ -174,35 +183,38 @@ export default function DashboardPage() {
                     ? `${Math.round((seance.dureeMinutes / 60) * 10) / 10} h`
                     : `${seance.dureeMinutes} min`;
                 return (
-                  <li
-                    key={seance.id}
-                    className={cn(
-                      'grid grid-cols-[60px_1fr_auto_auto] items-center gap-4 py-3.5',
-                      i > 0 && 'border-border/40 border-t',
-                    )}
-                  >
-                    <span className="text-accent-gold nk-mono text-[14px] font-semibold tabular-nums">
-                      {format(start, 'HH:mm')}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-text-primary truncate text-sm font-medium">
-                        {client ? `${client.prenom} ${client.nom}` : 'Client'}
-                      </div>
-                      <div className="text-text-secondary truncate text-xs">
-                        {carte?.nom ?? 'Séance'} · {dur}
-                      </div>
-                    </div>
-                    <span
+                  <li key={seance.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSeance(seance)}
                       className={cn(
-                        'rounded-full px-2.5 py-1 text-[11px] font-medium',
-                        isPending
-                          ? 'bg-warning/15 text-warning'
-                          : 'bg-accent-gold/15 text-accent-gold',
+                        'hover:bg-surface-elevated/40 grid w-full grid-cols-[60px_1fr_auto_auto] items-center gap-4 py-3.5 text-left transition-colors',
+                        i > 0 && 'border-border/40 border-t',
                       )}
                     >
-                      {isPending ? 'En attente' : 'Confirmé'}
-                    </span>
-                    <ChevronRight size={16} className="text-text-tertiary" />
+                      <span className="text-accent-gold nk-mono text-[14px] font-semibold tabular-nums">
+                        {format(start, 'HH:mm')}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-text-primary truncate text-sm font-medium">
+                          {client ? `${client.prenom} ${client.nom}` : 'Client'}
+                        </div>
+                        <div className="text-text-secondary truncate text-xs">
+                          {carte?.nom ?? 'Séance'} · {dur}
+                        </div>
+                      </div>
+                      <span
+                        className={cn(
+                          'rounded-full px-2.5 py-1 text-[11px] font-medium',
+                          isPending
+                            ? 'bg-warning/15 text-warning'
+                            : 'bg-accent-gold/15 text-accent-gold',
+                        )}
+                      >
+                        {isPending ? 'En attente' : 'Confirmé'}
+                      </span>
+                      <ChevronRight size={16} className="text-text-tertiary" />
+                    </button>
                   </li>
                 );
               })}
@@ -313,6 +325,12 @@ export default function DashboardPage() {
       </motion.section>
 
       <Clock aria-hidden="true" className="hidden" />
+
+      <SeanceDetailDialog
+        seance={selectedSeance}
+        open={selectedSeance !== null}
+        onClose={() => setSelectedSeance(null)}
+      />
     </motion.div>
   );
 }
@@ -337,7 +355,7 @@ function KpiCard({
         <span className="nk-label text-accent-muted">{label}</span>
         {Icon && <Icon size={14} className="text-accent-gold/70" />}
       </div>
-      <div className="text-text-primary mt-3 text-[28px] font-bold tracking-[-0.02em] tabular-nums">
+      <div className="text-text-primary mt-3 text-[28px] font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums">
         {value}
       </div>
       {delta && (
@@ -358,8 +376,8 @@ function KpiCard({
 function RevenueValue({ target }: { target: number }) {
   const value = useCountUp(target, 1100);
   return (
-    <span className="text-accent-gold text-glow-or text-[34px] font-bold tracking-[-0.02em] tabular-nums">
-      {value.toLocaleString('fr-FR')} €
+    <span className="text-accent-gold text-glow-or text-[34px] font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums">
+      {formatPrice(value)}
     </span>
   );
 }

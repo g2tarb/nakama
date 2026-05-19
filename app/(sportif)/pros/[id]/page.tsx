@@ -9,11 +9,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCountUp } from '@/hooks/use-count-up';
 import { pros } from '@/lib/mock-data';
-import { SPECIALITES, SPORTS_DISPONIBLES } from '@/lib/constants';
-import { formatPricePerHour, formatDate } from '@/lib/formatters';
+import { SPORTS_DISPONIBLES } from '@/lib/constants';
+import { formatPrice, formatPricePerHour, formatDate } from '@/lib/formatters';
 import { useUserStore } from '@/stores/user-store';
 import { computeMatchScore } from '@/lib/matching';
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 
 export default function FicheProPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -42,14 +42,13 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
     );
   }
 
-  const specialiteLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specialiteLabel = getSpecialiteLabel(pro.specialite);
 
   const sportLabel = (value: string) =>
     SPORTS_DISPONIBLES.find((s) => s.value === value)?.label ?? value;
 
   return (
-    <div className="pb-40 md:pb-24">
+    <div className="pt-8 pb-40 md:pb-24">
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -182,7 +181,7 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
                         </span>
                       </div>
                       <span className="text-accent-gold shrink-0 text-lg font-bold tabular-nums">
-                        {carte.tarifHeure} €
+                        {formatPrice(carte.tarifHeure)}
                         <span className="text-text-tertiary text-xs font-normal">
                           {' '}
                           /h

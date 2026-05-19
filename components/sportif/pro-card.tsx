@@ -4,11 +4,10 @@ import { memo, useState } from 'react';
 import Image from 'next/image';
 import { Heart, MapPin, Star } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 import type { Pro } from '@/types';
 import { useCountUp } from '@/hooks/use-count-up';
 import { formatPricePerHour } from '@/lib/formatters';
-import { SPECIALITES } from '@/lib/constants';
 
 interface ProCardProps {
   pro: Pro;
@@ -27,8 +26,7 @@ export const ProCard = memo(function ProCard({
 }: ProCardProps) {
   const [favorited, setFavorited] = useState(false);
   const animatedScore = useCountUp(compatibilityScore ?? 0, 900);
-  const specialiteLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specialiteLabel = getSpecialiteLabel(pro.specialite);
 
   return (
     <article
@@ -84,7 +82,7 @@ export const ProCard = memo(function ProCard({
         </button>
 
         {distance != null && (
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 text-xs font-medium text-white drop-shadow-sm">
+          <div className="absolute bottom-2 left-2 hidden items-center gap-1 text-xs font-medium text-white drop-shadow-sm md:flex">
             <MapPin size={12} />
             {distance < 1
               ? `${Math.round(distance * 1000)} m`
@@ -101,9 +99,22 @@ export const ProCard = memo(function ProCard({
             </h3>
             <p className="text-text-secondary truncate text-xs">{specialiteLabel}</p>
           </div>
-          <span className="text-accent-gold shrink-0 text-sm font-bold">
+          <span className="text-accent-gold hidden shrink-0 text-sm font-bold md:block">
             {formatPricePerHour(pro.tarifMin)}
           </span>
+        </div>
+        <div className="text-text-secondary mt-1.5 flex items-center justify-between text-xs md:hidden">
+          <span className="text-accent-gold font-bold">
+            {formatPricePerHour(pro.tarifMin)}
+          </span>
+          {distance != null && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin size={11} />
+              {distance < 1
+                ? `${Math.round(distance * 1000)} m`
+                : `${distance.toFixed(1)} km`}
+            </span>
+          )}
         </div>
       </div>
     </article>

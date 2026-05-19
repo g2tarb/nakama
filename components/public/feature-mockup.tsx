@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { formatPricePerHour } from '@/lib/formatters';
+
 // Three.js lazy-loaded pour ne pas plomber le bundle initial
 const ThreeBackground = dynamic(
   () => import('./three-background').then((mod) => mod.ThreeBackground),
@@ -231,7 +233,7 @@ function PhoneMockup({ scores }: { scores: number[] }) {
                   {pro.name}
                 </div>
                 <div className="text-text-secondary text-[11px]">
-                  {pro.specialty} · {pro.price} €/h
+                  {pro.specialty} · {formatPricePerHour(pro.price)}
                 </div>
               </div>
               <div

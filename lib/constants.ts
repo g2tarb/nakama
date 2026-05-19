@@ -1,4 +1,4 @@
-import type { Sport, Specialite, Formule } from '@/types';
+import type { Sport, Specialite, Formule, StatutSeance } from '@/types';
 
 export const SPORTS_DISPONIBLES: { value: Sport; label: string }[] = [
   { value: 'fitness', label: 'Fitness' },
@@ -97,3 +97,17 @@ export const RESSENTI_EMOJIS: Record<1 | 2 | 3 | 4, string> = {
   3: '😊',
   4: '🔥',
 };
+
+export const STATUT_BADGE: Record<StatutSeance, { label: string; className: string }> = {
+  confirmee: { label: 'Confirmé', className: 'bg-accent-gold/15 text-accent-gold' },
+  en_attente: { label: 'En attente', className: 'bg-warning/15 text-warning' },
+  annulee: { label: 'Annulé', className: 'bg-muted text-text-tertiary' },
+  terminee: { label: 'Terminé', className: 'bg-success/15 text-success' },
+};
+
+export function getStatutBadgeProps(statut: StatutSeance): {
+  label: string;
+  className: string;
+} {
+  return STATUT_BADGE[statut];
+}

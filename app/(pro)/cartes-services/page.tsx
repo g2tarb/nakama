@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { useUserStore } from '@/stores/user-store';
 import { pros } from '@/lib/mock-data';
-import { formatPricePerHour } from '@/lib/formatters';
+import { formatPrice, formatPricePerHour } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { SPORTS_DISPONIBLES } from '@/lib/constants';
 import { carteServiceCreateSchema, type CarteServiceCreateInput } from '@/lib/schemas';
@@ -164,7 +164,8 @@ export default function CartesServicesPage() {
               </div>
             </div>
             <p className="text-text-tertiary mt-3 text-xs">
-              {carte.nbReservations} réservations · {carte.caGenere}€ CA généré
+              {carte.nbReservations} réservations · {formatPrice(carte.caGenere)} CA
+              généré
             </p>
           </div>
         ))}

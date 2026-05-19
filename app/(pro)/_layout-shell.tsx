@@ -18,10 +18,9 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { cn } from '@/lib/utils';
+import { cn, getSpecialiteLabel } from '@/lib/utils';
 import { useUserStore } from '@/stores/user-store';
 import { pros } from '@/lib/mock-data';
-import { SPECIALITES } from '@/lib/constants';
 
 type SidebarItem = {
   href: string;
@@ -44,15 +43,23 @@ const MOBILE_NAV: ReadonlyArray<{ href: string; label: string; icon: LucideIcon 
   { href: '/dashboard', label: 'Bord', icon: Home },
   { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/clients', label: 'Athlètes', icon: Users },
+  { href: '/cartes-services', label: 'Cartes', icon: CreditCard },
   { href: '/revenus', label: 'Revenus', icon: TrendingUp },
+];
+
+const DESKTOP_NAV: ReadonlyArray<{ href: string; label: string }> = [
+  { href: '/dashboard', label: 'Bord' },
+  { href: '/agenda', label: 'Agenda' },
+  { href: '/clients', label: 'Athlètes' },
+  { href: '/cartes-services', label: 'Cartes' },
+  { href: '/revenus', label: 'Revenus' },
 ];
 
 export function ProLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const pro = useUserStore((s) => s.pro) ?? pros[4]!;
 
-  const specLabel =
-    SPECIALITES.find((s) => s.value === pro.specialite)?.label ?? pro.specialite;
+  const specLabel = getSpecialiteLabel(pro.specialite);
 
   const activeMobileHref = MOBILE_NAV.find(
     ({ href }) => pathname === href || (pathname?.startsWith(`${href}/`) ?? false),
@@ -136,7 +143,7 @@ export function ProLayoutShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex flex-1 flex-col lg:pl-60">
-        <header className="border-border/60 bg-background/85 sticky top-0 z-40 flex h-14 items-center justify-between border-b px-4 backdrop-blur-md lg:hidden">
+        <header className="border-border/60 bg-background/85 sticky top-0 z-40 flex h-14 items-center gap-6 border-b px-4 backdrop-blur-md lg:hidden">
           <Link
             href="/dashboard"
             className="text-accent-gold flex items-center gap-2 text-lg font-bold tracking-[0.04em]"
@@ -150,7 +157,38 @@ export function ProLayoutShell({ children }: { children: React.ReactNode }) {
             />
             NAKAMA
           </Link>
-          <div className="flex items-center gap-1">
+          <nav
+            className="hidden flex-1 items-center justify-center gap-6 md:flex"
+            aria-label="Navigation principale"
+          >
+            {DESKTOP_NAV.map(({ href, label }) => {
+              const isActive = href === activeMobileHref;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'relative py-1 text-[14px] font-medium transition-colors',
+                    isActive
+                      ? 'text-accent-gold'
+                      : 'text-text-secondary hover:text-text-primary',
+                  )}
+                >
+                  {label}
+                  {isActive && (
+                    <motion.span
+                      layoutId="pro-desktop-nav-indicator"
+                      aria-hidden="true"
+                      className="bg-accent-gold absolute right-0 -bottom-1 left-0 h-[2px] rounded-full"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="ml-auto flex items-center gap-1 md:ml-0">
             <button
               type="button"
               aria-label="Notifications"
@@ -173,14 +211,14 @@ export function ProLayoutShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
+        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
           {children}
         </main>
       </div>
 
       <nav
-        className="border-border/60 bg-background/85 pb-safe fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md lg:hidden"
-        aria-label="Navigation principale"
+        className="border-border/60 bg-background/85 pb-safe fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md md:hidden"
+        aria-label="Navigation mobile"
       >
         <div className="mx-auto flex h-20 max-w-[480px] items-stretch px-2">
           {MOBILE_NAV.map(({ href, label, icon: Icon }) => {
