@@ -26,14 +26,45 @@ export function SportifLayoutShell({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-border bg-background/80 sticky top-0 z-40 h-14 border-b backdrop-blur-md">
-        <div className="mx-auto flex h-full max-w-[480px] items-center justify-between px-4 md:max-w-[640px]">
+        <div className="mx-auto flex h-full max-w-[480px] items-center gap-6 px-4 md:max-w-[1080px]">
           <Link
             href="/accueil"
             className="text-accent-gold text-lg font-bold tracking-[0.04em]"
           >
             NAKAMA
           </Link>
-          <div className="flex items-center gap-1">
+          <nav
+            className="hidden flex-1 items-center justify-center gap-7 md:flex"
+            aria-label="Navigation principale"
+          >
+            {NAV_ITEMS.map(({ href, label }) => {
+              const isActive = href === activeTabHref;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'relative py-1 text-[14px] font-medium transition-colors',
+                    isActive
+                      ? 'text-accent-gold'
+                      : 'text-text-secondary hover:text-text-primary',
+                  )}
+                >
+                  {label}
+                  {isActive && (
+                    <motion.span
+                      layoutId="sportif-desktop-nav-indicator"
+                      aria-hidden="true"
+                      className="bg-accent-gold absolute right-0 -bottom-1 left-0 h-[2px] rounded-full"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="ml-auto flex items-center gap-1 md:ml-0">
             <button
               type="button"
               aria-label="Notifications"
