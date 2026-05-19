@@ -34,6 +34,8 @@ import { formatPrice } from '@/lib/formatters';
 import { seances, sportifs, pros } from '@/lib/mock-data';
 import { useUserStore } from '@/stores/user-store';
 import { useMobile } from '@/hooks/use-mobile';
+import { SeanceDetailDialog } from '@/components/pro/seance-detail-dialog';
+import type { Seance } from '@/types';
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
@@ -55,6 +57,8 @@ export default function AgendaPage() {
   const [dayDetailDate, setDayDetailDate] = useState<Date | null>(null);
   const [blockOpen, setBlockOpen] = useState(false);
   const [blocks, setBlocks] = useState<BlockedSlot[]>([]);
+  const [selectedSeance, setSelectedSeance] = useState<Seance | null>(null);
+  const [canceledIds, setCanceledIds] = useState<Set<string>>(new Set());
   const [blockForm, setBlockForm] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
     heureDebut: '12:00',
@@ -100,9 +104,20 @@ export default function AgendaPage() {
   );
 
   const proSeances = useMemo(
-    () => seances.filter((s) => s.proId === pro.id && s.statut !== 'annulee'),
-    [pro.id],
+    () =>
+      seances.filter(
+        (s) => s.proId === pro.id && s.statut !== 'annulee' && !canceledIds.has(s.id),
+      ),
+    [pro.id, canceledIds],
   );
+
+  const handleSeanceCancel = (id: string) => {
+    setCanceledIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  };
 
   function navigatePrev() {
     if (view === 'jour') setRefDate(subDays(refDate, 1));
@@ -217,6 +232,7 @@ export default function AgendaPage() {
           date={refDate}
           seances={getDateSeances(refDate)}
           blocks={getDateBlocks(refDate)}
+          onSeanceClick={setSelectedSeance}
         />
       )}
 
@@ -423,6 +439,10 @@ export default function AgendaPage() {
             <DayContentList
               seances={getDateSeances(dayDetailDate)}
               blocks={getDateBlocks(dayDetailDate)}
+              onSeanceClick={(s) => {
+                setDayDetailDate(null);
+                setSelectedSeance(s);
+              }}
             />
           )}
           <DialogFooter>
@@ -542,6 +562,13 @@ export default function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SeanceDetailDialog
+        seance={selectedSeance}
+        open={selectedSeance !== null}
+        onClose={() => setSelectedSeance(null)}
+        onCancel={handleSeanceCancel}
+      />
     </div>
   );
 }
@@ -554,9 +581,10 @@ interface DayViewProps {
   date: Date;
   seances: typeof seances;
   blocks: BlockedSlot[];
+  onSeanceClick?: (s: Seance) => void;
 }
 
-function DayView({ date, seances, blocks }: DayViewProps) {
+function DayView({ date, seances, blocks, onSeanceClick }: DayViewProps) {
   const isToday = isSameDay(date, new Date());
 
   if (seances.length === 0 && blocks.length === 0) {
@@ -574,7 +602,7 @@ function DayView({ date, seances, blocks }: DayViewProps) {
 
   return (
     <div className="space-y-2">
-      <DayContentList seances={seances} blocks={blocks} />
+      <DayContentList seances={seances} blocks={blocks} onSeanceClick={onSeanceClick} />
     </div>
   );
 }
@@ -586,9 +614,10 @@ function DayView({ date, seances, blocks }: DayViewProps) {
 interface DayContentListProps {
   seances: typeof seances;
   blocks: BlockedSlot[];
+  onSeanceClick?: (s: Seance) => void;
 }
 
-function DayContentList({ seances, blocks }: DayContentListProps) {
+function DayContentList({ seances, blocks, onSeanceClick }: DayContentListProps) {
   if (seances.length === 0 && blocks.length === 0) {
     return (
       <p className="text-text-tertiary py-4 text-center text-sm">
@@ -603,39 +632,43 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
         const client = sportifs.find((c) => c.id === s.sportifId);
         const isPending = s.statut === 'en_attente';
         return (
-          <li
-            key={s.id}
-            className="bg-card border-border/40 hover:bg-surface-elevated flex items-center gap-3 rounded-xl border p-4 transition-colors"
-          >
-            <div className="w-14 shrink-0 text-center">
-              <p className="text-accent-gold nk-mono text-sm font-bold tabular-nums">
-                {format(new Date(s.date), 'HH:mm')}
-              </p>
-              <p className="text-text-tertiary mt-0.5 text-[10px]">
-                {s.dureeMinutes} min
-              </p>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-text-primary truncate text-sm font-medium">
-                {client ? `${client.prenom} ${client.nom}` : 'Client'}
-              </p>
-              <p className="text-text-tertiary truncate text-xs">
-                {s.lieu ?? 'Lieu à confirmer'}
-              </p>
-            </div>
-            <span
-              className={cn(
-                'shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium',
-                isPending
-                  ? 'bg-warning/15 text-warning'
-                  : 'bg-accent-gold/15 text-accent-gold',
-              )}
+          <li key={s.id}>
+            <button
+              type="button"
+              onClick={() => onSeanceClick?.(s)}
+              className="bg-card border-border/40 hover:bg-surface-elevated flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-colors active:translate-y-px"
+              aria-label={`Voir détails séance ${format(new Date(s.date), 'HH:mm')}`}
             >
-              {isPending ? 'Attente' : 'Confirmé'}
-            </span>
-            <span className="text-accent-gold shrink-0 text-sm font-bold tabular-nums">
-              {formatPrice(s.tarif)}
-            </span>
+              <div className="w-14 shrink-0 text-center">
+                <p className="text-accent-gold nk-mono text-sm font-bold tabular-nums">
+                  {format(new Date(s.date), 'HH:mm')}
+                </p>
+                <p className="text-text-tertiary mt-0.5 text-[10px]">
+                  {s.dureeMinutes} min
+                </p>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-text-primary truncate text-sm font-medium">
+                  {client ? `${client.prenom} ${client.nom}` : 'Client'}
+                </p>
+                <p className="text-text-tertiary truncate text-xs">
+                  {s.lieu ?? 'Lieu à confirmer'}
+                </p>
+              </div>
+              <span
+                className={cn(
+                  'shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium',
+                  isPending
+                    ? 'bg-warning/15 text-warning'
+                    : 'bg-accent-gold/15 text-accent-gold',
+                )}
+              >
+                {isPending ? 'Attente' : 'Confirmé'}
+              </span>
+              <span className="text-accent-gold shrink-0 text-sm font-bold tabular-nums">
+                {formatPrice(s.tarif)}
+              </span>
+            </button>
           </li>
         );
       })}

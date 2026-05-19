@@ -1,6 +1,6 @@
 import type { Seance } from '@/types';
 
-export const seances: Seance[] = [
+const manualSeances: Seance[] = [
   // ===== Séances futures =====
   {
     id: 'seance-001',
@@ -468,3 +468,172 @@ export const seances: Seance[] = [
     statut: 'annulee',
   },
 ];
+
+// Generateur programmatique pour pros[4] (Julie MARTIN, pro-005) : planning dense
+// sur 4 semaines (S-1, S, S+1, S+2) autour de la date "aujourd'hui" du MVP.
+// Deterministe : meme entree => meme sortie. Reproductible.
+
+const PRO_VEDETTE_ID = 'pro-005';
+const REF_TODAY = new Date(2026, 4, 19); // 19 mai 2026
+
+const CS_CATALOG: Record<
+  string,
+  { sport: string; tarif: number; duree: number; lieu: string }
+> = {
+  'cs-007': {
+    sport: 'fitness',
+    tarif: 70,
+    duree: 60,
+    lieu: 'Salle Fitness Park, Paris 16e',
+  },
+  'cs-008': {
+    sport: 'running',
+    tarif: 65,
+    duree: 75,
+    lieu: 'Bois de Boulogne, Paris 16e',
+  },
+  'cs-009': {
+    sport: 'musculation',
+    tarif: 70,
+    duree: 75,
+    lieu: 'Studio Nakama, Paris 16e',
+  },
+  'cs-012': {
+    sport: 'musculation',
+    tarif: 60,
+    duree: 75,
+    lieu: 'Studio Nakama, Paris 16e',
+  },
+  'cs-013': {
+    sport: 'crossfit',
+    tarif: 55,
+    duree: 60,
+    lieu: 'CrossFit Box 16, Paris 16e',
+  },
+};
+const CS_IDS = Object.keys(CS_CATALOG);
+
+const SPORTIF_POOL = [
+  'sportif-001',
+  'sportif-002',
+  'sportif-003',
+  'sportif-004',
+  'sportif-005',
+  'sportif-006',
+  'sportif-007',
+  'sportif-008',
+  'sportif-009',
+  'sportif-010',
+];
+
+// Cathegories horaires (matin tot, matin, midi, apres-midi, soir)
+const TIME_BUCKETS: string[][] = [
+  ['06:30', '07:00', '07:30'],
+  ['09:00', '10:00', '11:00'],
+  ['12:00', '12:30', '13:00'],
+  ['14:00', '15:00', '16:00'],
+  ['18:00', '19:00', '19:30', '20:00', '20:30'],
+];
+
+function startOfWeekMonday(d: Date): Date {
+  const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dow = out.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const delta = (dow + 6) % 7; // 0 si lundi, 6 si dimanche
+  out.setDate(out.getDate() - delta);
+  return out;
+}
+
+function isoLocal(date: Date, time: string): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}T${time}:00`;
+}
+
+function countForDay(dow: number, seed: number): number {
+  // dow: 0=Sun..6=Sat
+  if (dow === 0) return 1 + (seed % 2); // dimanche 1-2
+  if (dow === 6) return 2 + (seed % 2); // samedi 2-3
+  return 4 + (seed % 3); // lun-ven 4-6
+}
+
+function pickTimes(count: number, daySeed: number): string[] {
+  // Distribue les seances dans des plages distinctes pour eviter les chevauchements
+  const picks: string[] = [];
+  const order = [0, 4, 1, 3, 2]; // matin tot, soir, matin, apres-midi, midi (priorite)
+  for (let i = 0; i < count; i++) {
+    const bucket = TIME_BUCKETS[order[i % order.length]!]!;
+    const slot = bucket[(daySeed + i * 3) % bucket.length]!;
+    picks.push(slot);
+  }
+  return picks.sort(); // tri pour rendu chrono
+}
+
+function generateProVedetteSeances(): Seance[] {
+  const out: Seance[] = [];
+  const monday = startOfWeekMonday(REF_TODAY);
+  const startMonday = new Date(monday);
+  startMonday.setDate(monday.getDate() - 7); // S-1
+
+  let counter = 0;
+
+  for (let week = 0; week < 4; week++) {
+    for (let dow = 0; dow < 7; dow++) {
+      const day = new Date(startMonday);
+      day.setDate(startMonday.getDate() + week * 7 + dow);
+
+      const realDow = day.getDay(); // 0=Sun..6=Sat
+      const daySeed = week * 7 + dow + 17;
+      const nb = countForDay(realDow, daySeed);
+      const times = pickTimes(nb, daySeed);
+
+      for (let i = 0; i < nb; i++) {
+        const time = times[i]!;
+        const cs = CS_IDS[(counter * 3) % CS_IDS.length]!;
+        const csData = CS_CATALOG[cs]!;
+        const sportifId = SPORTIF_POOL[(counter * 7) % SPORTIF_POOL.length]!;
+
+        // Statut : passe = terminee (rare annulee), aujourd'hui = confirmee mostly,
+        // futur = confirmee majoritairement, parfois en_attente, rare annulee
+        const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+        const todayStart = new Date(
+          REF_TODAY.getFullYear(),
+          REF_TODAY.getMonth(),
+          REF_TODAY.getDate(),
+        );
+
+        let statut: Seance['statut'];
+        if (dayStart < todayStart) {
+          statut = counter % 13 === 0 ? 'annulee' : 'terminee';
+        } else if (dayStart.getTime() === todayStart.getTime()) {
+          statut = counter % 9 === 0 ? 'en_attente' : 'confirmee';
+        } else {
+          statut =
+            counter % 17 === 0
+              ? 'annulee'
+              : counter % 6 === 0
+                ? 'en_attente'
+                : 'confirmee';
+        }
+
+        out.push({
+          id: `seance-gen-${String(counter).padStart(3, '0')}`,
+          proId: PRO_VEDETTE_ID,
+          sportifId,
+          carteServiceId: cs,
+          date: isoLocal(day, time),
+          dureeMinutes: csData.duree,
+          lieu: csData.lieu,
+          tarif: csData.tarif,
+          statut,
+        });
+
+        counter++;
+      }
+    }
+  }
+
+  return out;
+}
+
+export const seances: Seance[] = [...manualSeances, ...generateProVedetteSeances()];
