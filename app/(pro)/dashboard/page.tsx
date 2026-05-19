@@ -23,6 +23,7 @@ import { useUserStore } from '@/stores/user-store';
 import { pros, seances, sportifs } from '@/lib/mock-data';
 import { containerVariants, itemVariants } from '@/lib/animations';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
 
 const SPARKLINE_DATA = [
   { month: 'Nov', value: 1200 },
@@ -121,7 +122,12 @@ export default function DashboardPage() {
           deltaPositive
           icon={TrendingUp}
         />
-        <KpiCard label="Revenus du mois" value="2 580 €" delta="+8 %" deltaPositive />
+        <KpiCard
+          label="Revenus du mois"
+          value={formatPrice(2580)}
+          delta="+8 %"
+          deltaPositive
+        />
         <KpiCard
           label="Note moyenne"
           value={pro.note.toFixed(1)}
@@ -337,7 +343,7 @@ function KpiCard({
         <span className="nk-label text-accent-muted">{label}</span>
         {Icon && <Icon size={14} className="text-accent-gold/70" />}
       </div>
-      <div className="text-text-primary mt-3 text-[28px] font-bold tracking-[-0.02em] tabular-nums">
+      <div className="text-text-primary mt-3 text-[28px] font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums">
         {value}
       </div>
       {delta && (
@@ -358,8 +364,8 @@ function KpiCard({
 function RevenueValue({ target }: { target: number }) {
   const value = useCountUp(target, 1100);
   return (
-    <span className="text-accent-gold text-glow-or text-[34px] font-bold tracking-[-0.02em] tabular-nums">
-      {value.toLocaleString('fr-FR')} €
+    <span className="text-accent-gold text-glow-or text-[34px] font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums">
+      {formatPrice(value)}
     </span>
   );
 }

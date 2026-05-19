@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
 import { seances, sportifs, pros } from '@/lib/mock-data';
 import { useUserStore } from '@/stores/user-store';
 import { useMobile } from '@/hooks/use-mobile';
@@ -394,7 +395,7 @@ export default function AgendaPage() {
       {/* FAB Bloquer plage : icon-only mobile, label desktop */}
       <button
         onClick={() => setBlockOpen(true)}
-        className="bg-accent-gold text-background fixed right-4 bottom-24 z-40 flex h-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 sm:right-6 sm:gap-2 sm:px-5 lg:bottom-8"
+        className="bg-accent-gold text-background fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom)+0.5rem)] z-40 flex h-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 sm:right-6 sm:gap-2 sm:px-5 lg:bottom-8"
         aria-label="Bloquer une plage horaire"
       >
         <Plus size={20} className="mx-3 sm:mx-0" />
@@ -633,7 +634,7 @@ function DayContentList({ seances, blocks }: DayContentListProps) {
               {isPending ? 'Attente' : 'Confirmé'}
             </span>
             <span className="text-accent-gold shrink-0 text-sm font-bold tabular-nums">
-              {s.tarif} €
+              {formatPrice(s.tarif)}
             </span>
           </li>
         );

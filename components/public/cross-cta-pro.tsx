@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
+import { formatPrice } from '@/lib/formatters';
+
 import { BackgroundVideo } from './background-video';
 
 export function CrossCtaPro() {
@@ -17,7 +19,7 @@ export function CrossCtaPro() {
         <h2 className="nk-h1 text-accent-gold mt-3 mb-4">Rejoins l’espace pro</h2>
         <p className="text-text-secondary mx-auto mb-8 max-w-[640px] text-base leading-relaxed">
           Profil mis en avant, agenda intégré, paiement sécurisé, fiche athlète unifiée. À
-          partir de 29 € par mois.
+          partir de {formatPrice(29)} par mois.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link

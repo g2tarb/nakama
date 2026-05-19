@@ -10,6 +10,7 @@ import { ProgressBar } from '@/components/sportif/onboarding/progress-bar';
 import { StepWrapper } from '@/components/sportif/onboarding/step-wrapper';
 import { VibeSlider } from '@/components/sportif/onboarding/vibe-slider';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
 import { useModeStore } from '@/stores/mode-store';
 import { SPORTS_DISPONIBLES, OBJECTIFS, NIVEAUX, FREQUENCES } from '@/lib/constants';
 import { onboardingSportifSchema } from '@/lib/schemas';
@@ -374,7 +375,7 @@ export default function InscriptionSportifPage() {
             </div>
             <div>
               <label className="text-text-secondary mb-1.5 block text-sm">
-                Budget par séance : {budgetMin}€ à {budgetMax}€
+                Budget par séance : {formatPrice(budgetMin)} à {formatPrice(budgetMax)}
               </label>
               <div className="flex items-center gap-4">
                 <input

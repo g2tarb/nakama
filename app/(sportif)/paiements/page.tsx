@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 import { containerVariants, itemVariants } from '@/lib/animations';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
 
 const FACTURES = [
   {
@@ -115,7 +116,7 @@ export default function PaiementsPage() {
         <div className="bg-card rounded-l-xl px-4 py-4">
           <div className="nk-label text-accent-muted">Dépensé · 2026</div>
           <div className="text-text-primary mt-1 text-[20px] font-bold tabular-nums">
-            {TOTAL_DEPENSE} €
+            {formatPrice(TOTAL_DEPENSE)}
           </div>
         </div>
         <div className="bg-card rounded-r-xl px-4 py-4">
@@ -165,7 +166,7 @@ export default function PaiementsPage() {
                       : 'text-accent-gold',
                   )}
                 >
-                  {f.montant} €
+                  {formatPrice(f.montant)}
                 </div>
                 <div className="text-text-tertiary text-[11px]">
                   {f.statut === 'remboursee' ? 'Remboursé' : 'Payé'}

@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
 import { pros } from '@/lib/mock-data';
 
 const MOCK_CRENEAUX = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
@@ -92,7 +93,7 @@ export default function ReservationPage({
                   <div className="flex justify-between">
                     <h3 className="font-semibold">{carte.nom}</h3>
                     <span className="text-accent-gold font-bold">
-                      {carte.tarifHeure}€
+                      {formatPrice(carte.tarifHeure)}
                     </span>
                   </div>
                   <p className="text-text-secondary mt-1 text-sm">{carte.description}</p>
@@ -217,16 +218,18 @@ export default function ReservationPage({
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-text-secondary">Séance</span>
-                <span>{service.tarifHeure}€</span>
+                <span>{formatPrice(service.tarifHeure)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">Frais Nakama (3,5% + 0,50€)</span>
-                <span>{fraisNakama.toFixed(2)}€</span>
+                <span className="text-text-secondary">
+                  Frais Nakama (3,5% + {formatPrice(0.5)})
+                </span>
+                <span>{formatPrice(fraisNakama)}</span>
               </div>
               <div className="flex justify-between pt-2 font-bold">
                 <span>Total</span>
                 <span className="text-accent-gold">
-                  {(service.tarifHeure + fraisNakama).toFixed(2)}€
+                  {formatPrice(service.tarifHeure + fraisNakama)}
                 </span>
               </div>
             </div>
@@ -254,7 +257,7 @@ export default function ReservationPage({
               <div>
                 <p className="text-text-tertiary text-xs uppercase">Total à payer</p>
                 <p className="text-accent-gold mt-1 text-2xl font-bold">
-                  {(service.tarifHeure + fraisNakama).toFixed(2)}€
+                  {formatPrice(service.tarifHeure + fraisNakama)}
                 </p>
               </div>
               <CreditCard size={28} className="text-accent-gold/60" />
@@ -324,7 +327,7 @@ export default function ReservationPage({
             className="w-full"
             onClick={() => router.push('/reservation/confirmation')}
           >
-            Confirmer le paiement de {(service.tarifHeure + fraisNakama).toFixed(2)}€
+            Confirmer le paiement de {formatPrice(service.tarifHeure + fraisNakama)}
           </Button>
 
           <p className="text-text-tertiary text-center text-xs">

@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { CalendarDays, ChevronRight, Clock, List, MapPin, Plus } from 'lucide-react';
+
+import { formatPrice } from '@/lib/formatters';
 import {
   format,
   isAfter,
@@ -204,7 +206,7 @@ export default function RdvPage() {
                         {seance.lieu}
                       </span>
                       <span className="text-accent-gold ml-auto text-sm font-bold tabular-nums">
-                        {seance.tarif} €
+                        {formatPrice(seance.tarif)}
                       </span>
                     </div>
                   </motion.li>

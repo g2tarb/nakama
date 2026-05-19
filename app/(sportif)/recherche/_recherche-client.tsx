@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { BottomSheet } from '@/components/common/bottom-sheet';
 import { ProArticleCard } from '@/components/sportif/pro-article-card';
 import { cn } from '@/lib/utils';
+import { formatPricePerHour } from '@/lib/formatters';
 import { useMatchedPros } from '@/hooks/use-matching';
 import { SPORTS_DISPONIBLES, SPECIALITES } from '@/lib/constants';
 import type { Pro, Sport, Specialite, Format } from '@/types';
@@ -202,7 +203,7 @@ function RechercheContent({
             <div className="mb-3 flex items-center justify-between">
               <p className="nk-label text-accent-muted">Tarif maximum</p>
               <span className="text-accent-gold text-[14px] font-bold tabular-nums">
-                {tarifMax} €/h
+                {formatPricePerHour(tarifMax)}
               </span>
             </div>
             <input

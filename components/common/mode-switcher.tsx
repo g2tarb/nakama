@@ -19,7 +19,7 @@ export function ModeSwitcher() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed right-6 bottom-6 z-[100]">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom)+0.5rem)] left-6 z-[100] lg:right-6 lg:bottom-6 lg:left-auto">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -27,7 +27,7 @@ export function ModeSwitcher() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="border-border bg-surface-elevated shadow-elevated absolute right-0 bottom-14 mb-2 w-48 overflow-hidden rounded-xl border"
+            className="border-border bg-surface-elevated shadow-elevated absolute bottom-14 left-0 mb-2 w-48 overflow-hidden rounded-xl border lg:right-0 lg:left-auto"
           >
             {MODES.map(({ value, label, icon: Icon }) => (
               <button

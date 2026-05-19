@@ -17,6 +17,7 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatPrice } from '@/lib/formatters';
 import {
   Dialog,
   DialogContent,
@@ -194,7 +195,8 @@ export default function ParametresPage() {
                       )}
                     </div>
                     <p className="text-accent-gold text-lg font-bold">
-                      {f.prix}€<span className="text-text-tertiary text-xs">/mois</span>
+                      {formatPrice(f.prix)}
+                      <span className="text-text-tertiary text-xs">/mois</span>
                     </p>
                   </div>
                   <ul className="text-text-secondary space-y-1 text-xs">

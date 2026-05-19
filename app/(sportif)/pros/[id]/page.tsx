@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useCountUp } from '@/hooks/use-count-up';
 import { pros } from '@/lib/mock-data';
 import { SPECIALITES, SPORTS_DISPONIBLES } from '@/lib/constants';
-import { formatPricePerHour, formatDate } from '@/lib/formatters';
+import { formatPrice, formatPricePerHour, formatDate } from '@/lib/formatters';
 import { useUserStore } from '@/stores/user-store';
 import { computeMatchScore } from '@/lib/matching';
 import { cn } from '@/lib/utils';
@@ -182,7 +182,7 @@ export default function FicheProPage({ params }: { params: Promise<{ id: string 
                         </span>
                       </div>
                       <span className="text-accent-gold shrink-0 text-lg font-bold tabular-nums">
-                        {carte.tarifHeure} €
+                        {formatPrice(carte.tarifHeure)}
                         <span className="text-text-tertiary text-xs font-normal">
                           {' '}
                           /h

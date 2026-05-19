@@ -2,11 +2,16 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export function formatPrice(amount: number): string {
-  return `${amount}€`;
+  const isInteger = Number.isInteger(amount);
+  const formatted = amount.toLocaleString('fr-FR', {
+    minimumFractionDigits: isInteger ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  return `${formatted} €`;
 }
 
 export function formatPricePerHour(amount: number): string {
-  return `${amount}€/h`;
+  return `${formatPrice(amount)}/h`;
 }
 
 export function formatDate(date: string | Date): string {

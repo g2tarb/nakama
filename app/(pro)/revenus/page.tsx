@@ -18,6 +18,7 @@ import {
 import { useUserStore } from '@/stores/user-store';
 import { pros, sportifs, seances } from '@/lib/mock-data';
 import { useCountUp } from '@/hooks/use-count-up';
+import { formatPrice } from '@/lib/formatters';
 
 const MONTHLY_DATA = [
   { month: 'Sep', value: 800 },
@@ -81,8 +82,8 @@ export default function RevenusPage() {
         <section className="bg-card border-border/40 rounded-xl border p-5 lg:col-span-5 lg:p-6">
           <span className="nk-label text-accent-muted">Chiffre d’affaires</span>
           <div className="mt-2 flex items-baseline gap-3">
-            <span className="text-accent-gold text-glow-or text-[40px] font-bold tracking-[-0.02em] tabular-nums">
-              {ca.toLocaleString('fr-FR')} €
+            <span className="text-accent-gold text-glow-or text-[40px] font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums">
+              {formatPrice(ca)}
             </span>
             <span className="text-success inline-flex items-center gap-1 text-sm font-medium">
               <TrendingUp size={13} />
@@ -91,7 +92,7 @@ export default function RevenusPage() {
           </div>
           <div className="border-border/40 mt-5 grid grid-cols-3 gap-3 border-t pt-4">
             <Stat label="Séances" value="32" />
-            <Stat label="Tarif moyen" value="80 €" />
+            <Stat label="Tarif moyen" value={formatPrice(80)} />
             <Stat label="Clients" value="18" accent />
           </div>
         </section>
@@ -231,8 +232,8 @@ export default function RevenusPage() {
                 <span className="text-text-secondary text-xs tabular-nums">
                   {client.nbSeances} séance{client.nbSeances > 1 ? 's' : ''}
                 </span>
-                <span className="text-accent-gold text-sm font-bold tabular-nums">
-                  {client.ca.toLocaleString('fr-FR')} €
+                <span className="text-accent-gold text-sm font-bold whitespace-nowrap tabular-nums">
+                  {formatPrice(client.ca)}
                 </span>
               </li>
             ))}
