@@ -3,6 +3,8 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  Calendar,
+  CheckCircle2,
   ChevronRight,
   CircleDot,
   Dumbbell,
@@ -10,6 +12,7 @@ import {
   Footprints,
   HandMetal,
   Medal,
+  Search,
   Sparkles,
   Swords,
   Zap,
@@ -26,7 +29,8 @@ import { defaultSportif, pros, seances } from '@/lib/mock-data';
 import { SPORTS_DISPONIBLES } from '@/lib/constants';
 import { containerVariants, itemVariants } from '@/lib/animations';
 import { cn } from '@/lib/utils';
-import type { Sport } from '@/types';
+import { useAccueilStore, type AccueilTab } from '@/stores/accueil-store';
+import type { Pro, Sport } from '@/types';
 
 const SPORT_ICONS: Partial<Record<Sport, LucideIcon>> = {
   fitness: Dumbbell,
@@ -50,9 +54,21 @@ const pseudoScore = (id: string) => {
   return 75 + (n % 20);
 };
 
+const STEPS: Array<{ icon: LucideIcon; label: string; description: string }> = [
+  { icon: Search, label: 'Trouve', description: 'Le coach qui matche tes envies' },
+  { icon: Calendar, label: 'Réserve', description: 'Une séance en quelques clics' },
+  {
+    icon: CheckCircle2,
+    label: 'Progresse',
+    description: 'Suivi & feedback à chaque RDV',
+  },
+];
+
 export default function AccueilSportifPage() {
   const router = useRouter();
   const matchedPros = useMatchedPros();
+  const tab = useAccueilStore((s) => s.tab);
+  const setTab = useAccueilStore((s) => s.setTab);
 
   const nextSeance = useMemo(() => {
     const now = new Date();
@@ -68,9 +84,22 @@ export default function AccueilSportifPage() {
   const nextSeancePro = nextSeance ? pros.find((p) => p.id === nextSeance.proId) : null;
 
   const prosProximite = useMemo(
-    () => [...pros].sort((a, b) => a.rayonKm - b.rayonKm),
+    () => [...pros].sort((a, b) => a.rayonKm - b.rayonKm).slice(0, 5),
     [],
   );
+
+  const suggestionsList = useMemo(() => {
+    const source =
+      matchedPros.length > 0
+        ? matchedPros.slice(0, 5)
+        : pros.slice(0, 5).map((p) => ({ proId: p.id, scoreTotal: pseudoScore(p.id) }));
+    return source
+      .map(({ proId, scoreTotal }) => {
+        const pro = pros.find((p) => p.id === proId);
+        return pro ? { pro, score: scoreTotal } : null;
+      })
+      .filter((x): x is { pro: Pro; score: number } => x !== null);
+  }, [matchedPros]);
 
   return (
     <div className="pb-8">
@@ -89,41 +118,60 @@ export default function AccueilSportifPage() {
           />
         )}
 
+        {/* Mobile : toggle + carousel unique */}
+        <section className="mt-10 md:hidden">
+          <div className="mb-4 px-4">
+            <ToggleTabs tab={tab} onChange={setTab} />
+          </div>
+          <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
+            {tab === 'suggestions'
+              ? suggestionsList.map(({ pro, score }) => (
+                  <div key={pro.id} className="snap-start">
+                    <ProCard
+                      pro={pro}
+                      compatibilityScore={score}
+                      onClick={() => router.push(`/pros/${pro.id}`)}
+                    />
+                  </div>
+                ))
+              : prosProximite.map((pro) => (
+                  <div key={pro.id} className="snap-start">
+                    <ProCard
+                      pro={pro}
+                      distance={pseudoDistance(pro.id)}
+                      onClick={() => router.push(`/pros/${pro.id}`)}
+                    />
+                  </div>
+                ))}
+          </div>
+        </section>
+
+        {/* Desktop : 2 carrousels coexistants, espacement ≥64px */}
         <motion.section
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-40px' }}
-          className="mt-10"
+          className="mt-10 hidden md:block"
         >
           <SectionHeading>Matchés pour toi</SectionHeading>
           <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
-            {(matchedPros.length > 0
-              ? matchedPros.slice(0, 5)
-              : pros.slice(0, 5).map((p) => ({
-                  proId: p.id,
-                  scoreTotal: pseudoScore(p.id),
-                }))
-            ).map((match) => {
-              const pro = pros.find((p) => p.id === match.proId);
-              if (!pro) return null;
-              return (
-                <motion.div key={pro.id} variants={itemVariants} className="snap-start">
-                  <ProCard
-                    pro={pro}
-                    compatibilityScore={match.scoreTotal}
-                    onClick={() => router.push(`/pros/${pro.id}`)}
-                  />
-                </motion.div>
-              );
-            })}
+            {suggestionsList.map(({ pro, score }) => (
+              <motion.div key={pro.id} variants={itemVariants} className="snap-start">
+                <ProCard
+                  pro={pro}
+                  compatibilityScore={score}
+                  onClick={() => router.push(`/pros/${pro.id}`)}
+                />
+              </motion.div>
+            ))}
           </div>
         </motion.section>
 
-        <section className="mt-10">
+        <section className="mt-16 hidden md:block">
           <SectionHeading>À proximité</SectionHeading>
           <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
-            {prosProximite.slice(0, 5).map((pro) => (
+            {prosProximite.map((pro) => (
               <div key={pro.id} className="snap-start">
                 <ProCard
                   pro={pro}
@@ -133,6 +181,32 @@ export default function AccueilSportifPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mt-10 px-4">
+          <h2 className="nk-h3 text-text-primary mb-4">Comment ça marche</h2>
+          <ol className="grid grid-cols-3 gap-3">
+            {STEPS.map(({ icon: Icon, label, description }, i) => (
+              <li
+                key={label}
+                className="border-border/40 bg-card flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-center"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 items-center justify-center rounded-full"
+                  style={{ background: 'var(--color-accent-gold-wash)' }}
+                >
+                  <Icon size={16} className="text-accent-gold" />
+                </span>
+                <div className="text-text-primary text-sm font-semibold">
+                  {i + 1}. {label}
+                </div>
+                <div className="text-text-tertiary text-[11px] leading-snug">
+                  {description}
+                </div>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section className="mt-10 px-4">
@@ -175,6 +249,49 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
     <motion.h2 variants={itemVariants} className="nk-h3 text-text-primary mb-4 px-4">
       {children}
     </motion.h2>
+  );
+}
+
+const TABS: Array<{ value: AccueilTab; label: string }> = [
+  { value: 'suggestions', label: 'Suggestions' },
+  { value: 'proximite', label: 'À proximité' },
+];
+
+function ToggleTabs({
+  tab,
+  onChange,
+}: {
+  tab: AccueilTab;
+  onChange: (next: AccueilTab) => void;
+}) {
+  return (
+    <div className="border-border/40 flex items-center gap-6 border-b">
+      {TABS.map(({ value, label }) => {
+        const active = tab === value;
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onChange(value)}
+            aria-pressed={active}
+            className={cn(
+              'relative pt-1 pb-2.5 text-sm font-semibold transition-colors',
+              active ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary',
+            )}
+          >
+            {label}
+            {active && (
+              <motion.span
+                layoutId="accueil-toggle-indicator"
+                aria-hidden="true"
+                className="bg-accent-gold absolute right-0 -bottom-px left-0 h-[2px] rounded-full"
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
